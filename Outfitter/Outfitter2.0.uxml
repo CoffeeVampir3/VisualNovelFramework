@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="CharacterImageStyle.uss" />
+    <uie:Toolbar>
+        <uie:ObjectField label="Character:" name="characterSelector" style="height: auto;" />
+        <ui:Button text="Save Outfit" display-tooltip-when-elided="true" name="SaveCharBtn" />
+    </uie:Toolbar>
+    <ui:VisualElement style="flex-direction: row; height: auto; width: auto; flex-grow: 1; flex-basis: 100%; align-items: auto;">
+        <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: auto; height: auto; padding-left: 0; padding-right: 0; border-right-width: 2px; border-top-width: 2px; border-left-width: 2px; border-bottom-width: 2px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); min-width: 20%;">
+            <VisualNovelFramework.Elements.Utils.ModularList name="poseList" FoldoutText="Pose" />
+            <VisualNovelFramework.Elements.Utils.ModularList name="layerList" FoldoutText="Layer" />
+            <ui:ListView focusable="true" name="layerImageList" style="flex: 1; align-items: center; justify-content: center;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="characterDisplayerRoot" style="flex: 3; flex-direction: row; align-items: center; justify-content: center; flex-grow: 4; overflow: hidden; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgb(58, 58, 58); visibility: visible; flex-basis: auto; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); flex-shrink: 1; min-width: 80%; min-height: 100%;">
+            <ui:VisualElement name="previewerPane" style="width: 300%; height: 300%; min-width: 300%; min-height: 300%; max-width: none; max-height: none; flex-grow: 1; justify-content: center; align-items: center; position: relative; top: auto; left: auto; flex-direction: column;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

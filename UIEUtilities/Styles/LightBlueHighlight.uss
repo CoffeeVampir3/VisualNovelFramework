@@ -1,0 +1,3 @@
+.--highlighted {
+    background-color: rgba(100, 120, 200, 0.2);
+}

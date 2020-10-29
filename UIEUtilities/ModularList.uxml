@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="RenamableListStyle.uss" />
+    <ui:VisualElement name="listContainer" style="flex-direction: row; flex-basis: auto; flex-grow: 1; background-color: rgb(49, 49, 49);">
+        <ui:Foldout text="Foldout" name="ListFoldout" style="flex-grow: 1; flex-direction: column; flex-basis: 100%;">
+            <ui:ListView focusable="true" name="listViewer" reorderable="true" item-height="22" selection-type="None" class="--list-item-container" />
+        </ui:Foldout>
+        <ui:VisualElement name="buttonContainer" style="height: 22px; flex-direction: row;" />
+    </ui:VisualElement>
+</ui:UXML>

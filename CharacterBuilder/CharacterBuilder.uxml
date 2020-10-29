@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="true">
+    <ui:VisualElement style="flex-grow: 1;">
+        <uie:Toolbar>
+            <uie:ObjectField label="Character:" name="characterSelector" style="height: auto;" />
+            <ui:Button text="Save Character" display-tooltip-when-elided="true" name="SaveCharBtn" />
+            <ui:Button text="New Character" display-tooltip-when-elided="true" name="NewCharBtn" />
+        </uie:Toolbar>
+        <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+            <ui:VisualElement style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-right: 0; border-left-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29);">
+                <ui:VisualElement name="previewImageContainer" style="flex-grow: 1; flex-direction: column; background-image: none; max-width: none; max-height: none; justify-content: center; align-items: center;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-left: 0; padding-right: 0; border-right-width: 0; border-top-width: 5px; border-left-width: 0; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29);">
+                <uie:FloatField label="Character Aspect Ratio:" value="1.01" name="aspectRatio" />
+                <VisualNovelFramework.Elements.Utils.ModularList name="poseList" FoldoutText="Pose"/>
+                <VisualNovelFramework.Elements.Utils.ModularList name="layerList" FoldoutText="Layer"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="LayerInspectorPane" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-bottom-color: rgba(0, 0, 0, 0.29); border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29);">
+                <ui:Toggle label="Multilayer" name="isLayerMultilayer" style="visibility: hidden;" />
+                <VisualNovelFramework.Elements.Utils.ModularList FoldoutText="LayerTextures" name="layerTextures" style="visibility: row;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

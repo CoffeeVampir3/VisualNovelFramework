@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <uie:ToolbarSpacer style="padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px;" />
+    <uie:ToolbarSearchField focusable="true" name="searchField" FoldoutText="Search Results" HasRemoveButtons="false" />
+    <VisualNovelFramework.Elements.Utils.RenamableList name="searchResults" HasRemoveButtons="false" FoldoutText="Search Results" />
+</ui:UXML>

@@ -1,0 +1,22 @@
+.--list-container {
+    flex-grow: 3;
+}
+
+.--list-item-container {
+    flex: 1;
+}
+
+.--element-button {
+    flex-grow: 1;
+    flex-direction: row;
+    align-content: stretch;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    max-width: 20px;
+    max-height: 20px;
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}

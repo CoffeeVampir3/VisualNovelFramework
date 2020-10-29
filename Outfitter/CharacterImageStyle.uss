@@ -1,0 +1,6 @@
+.charImgStyle {
+    height: initial;
+    position: absolute;
+    -unity-background-scale-mode: scale-to-fit;
+    width: initial;
+}
