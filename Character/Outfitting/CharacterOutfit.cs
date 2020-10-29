@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEditor;
@@ -25,6 +26,13 @@ namespace VisualNovelFramework.Outfitting
             outfitDictionary.Clear();
             utilizedLayers.Clear();
             outfitPose = null;
+        }
+
+        public Texture2D GetRandomPreviewTexture()
+        {
+            var layer = utilizedLayers.ElementAt(0);
+            var ggd = outfitDictionary[layer];
+            return ggd[0];
         }
 
         public void SetLayerDefault(CharacterPose inPose, CharacterLayer layer)

@@ -25,6 +25,12 @@ namespace VisualNovelFramework.Elements.Utils
     //TODO:: Support binding when unity adds support for it.
     public class ModularList : BindableElement
     {
+        private const string ModularListPath = 
+            "Assets/VisualNovelFramework/UIEUtilities/ModularList/ModularList.uxml";
+        private const string ModularListItemPath =
+            "Assets/VisualNovelFramework/UIEUtilities/Elements/DynamicLabelWithIcon.uxml";
+        private const string highlightUssClassName = "--highlighted";
+
         public ListView listViewer;
         private readonly VisualElement root;
         private readonly VisualElement buttonContainer;
@@ -35,15 +41,10 @@ namespace VisualNovelFramework.Elements.Utils
         public ModularList()
         {
             var listUxml =
-                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                    "Assets/VisualNovelFramework/UIEUtilities/ModularList/ModularList.uxml");
-
-            var highlightStyle =
-                AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/VisualNovelFramework/UIEUtilities/Styles/LightBlueHighlight.uss");
+                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ModularListPath);
             
             root = listUxml.Instantiate();
             Add(root);
-            root.styleSheets.Add(highlightStyle);
 
             var tc = root.Q<TemplateContainer>();
             buttonContainer = root.Q<VisualElement>("buttonContainer");
@@ -74,8 +75,7 @@ namespace VisualNovelFramework.Elements.Utils
             if (listItemProto == null)
             {
                 listItemProto =
-                    AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                        "Assets/VisualNovelFramework/UIEUtilities/ModularList/ModularListItem.uxml");
+                    AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ModularListItemPath);
             }
             
             listViewer = root.Q<ListView>("listViewer");
@@ -146,7 +146,6 @@ namespace VisualNovelFramework.Elements.Utils
         }
 
         private VisualElement lastHighlitField = null;
-        private const string highlightUssClassName = "--highlighted";
         public void HighlightItem(Object targetItem, bool unhighlightOld = true)
         {
             if (!objectItemLink.TryGetValue(targetItem, out var ve)) 
