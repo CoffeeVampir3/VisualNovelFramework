@@ -12,7 +12,6 @@ namespace VisualNovelFramework.Outfitting
     /// out of synch with the character outfit. When deserializing the outfit we must ensure
     /// each texture actually exists within the character layer, and, if not, warn the user!
     /// </summary>
-    [CreateAssetMenu]
     public class CharacterOutfit : SerializedScriptableObject
     {
         [OdinSerialize]

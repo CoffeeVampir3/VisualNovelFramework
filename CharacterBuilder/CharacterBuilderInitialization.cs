@@ -62,14 +62,7 @@ namespace VisualNovelFramework.CharacterBuilder
                 }
             });
         }
-        
-        private void SetupSaveButton()
-        {
-            var saveBtn = rootVisualElement.Q<Button>("SaveCharBtn");
 
-            saveBtn.clicked += OnSaveButtonClicked;
-        }
-        
         private void SetupCharacterSelector()
         {
             charSelector = rootVisualElement.Q<ObjectField>("characterSelector");
@@ -79,11 +72,17 @@ namespace VisualNovelFramework.CharacterBuilder
             charSelector.RegisterCallback<ClickEvent>(OnCharacterFieldClicked);
         }
 
-        private void SetupNewCharBtn()
+        private void SetupFileMenu()
         {
-            var btn = rootVisualElement.Q<Button>("NewCharBtn");
-
-            btn.clicked += NewCharButtonClicked;
+            var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
+            
+            menu.menu.AppendAction("New", CreateNewCharacterMenu);
+            menu.menu.AppendAction("Load", LoadCharacterMenu);
+            menu.menu.AppendSeparator();
+            menu.menu.AppendAction("Rename", RenameCharacterMenu);
+            menu.menu.AppendSeparator();
+            menu.menu.AppendAction("Save", SaveCharacterMenu);
+            menu.menu.AppendAction("Save As", SaveCharacterAsMenu);
         }
         
         public void OnEnable()
@@ -115,10 +114,9 @@ namespace VisualNovelFramework.CharacterBuilder
             });
 
             //Setup order does not matter.
-            SetupSaveButton();
+            SetupFileMenu();
             SetupLayerSelector();
             SetupCompositorFrame();
-            SetupNewCharBtn();
             SetupCharacterSelector();
             
             HideCompositorFrame();

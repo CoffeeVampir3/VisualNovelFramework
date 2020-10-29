@@ -6,7 +6,6 @@ using VisualNovelFramework.Outfitting;
 
 namespace VisualNovelFramework
 {
-    [CreateAssetMenu]
     public class Character : ScriptableObject
     {
         public CharacterCompositor compositor;
@@ -88,14 +87,13 @@ namespace VisualNovelFramework
             return null;
         }
 
-        public Character Serialize()
+        public Character Serialize(bool saveAs = false)
         {
             var charAsset = GetCharacterAsset(this.characterGUID);
-            if (charAsset != null)
-            {
-                return SaveExisting(charAsset);
-            }
-            return CreateAsAsset();
+            if(saveAs || charAsset == null) 
+                return CreateAsAsset();
+            
+            return SaveExisting(charAsset);
         }
 
         private string GetSavePath()

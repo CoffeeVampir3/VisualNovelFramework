@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace VisualNovelFramework.Outfitting
 {
-    [CreateAssetMenu]
     public class CharacterCompositor : ScriptableObject
     {
         public float layerAspectRatio;

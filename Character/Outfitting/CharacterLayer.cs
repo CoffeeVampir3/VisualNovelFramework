@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace VisualNovelFramework.Outfitting
 {
-    [CreateAssetMenu]
     public class CharacterLayer : ScriptableObject
     {
         [SerializeField] public List<Texture2D> textures = new List<Texture2D>();

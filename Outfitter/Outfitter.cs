@@ -19,6 +19,35 @@ namespace VisualNovelFramework.Outfitter
         private readonly List<Texture2D> images = new List<Texture2D>();
         private CharacterOutfit workingOutfit = null;
         
+        #region FileMenu
+        
+        private void LoadCharacterMenu(DropdownMenuAction dma)
+        {
+            if (charSelector == null) 
+                return;
+            
+            var btnQuery = charSelector.Query<VisualElement>(null, "unity-object-field__selector");
+            var objectFieldSelector = btnQuery.First();
+            if (objectFieldSelector == null)
+                return;
+
+            var clickEvent = new MouseDownEvent();
+            clickEvent.target = objectFieldSelector;
+            
+            objectFieldSelector.SendEvent(clickEvent);
+        }
+        
+        private void SaveOutfitMenu(DropdownMenuAction dma)
+        {
+            if (workingOutfit == null || currentCharacter == null)
+                return;
+
+            workingOutfit.name = "outfitTester";
+            workingOutfit.SerializeToCharacter(currentCharacter);
+        }
+        
+        #endregion
+        
         private void LoadNewPoseToWorking(CharacterCompositor compositor)
         {
             workingOutfit.ResetOutfit();
@@ -154,15 +183,6 @@ namespace VisualNovelFramework.Outfitter
             workingOutfit.AddOrRemoveExistingItem(currentPosedLayer, index);
             outfitPreviewer.DisplayOutfit(workingOutfit);
         }
-        
-        private void OnSaveButtonClicked()
-        {
-            if (workingOutfit == null || currentCharacter == null)
-                return;
 
-            workingOutfit.name = "outfitTester";
-            workingOutfit.SerializeToCharacter(currentCharacter);
-        }
-        
     }
 }

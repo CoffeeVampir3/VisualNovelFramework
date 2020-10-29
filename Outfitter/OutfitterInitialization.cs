@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Elements;
 using VisualNovelFramework.Elements.Utils;
+using PopupWindow = UnityEngine.UIElements.PopupWindow;
 
 namespace VisualNovelFramework.Outfitter
 {
@@ -25,14 +27,7 @@ namespace VisualNovelFramework.Outfitter
             layerList = rootVisualElement.Q<ModularList>("layerList");
             poseList = rootVisualElement.Q<ModularList>("poseList");
         }
-        
-        private void SetupSaveButton()
-        {
-            var saveBtn = rootVisualElement.Q<Button>("SaveCharBtn");
 
-            saveBtn.clicked += OnSaveButtonClicked;
-        }
-        
         private ObjectField charSelector = null;
         private void SetupCharacterSelector()
         {
@@ -80,6 +75,31 @@ namespace VisualNovelFramework.Outfitter
             };
         }
         
+        private void SetupFileMenu()
+        {
+            var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
+            
+            menu.menu.AppendAction("Load Character", LoadCharacterMenu);
+            menu.menu.AppendSeparator();
+            menu.menu.AppendAction("Save Outfit to Character", SaveOutfitMenu);
+        }
+
+        private List<string> strings = new List<string>();
+        private ToolbarPopupSearchField searcher;
+        private ScrollView sv;
+        private void SetupOutfitSearcher()
+        {
+            searcher = rootVisualElement.Q<ToolbarPopupSearchField>("outfitSearcher");
+            
+            searcher.RegisterValueChangedCallback(OnSearchTextChanged);
+        }
+        
+        void OnSearchTextChanged(ChangeEvent<string> evt)
+        {
+            Debug.Log("change");
+        }
+    
+        
         public void OnEnable()
         {
             // Each editor window contains a root VisualElement object
@@ -97,10 +117,11 @@ namespace VisualNovelFramework.Outfitter
             templateContainer.style.flexGrow = 1;
             templateContainer.style.flexShrink = 1;
             templateContainer.style.flexBasis = new StyleLength(100f);
-            
+
+            SetupFileMenu();
+            SetupOutfitSearcher();
             SetupCompositorFrame();
             SetupCharacterSelector();
-            SetupSaveButton();
             SetupLayerListView();
             SetupPreviewer();
         }

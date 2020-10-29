@@ -231,7 +231,7 @@ namespace VisualNovelFramework.Elements.Utils
         public new class UxmlFactory : UxmlFactory<ModularList, UxmlTraits> { }
    
         [Preserve]
-        public new class UxmlTraits : VisualElement.UxmlTraits
+        public new class UxmlTraits : BindableElement.UxmlTraits
         {
             readonly UxmlStringAttributeDescription foldout = new UxmlStringAttributeDescription { name = "FoldoutText", defaultValue = "Foldout" };
             

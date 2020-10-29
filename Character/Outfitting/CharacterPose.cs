@@ -6,7 +6,6 @@ namespace VisualNovelFramework.Outfitting
     /// <summary>
     /// Effectively a dynamic enumeration.
     /// </summary>
-    [CreateAssetMenu]
     public class CharacterPose : ScriptableObject
     {
         public void SerializeRecursive(CharacterCompositor saveTo)

@@ -14,12 +14,16 @@ namespace VisualNovelFramework.CharacterBuilder
     /// <summary>
     /// Event Paths:
     /// Window:
-    /// SetupSaveBtn -> OnSaveButtonClicked
+    /// SetupFileMenu -> New -> CreateNewCharacterMenu
+    /// SetupFileMenu -> Load -> LoadCharacterMenu
+    /// SetupFileMenu -> Rename -> RenameCharacterMenu
+    /// SetupFileMenu -> Save -> SaveCharacterMenu
+    /// SetupFileMenu -> Save As -> SaveCharacterAsMenu
     /// 
     /// Character:
     /// SetupCharSelector -> LoadCharacter -> LoadCompositor
     /// SetupNewCharBtn -> NewCharBtnClicked -> CreateNamedCharacter
-    /// aspectRatioField -> OnValueChanged
+    /// aspectRatioField -> OnValueChanged (initialization implicit)
     /// SetupCharSelector -> OnCharacterFieldClicked -> RenameCurrentCharacter
     ///
     /// Compositor:
@@ -46,7 +50,7 @@ namespace VisualNovelFramework.CharacterBuilder
         
         #region Window
         
-        private void OnSaveButtonClicked()
+        private void SaveCharacterMenu(DropdownMenuAction dma)
         {
             if (currentCharacter != null)
             {
@@ -56,6 +60,44 @@ namespace VisualNovelFramework.CharacterBuilder
             }
         }
         
+        private void SaveCharacterAsMenu(DropdownMenuAction dma)
+        {
+            if (currentCharacter != null)
+            {
+                var c = currentCharacter.Serialize(true);
+                if(c != null)
+                    LoadCharacter(c);
+            }
+        }
+
+        /// <summary>
+        /// Synthesizes a mouse click on the object field selector.
+        /// </summary>
+        private void LoadCharacterMenu(DropdownMenuAction dma)
+        {
+            if (charSelector == null) 
+                return;
+            
+            var btnQuery = charSelector.Query<VisualElement>(null, "unity-object-field__selector");
+            var objectFieldSelector = btnQuery.First();
+            if (objectFieldSelector == null)
+                return;
+
+            var clickEvent = new MouseDownEvent();
+            clickEvent.target = objectFieldSelector;
+            
+            objectFieldSelector.SendEvent(clickEvent);
+        }
+
+        private void RenameCharacterMenu(DropdownMenuAction dma)
+        {
+            if (currentCharacter != null)
+            {
+                NamerPopup renamerPopup = new NamerPopup(RenameCurrentCharacter);
+                renamerPopup.Popup();
+            }
+        }
+
         #endregion
 
         #region Character
@@ -94,7 +136,7 @@ namespace VisualNovelFramework.CharacterBuilder
             LoadCharacter(character);
         }
 
-        private void NewCharButtonClicked()
+        private void CreateNewCharacterMenu(DropdownMenuAction dma)
         {
             NamerPopup popup = new NamerPopup(CreateNamedCharacter);
 
@@ -136,7 +178,7 @@ namespace VisualNovelFramework.CharacterBuilder
                 evt.StopImmediatePropagation();
             }
         }
-        
+
         private void RenameCurrentCharacter(string newName)
         {
             if (currentCharacter == null) 

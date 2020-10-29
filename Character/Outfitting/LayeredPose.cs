@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace VisualNovelFramework.Outfitting
 {
-    [CreateAssetMenu]
     public class LayeredPose : ScriptableObject
     {
         public CharacterLayer layer;
