@@ -2,6 +2,7 @@
 using System.Linq;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
 
@@ -28,11 +29,17 @@ namespace VisualNovelFramework.Outfitting
             outfitPose = null;
         }
 
-        public Texture2D GetRandomPreviewTexture()
+        public List<Texture2D> GetPreviewTextures()
         {
-            var layer = utilizedLayers.ElementAt(0);
-            var ggd = outfitDictionary[layer];
-            return ggd[0];
+            List<Texture2D> previewTextures = new List<Texture2D>();
+            foreach (var layer in utilizedLayers)
+            {
+                if (outfitDictionary.TryGetValue(layer, out var texs))
+                {
+                    previewTextures.AddRange(texs);
+                }
+            }
+            return previewTextures;
         }
 
         public void SetLayerDefault(CharacterPose inPose, CharacterLayer layer)

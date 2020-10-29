@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.UIEUtilities.Elements;
 using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.Elements.Utils
@@ -13,9 +14,9 @@ namespace VisualNovelFramework.Elements.Utils
     public class PreviewSearchableBrowser : BindableElement
     {
         private const string SearchableBrowserPath =
-            "Assets/VisualNovelFramework/UIEUtilities/SearchableBrowser/SearchableBrowser.uxml";
+            "Assets/VisualNovelFramework/UIEUtilities/PreviewedSearchableBrowser/PreviewSearchableBrowser.uxml";
         private const string SearchableItemPath =
-            "Assets/VisualNovelFramework/UIEUtilities/Elements/DynamicLabelWithIcon.uxml";
+            "Assets/VisualNovelFramework/UIEUtilities/PreviewedSearchableBrowser/PreviewedLabelItem.uxml";
         
         private readonly VisualElement root;
         private readonly ToolbarSearchField searcher;
@@ -50,23 +51,23 @@ namespace VisualNovelFramework.Elements.Utils
             
             listViewer.reorderable = true;
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
-            listViewer.itemHeight = 21;
+            listViewer.itemHeight = 221;
             listViewer.makeItem = () => listItemProto.Instantiate();
             
-            BindIconFactory(CreateIconTest);
+            BindPreviewFactory(CreateIconTest);
         }
 
-        private Func<Object, Texture2D> textureFactory = null;
-        public void BindIconFactory(Func<Object, Texture2D> texFac)
+        private Func<Object, List<Texture2D>> textureFactory = null;
+        public void BindPreviewFactory(Func<Object, List<Texture2D>> texFac)
         {
             textureFactory = texFac;
         }
 
-        private Texture2D CreateIconTest(Object o)
+        private List<Texture2D> CreateIconTest(Object o)
         {
             if(o != null && o is CharacterOutfit co)
             {
-                return co.GetRandomPreviewTexture();
+                return co.GetPreviewTextures();
             }
             return null;
         }
@@ -111,22 +112,13 @@ namespace VisualNovelFramework.Elements.Utils
             itemLabel.text = targetObj.name;
             itemLabel.Bind(so);
 
-            if (textureFactory != null)
-            {
-                VisualElement icon = ve.Q<VisualElement>("icon");
-                Texture2D t = textureFactory.Invoke(targetObj);
 
-                if (t != null)
-                {
-                    icon.style.backgroundImage = new StyleBackground(t);
-                }
-            }
-
-            if (!objectItemLink.ContainsKey(targetObj))
-            {
-                objectItemLink.Remove(targetObj);
-                objectItemLink.Add(targetObj, itemLabel);
-            }
+            var textures = textureFactory?.Invoke(targetObj);
+            if (textures == null) 
+                return;
+            
+            var previewer = root.Q<MultitexturePreviewer>();
+            previewer.DisplayTextures(textures);
         }
 
         private void Refresh()
@@ -158,7 +150,7 @@ namespace VisualNovelFramework.Elements.Utils
         #region UXML
         
         [Preserve]
-        public new class UxmlFactory : UxmlFactory<SearchableBrowser, UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<PreviewSearchableBrowser, UxmlTraits> { }
    
         [Preserve]
         public new class UxmlTraits : BindableElement.UxmlTraits

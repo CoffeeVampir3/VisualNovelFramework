@@ -1,0 +1,4 @@
+.--multitextured-image {
+    position: absolute;
+    -unity-background-scale-mode: scale-to-fit;
+}

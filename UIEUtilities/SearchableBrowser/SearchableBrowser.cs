@@ -52,23 +52,12 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
             listViewer.itemHeight = 21;
             listViewer.makeItem = () => listItemProto.Instantiate();
-            
-            BindIconFactory(CreateIconTest);
         }
 
         private Func<Object, Texture2D> textureFactory = null;
         public void BindIconFactory(Func<Object, Texture2D> texFac)
         {
             textureFactory = texFac;
-        }
-
-        private Texture2D CreateIconTest(Object o)
-        {
-            if(o != null && o is CharacterOutfit co)
-            {
-                return co.GetRandomPreviewTexture();
-            }
-            return null;
         }
 
         private void DebugList()
