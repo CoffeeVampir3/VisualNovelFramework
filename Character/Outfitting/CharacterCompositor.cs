@@ -47,7 +47,7 @@ namespace VisualNovelFramework.Outfitting
         
         public Dictionary<CharacterLayer, CharacterLayer> posedLayerSerializationDict 
             = new Dictionary<CharacterLayer, CharacterLayer>();
-        public void SerializeRecursive(Character saveTo)
+        public CharacterCompositor SerializeRecursive(Character saveTo)
         {
             var clone = Instantiate(this);
             saveTo.compositor = clone;
@@ -65,6 +65,8 @@ namespace VisualNovelFramework.Outfitting
             layers.ForEach(e => e.SerializeRecursive(clone));
             poses.ForEach(e => e.SerializeRecursive(clone));
             layeredPoses.ForEach(e => e.SerializeRecursive(clone));
+
+            return clone;
         }
     }
 }

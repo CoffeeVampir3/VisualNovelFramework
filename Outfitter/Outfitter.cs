@@ -162,8 +162,6 @@ namespace VisualNovelFramework.Outfitter
 
             workingOutfit.name = "outfitTester";
             workingOutfit.SerializeToCharacter(currentCharacter);
-            
-            Debug.Log("Saved!");
         }
         
     }

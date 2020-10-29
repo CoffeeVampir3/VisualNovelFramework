@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Elements.Utils;
 using VisualNovelFramework.Outfitting;
+using Button = UnityEngine.UIElements.Button;
 using Object = UnityEngine.Object;
+using Toggle = UnityEngine.UIElements.Toggle;
 
 namespace VisualNovelFramework.CharacterBuilder
 {
@@ -47,7 +50,9 @@ namespace VisualNovelFramework.CharacterBuilder
         {
             if (currentCharacter != null)
             {
-                currentCharacter.CreateAsAsset();
+                var c = currentCharacter.Serialize();
+                if(c != null)
+                    LoadCharacter(c);
             }
         }
         
@@ -55,10 +60,14 @@ namespace VisualNovelFramework.CharacterBuilder
 
         #region Character
 
-        private void LoadCharacter(ChangeEvent<Object> evt)
+        private void LoadCharacter(Character character)
         {
-            Character character = evt.newValue as Character;
-
+            currentCharacter = null;
+            currentCompositor = null;
+            currentLayer = null;
+            currentPose = null;
+            currentWorkingLayer = null;
+            
             if (character != null)
             {
                 currentCharacter = character;
@@ -76,6 +85,13 @@ namespace VisualNovelFramework.CharacterBuilder
                 HideCompositorFrame();
                 ClearLayerInspector();
             }
+        }
+
+        private void LoadCharacter(ChangeEvent<Object> evt)
+        {
+            Character character = evt.newValue as Character;
+
+            LoadCharacter(character);
         }
 
         private void NewCharButtonClicked()
@@ -96,8 +112,8 @@ namespace VisualNovelFramework.CharacterBuilder
             currentWorkingLayer = null;
 
             Character nChar = CreateInstance<Character>();
-            nChar.compositor = CreateInstance<CharacterCompositor>();
-            nChar.name = charName;
+            
+            nChar.InitializeChar(charName);
             nChar.compositor.layerAspectRatio = 1.0f;
             SerializedObject so = new SerializedObject(nChar);
             charSelector.Bind(so);
@@ -150,6 +166,10 @@ namespace VisualNovelFramework.CharacterBuilder
         {
             aspectRatioField.value = compositor.layerAspectRatio;
 
+            
+            currentLayer = null;
+            currentPose = null;
+            
             currentCompositor = compositor;
             layerList.BindToList(compositor.layers, OnLayerItemSelected);
             poseList.BindToList(compositor.poses, OnPoseItemSelected);
@@ -208,7 +228,10 @@ namespace VisualNovelFramework.CharacterBuilder
         private void OnLayerItemDelete(Object targetItem)
         {
             if (currentLayer != null && targetItem is CharacterLayer cl && cl == currentLayer)
-                textureList.Clear();
+            {
+                textureList?.SetEnabled(false);
+                currentLayer = null;
+            }
         }
 
         private void OnPoseItemSelected(Object targetItem)
@@ -224,7 +247,10 @@ namespace VisualNovelFramework.CharacterBuilder
         private void OnPoseItemDelete(Object targetItem)
         {
             if (currentPose != null && targetItem is CharacterPose cp && cp == currentPose)
-                textureList.Clear();
+            {
+                textureList?.SetEnabled(false);
+                currentPose = null;
+            }
         }
 
         #endregion
@@ -233,16 +259,22 @@ namespace VisualNovelFramework.CharacterBuilder
 
         private void DisplayLayerSelector(CharacterLayer layer)
         {
+            if (layer.textures == null)
+            {
+                layer.textures = new List<Texture2D>();
+            }
+
             currentWorkingLayer = layer;
 
             textureList.BindToList(layer.textures, OnTextureSelected);
+            
             textureList.FoldoutText = currentPose.name + "-" + currentLayer.name;
             textureList.visible = true;
             textureList.SetEnabled(true);
             multilayerToggle.visible = true;
             multilayerToggle.SetEnabled(true);
             multilayerToggle.value = currentWorkingLayer.isMultilayer;
-
+            
             //Default Select
             if (currentCompositor.layeredPoses.Count > 0)
             {

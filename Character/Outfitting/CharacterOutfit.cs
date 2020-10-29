@@ -105,7 +105,6 @@ namespace VisualNovelFramework.Outfitting
 
         public CharacterOutfit UpdateSerializationReferences(Character saveTo)
         {
-            var clone = Instantiate(this);
             var newUtilLayers = new HashSet<CharacterLayer>();
             var newLayerDict = new Dictionary<CharacterLayer, List<Texture2D>>();
             CharacterCompositor compositor = saveTo.compositor;
@@ -118,11 +117,10 @@ namespace VisualNovelFramework.Outfitting
                     newUtilLayers.Add(newLayer);
                     newLayerDict.Add(newLayer, textures);
                 }
-                else
-                {
-                    Debug.LogError("Unable to update outfit for layer: " + cl.name);
-                }
             }
+
+            if (newUtilLayers.Count == 0)
+                return null;
             
             if(compositor.poseSerializationDict.TryGetValue(outfitPose, out var newPose))
             {
@@ -131,8 +129,9 @@ namespace VisualNovelFramework.Outfitting
             
             outfitDictionary = newLayerDict;
             utilizedLayers = newUtilLayers;
-            
-            AssetDatabase.AddObjectToAsset(clone, saveTo);
+
+            AssetDatabase.RemoveObjectFromAsset(this);
+            AssetDatabase.AddObjectToAsset(this, saveTo);
             return this;
         }
 

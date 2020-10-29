@@ -21,8 +21,15 @@ namespace VisualNovelFramework.Outfitting
         
         public void SerializeRecursive(CharacterCompositor saveTo)
         {
-            var newLayer = saveTo.layerSerializationDict[layer];
-            var newPose = saveTo.poseSerializationDict[pose];
+            //Discard if the layer was deleted.
+            if (!saveTo.layerSerializationDict.TryGetValue(layer, out var newLayer))
+            {
+                return;
+            }
+            if (!saveTo.poseSerializationDict.TryGetValue(pose, out var newPose))
+            {
+                return;
+            }
              
             var clone = Instantiate(posedLayer);
             clone.name = "pl_" + pose.name + "-" + layer.name;
