@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="true">
     <ui:VisualElement style="flex-grow: 1;">
         <uie:Toolbar>
-            <uie:ToolbarMenu display-tooltip-when-elided="True" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgba(49, 49, 49, 255); border-right-color: rgba(49, 49, 49, 255); border-top-color: rgba(49, 49, 49, 255); border-bottom-color: rgba(49, 49, 49, 255); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
+            <uie:ToolbarMenu display-tooltip-when-elided="true" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgba(49, 49, 49, 255); border-right-color: rgba(49, 49, 49, 255); border-top-color: rgba(49, 49, 49, 255); border-bottom-color: rgba(49, 49, 49, 255); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
             <uie:ObjectField label="Character:" name="characterSelector" style="height: auto; visibility: visible;" />
         </uie:Toolbar>
         <ui:VisualElement style="flex-grow: 1; flex-direction: row;">

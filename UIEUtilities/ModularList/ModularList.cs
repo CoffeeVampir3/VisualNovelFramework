@@ -36,7 +36,7 @@ namespace VisualNovelFramework.Elements.Utils
         {
             var listUxml =
                 AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                    "Assets/VisualNovelFramework/UIEUtilities/ModularList.uxml");
+                    "Assets/VisualNovelFramework/UIEUtilities/ModularList/ModularList.uxml");
 
             var highlightStyle =
                 AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/VisualNovelFramework/UIEUtilities/Styles/LightBlueHighlight.uss");
@@ -75,7 +75,7 @@ namespace VisualNovelFramework.Elements.Utils
             {
                 listItemProto =
                     AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                        "Assets/VisualNovelFramework/UIEUtilities/ModularListItem.uxml");
+                        "Assets/VisualNovelFramework/UIEUtilities/ModularList/ModularListItem.uxml");
             }
             
             listViewer = root.Q<ListView>("listViewer");

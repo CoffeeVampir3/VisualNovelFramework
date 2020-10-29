@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 
@@ -24,9 +22,8 @@ namespace VisualNovelFramework.Elements.Utils
             Add(root);
 
             var tc = root.Q<TemplateContainer>();
-
             tc.style.flexGrow = 1f;
-            tc.style.flexShrink = 1f;
+            tc.style.flexShrink = 1f; //effectively adding flex: 1
 
             searcher = root.Q<ToolbarSearchField>("searcher");
             listViewer = root.Q<ListView>("listView");
