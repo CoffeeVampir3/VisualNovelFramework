@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Elements;
 using VisualNovelFramework.Elements.Utils;
-using PopupWindow = UnityEngine.UIElements.PopupWindow;
+using VisualNovelFramework.Outfitting;
 
 namespace VisualNovelFramework.Outfitter
 {
@@ -19,23 +18,12 @@ namespace VisualNovelFramework.Outfitter
             wnd.titleContent = new GUIContent("Outfitter");
         }
         
-        private ModularList poseList = null;
-        private ModularList layerList = null;
-        
-        private void SetupCompositorFrame()
-        {
-            layerList = rootVisualElement.Q<ModularList>("layerList");
-            poseList = rootVisualElement.Q<ModularList>("poseList");
-        }
-
-        private ObjectField charSelector = null;
         private void SetupCharacterSelector()
         {
             charSelector = rootVisualElement.Q<ObjectField>("characterSelector");
             charSelector.objectType = typeof(Character);
 
             charSelector.RegisterValueChangedCallback(LoadCharacter);
-            //charSelector.RegisterCallback<ClickEvent>(OnCharacterFieldClicked);
         }
 
         private OutfitPreviewer outfitPreviewer;
@@ -71,7 +59,7 @@ namespace VisualNovelFramework.Outfitter
                 img.style.width = 200f;
                 img.style.height = currentCompositor.layerAspectRatio * 200f;
 
-                img.RegisterCallback<ClickEvent>(OnLayerItemClicked);
+                img.RegisterCallback<ClickEvent>(OnTextureItemClicked);
             };
         }
         
@@ -80,25 +68,50 @@ namespace VisualNovelFramework.Outfitter
             var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
             
             menu.menu.AppendAction("Load Character", LoadCharacterMenu);
+            menu.menu.AppendAction("New Outfit", NewOutfitMenu);
             menu.menu.AppendSeparator();
+            menu.menu.AppendAction("Rename Outfit", RenameOutfitMenu);
             menu.menu.AppendAction("Save Outfit to Character", SaveOutfitMenu);
+            menu.menu.AppendSeparator();
+            menu.menu.AppendAction("Delete Outfit From Character", DeleteOutfitMenu);
         }
 
-        private List<string> strings = new List<string>();
-        private ToolbarPopupSearchField searcher;
-        private ScrollView sv;
-        private void SetupOutfitSearcher()
+        private OutfitDropdownWindow outfitDropdown = null;
+        private void SetupOutfitDropdown()
         {
-            searcher = rootVisualElement.Q<ToolbarPopupSearchField>("outfitSearcher");
+            var menu = rootVisualElement.Q<ToolbarMenu>("outfitDropdown");
+
+            menu.RegisterCallback<ClickEvent>((e) =>
+            {
+                if (currentCharacter == null)
+                    return;
+                
+                Rect newPos = new Rect(this.position.x + menu.worldBound.x,
+                    this.position.y - 360, 200, 400);
+                outfitDropdown = CreateInstance<OutfitDropdownWindow>();
+                outfitDropdown.ShowAsDropDown(newPos, new Vector2(200, 400));
+                
+                outfitDropdown.browser.BindToList(currentCharacter.outfits, OnOutfitClicked);
+            });
+        }
+
+        private void OnOutfitClicked(UnityEngine.Object target)
+        {
+            if (target == null || !(target is CharacterOutfit co)) 
+                return;
             
-            searcher.RegisterValueChangedCallback(OnSearchTextChanged);
+            LoadOutfit(co);
+            if(outfitDropdown != null)
+                outfitDropdown.Close();
         }
         
-        void OnSearchTextChanged(ChangeEvent<string> evt)
+        private void SetupOutfitLabel()
         {
-            Debug.Log("change");
+            var label = rootVisualElement.Q<VisualElement>("outfitLabel");
+            outfitLabel = label.Q<Label>("itemLabel");
+            outfitLabel.SetEnabled(false);
+            outfitLabel.text = "No Outfit Selected.";
         }
-    
         
         public void OnEnable()
         {
@@ -117,12 +130,15 @@ namespace VisualNovelFramework.Outfitter
             templateContainer.style.flexGrow = 1;
             templateContainer.style.flexShrink = 1;
             templateContainer.style.flexBasis = new StyleLength(100f);
+            
+            layerList = rootVisualElement.Q<ModularList>("layerList");
+            poseList = rootVisualElement.Q<ModularList>("poseList");
 
+            SetupOutfitLabel();
             SetupFileMenu();
-            SetupOutfitSearcher();
-            SetupCompositorFrame();
             SetupCharacterSelector();
             SetupLayerListView();
+            SetupOutfitDropdown();
             SetupPreviewer();
         }
     }

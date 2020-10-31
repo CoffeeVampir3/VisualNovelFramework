@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
-using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
+using VisualNovelFramework.GenericInterfaces;
 
 namespace VisualNovelFramework.Outfitting
 {
@@ -14,24 +14,37 @@ namespace VisualNovelFramework.Outfitting
     /// out of synch with the character outfit. When deserializing the outfit we must ensure
     /// each texture actually exists within the character layer, and, if not, warn the user!
     /// </summary>
-    public class CharacterOutfit : SerializedScriptableObject
+    public class CharacterOutfit : SerializedScriptableObject, HasCoffeeGUID
     {
-        [OdinSerialize]
-        public Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary = 
-            new Dictionary<CharacterLayer,List<Texture2D>>();
-        public HashSet<CharacterLayer> utilizedLayers = new HashSet<CharacterLayer>();
         public CharacterPose outfitPose = null;
+        [SerializeField]
+        private string outfitGUID;
 
-        public void ResetOutfit()
+        [OdinSerialize] private Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
+            new Dictionary<CharacterLayer, List<Texture2D>>();
+
+        [OdinSerialize] private Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
+            new Dictionary<CharacterPose, HashSet<CharacterLayer>>();
+
+        public string GetCoffeeGUID()
         {
-            outfitDictionary.Clear();
-            utilizedLayers.Clear();
-            outfitPose = null;
+            return outfitGUID;
+        }
+        
+        public void Initialize(string charName)
+        {
+            name = charName;
+            outfitGUID = Guid.NewGuid().ToString();
         }
 
         public List<Texture2D> GetPreviewTextures()
         {
             List<Texture2D> previewTextures = new List<Texture2D>();
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                return null;
+            }
+
             foreach (var layer in utilizedLayers)
             {
                 if (outfitDictionary.TryGetValue(layer, out var texs))
@@ -39,6 +52,7 @@ namespace VisualNovelFramework.Outfitting
                     previewTextures.AddRange(texs);
                 }
             }
+
             return previewTextures;
         }
 
@@ -52,8 +66,51 @@ namespace VisualNovelFramework.Outfitting
             }
         }
 
-        public void AddLayerItem(CharacterLayer layer, Texture2D targetTex)
+        private List<int> FindPoseUnusedDefaultable(CharacterCompositor compositor, bool setDefaults)
         {
+            var unusedLayers = new List<int>();
+            for (var index = 0; index < compositor.layers.Count; index++)
+            {
+                var cl = compositor.layers[index];
+                var posedLayer = compositor.GetPosedLayer(cl, outfitPose);
+                if (posedLayer == null || posedLayer.textures.Count == 0)
+                {
+                    unusedLayers.Add(index);
+                    continue;
+                }
+                
+                if (posedLayer.isMultilayer)
+                    continue;
+                
+                if(setDefaults)
+                    SetLayerDefault(outfitPose, posedLayer);
+            }
+
+            return unusedLayers;
+        }
+
+        public List<int> SwitchPose(CharacterPose inPose, CharacterCompositor compositor)
+        {
+            outfitPose = inPose;
+            
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                utilizedLayers = new HashSet<CharacterLayer>();
+                poseToUtilized.Add(outfitPose, utilizedLayers);
+                return FindPoseUnusedDefaultable(compositor, true);
+            }
+
+            return FindPoseUnusedDefaultable(compositor, false);
+        }
+
+        private void AddLayerItem(CharacterLayer layer, Texture2D targetTex)
+        {
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                utilizedLayers = new HashSet<CharacterLayer>();
+                poseToUtilized.Add(outfitPose, utilizedLayers);
+            }
+            
             if (outfitDictionary.TryGetValue(layer, out var layerItemList))
             {
                 if(!layer.isMultilayer)
@@ -83,6 +140,12 @@ namespace VisualNovelFramework.Outfitting
         /// <returns></returns>
         public bool AddOrRemoveExistingItem(CharacterLayer layer, Texture2D targetTex)
         {
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                utilizedLayers = new HashSet<CharacterLayer>();
+                poseToUtilized.Add(outfitPose, utilizedLayers);
+            }
+            
             if (outfitDictionary.TryGetValue(layer, out var layerItemList))
             {
                 if (!layer.isMultilayer)
@@ -112,16 +175,17 @@ namespace VisualNovelFramework.Outfitting
             return true;
         }
 
-        public List<Texture2D> GetLayerItems(CharacterLayer layer)
-        {
-            return outfitDictionary[layer];
-        }
-
         public CharacterOutfit UpdateSerializationReferences(Character saveTo)
         {
             var newUtilLayers = new HashSet<CharacterLayer>();
             var newLayerDict = new Dictionary<CharacterLayer, List<Texture2D>>();
             CharacterCompositor compositor = saveTo.compositor;
+            
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                utilizedLayers = new HashSet<CharacterLayer>();
+                poseToUtilized.Add(outfitPose, utilizedLayers);
+            }
 
             foreach (var cl in utilizedLayers)
             {
@@ -142,16 +206,45 @@ namespace VisualNovelFramework.Outfitting
             }
             
             outfitDictionary = newLayerDict;
-            utilizedLayers = newUtilLayers;
+            poseToUtilized.Clear();
+            poseToUtilized.Add(outfitPose, newUtilLayers);
 
             AssetDatabase.RemoveObjectFromAsset(this);
             AssetDatabase.AddObjectToAsset(this, saveTo);
             return this;
         }
 
+        public void DeleteFromCharacter()
+        {
+            AssetDatabase.RemoveObjectFromAsset(this);
+        }
+
+        public List<Texture2D> GetLayerIfNotEmpty(CharacterLayer layer)
+        {
+            if(!outfitDictionary.TryGetValue(layer, out var layerItems))
+            {
+                return null;
+            }
+
+            if (layerItems.Count == 0)
+                return null;
+
+            return layerItems;
+        }
+
+        public HashSet<CharacterLayer> GetCurrentUtilizedLayers()
+        {
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
+            {
+                return null;
+            }
+            return utilizedLayers;
+        }
+
         public void SerializeToCharacter(Character saveTo)
         {
             var clone = Instantiate(this);
+            clone.name = this.name;
             saveTo.outfits.Add(clone);
             AssetDatabase.AddObjectToAsset(clone, saveTo);
             AssetDatabase.SaveAssets();

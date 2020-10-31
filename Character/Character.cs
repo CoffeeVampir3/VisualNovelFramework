@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using VisualNovelFramework.GenericInterfaces;
 using VisualNovelFramework.Outfitting;
 
 namespace VisualNovelFramework
 {
-    public class Character : ScriptableObject
+    public class Character : ScriptableObject, HasCoffeeGUID
     {
         public CharacterCompositor compositor;
         public List<CharacterOutfit> outfits = new List<CharacterOutfit>();
-        public string characterGUID = "";
+        [SerializeField]
+        private string characterGUID = "";
 
+        public string GetCoffeeGUID()
+        {
+            return characterGUID;
+        }
+        
         public void InitializeChar(string charName)
         {
             compositor = CreateInstance<CharacterCompositor>();
@@ -71,25 +78,10 @@ namespace VisualNovelFramework
             return characterAsset;
         }
 
-        private static Character GetCharacterAsset(string charGUID)
-        {
-            var charGuids = AssetDatabase.FindAssets("t:Character");
-            foreach(var chGuid in charGuids)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(chGuid);
-                var character = AssetDatabase.LoadAssetAtPath<Character>(path);
-                if (character == null || character.characterGUID != charGUID) 
-                    continue;
-                
-                return character;
-            }
-
-            return null;
-        }
-
         public Character Serialize(bool saveAs = false)
         {
-            var charAsset = GetCharacterAsset(this.characterGUID);
+            var charAsset = CoffeeAssetDatabase.
+                FindAssetWithCoffeeGUID<Character>(this.characterGUID);
             if(saveAs || charAsset == null) 
                 return CreateAsAsset();
             
@@ -143,5 +135,6 @@ namespace VisualNovelFramework
 
             return clone;
         }
+        
     }
 }

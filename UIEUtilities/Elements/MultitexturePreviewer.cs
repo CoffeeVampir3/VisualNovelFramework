@@ -11,22 +11,34 @@ namespace VisualNovelFramework.UIEUtilities.Elements
         
         public MultitexturePreviewer()
         {
+            style.alignSelf = new StyleEnum<Align>(Align.Center);
             style.alignContent = new StyleEnum<Align>(Align.Center);
             style.justifyContent = new StyleEnum<Justify>(Justify.Center);
         }
 
-        public void DisplayTextures(List<Texture2D> textures, float scalingSize = 1f)
+        public void DisplayTextures(List<Texture2D> textures, float width, float height)
         {
             this.Clear();
             foreach (var item in textures)
             {
-                Image img = new Image {image = item};
-                transform.scale = new Vector3(scalingSize, scalingSize, 1f);
+                Texture2D cTex = new Texture2D(item.width, item.height, item.format, true);
+                Graphics.CopyTexture(item, cTex);
+
+                float inverseAspect = height / width;
+                TextureScaler.scale(cTex, (int)(width * inverseAspect), (int)height);
+                Image img = new Image {image = cTex};
+                img.style.width = width;
+                img.style.height = height;
+                img.style.maxWidth = width;
+                img.style.maxWidth = height;
+                img.style.minHeight = width;
+                img.style.minWidth = height;
+
                 img.AddToClassList(MultitextureCssClass);
                 this.Add(img);
             }
         }
-        
+
         #region UXML
         
         [Preserve]

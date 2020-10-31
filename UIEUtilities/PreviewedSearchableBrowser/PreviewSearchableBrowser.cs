@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -17,10 +19,19 @@ namespace VisualNovelFramework.Elements.Utils
             "Assets/VisualNovelFramework/UIEUtilities/PreviewedSearchableBrowser/PreviewSearchableBrowser.uxml";
         private const string SearchableItemPath =
             "Assets/VisualNovelFramework/UIEUtilities/PreviewedSearchableBrowser/PreviewedLabelItem.uxml";
-        
+
+        private const float DefaultTexturePreviewSize = 100f;
+
         private readonly VisualElement root;
         private readonly ToolbarSearchField searcher;
         private ListView listViewer;
+        private Func<Object, List<Texture2D>> textureFactory = null;
+        private float textureWidth = DefaultTexturePreviewSize;
+        private float textureHeight = DefaultTexturePreviewSize;
+        
+        private IList listReference;
+        private IList workingList;
+        
         public PreviewSearchableBrowser()
         {
             var listUxml =
@@ -39,8 +50,6 @@ namespace VisualNovelFramework.Elements.Utils
             searcher.RegisterValueChangedCallback(OnTextChanged);
             
             SetupListView();
-            DebugList();
-            List();
         }
 
         private VisualTreeAsset listItemProto;
@@ -51,57 +60,32 @@ namespace VisualNovelFramework.Elements.Utils
             
             listViewer.reorderable = true;
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
-            listViewer.itemHeight = 221;
+            listViewer.itemHeight = 100;
             listViewer.makeItem = () => listItemProto.Instantiate();
-            
-            BindPreviewFactory(CreateIconTest);
         }
-
-        private Func<Object, List<Texture2D>> textureFactory = null;
-        public void BindPreviewFactory(Func<Object, List<Texture2D>> texFac)
+        
+        public void BindPreviewFactory(int width, int height, Func<Object, List<Texture2D>> texFac)
         {
             textureFactory = texFac;
+            textureWidth = width;
+            textureHeight = height;
+
+            listViewer.itemHeight = height;
         }
 
-        private List<Texture2D> CreateIconTest(Object o)
+        private Action<Object> onItemSelected;
+        public void BindToList<T>(List<T> listOfObjects, Action<Object> onSelectAction = null) where T : Object
         {
-            if(o != null && o is CharacterOutfit co)
-            {
-                return co.GetPreviewTextures();
-            }
-            return null;
-        }
-
-        private void DebugList()
-        {
-            var stuff = AssetDatabase.FindAssets("t:CharacterOutfit");
-
-            foreach (var pathGUID in stuff)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(pathGUID);
-                var o = AssetDatabase.LoadAllAssetsAtPath(path);
-                foreach (var m in o)
-                {
-                    if (m is CharacterOutfit q)
-                    {
-                        objects.Add(q);
-                    }
-                }
-            }
-            Refresh();
-        }
-
-        private List<ScriptableObject> objects = new List<ScriptableObject>();
-        private void List()
-        {
-            workingList = objects;
+            listReference = listOfObjects;
+            workingList = listReference;
             listViewer.itemsSource = workingList;
-            listViewer.bindItem = BindListItem<ScriptableObject>;
+            onItemSelected = onSelectAction;
+            listViewer.bindItem = BindListItem<T>;
             Refresh();
         }
 
-        private readonly Dictionary<Object, VisualElement> objectItemLink = 
-            new Dictionary<Object, VisualElement>();
+        private readonly Dictionary<VisualElement, Object> itemClickLink = 
+            new Dictionary<VisualElement, Object>();
         private void BindListItem<T>(VisualElement e, int i) where T : Object
         {
             VisualElement ve = e;
@@ -112,31 +96,53 @@ namespace VisualNovelFramework.Elements.Utils
             itemLabel.text = targetObj.name;
             itemLabel.Bind(so);
 
+            if (itemClickLink.ContainsKey(ve))
+            {
+                itemClickLink.Remove(ve);
+            }
+            itemClickLink.Add(ve, targetObj);
 
             var textures = textureFactory?.Invoke(targetObj);
             if (textures == null) 
                 return;
             
-            var previewer = root.Q<MultitexturePreviewer>();
-            previewer.DisplayTextures(textures);
+            ve.RegisterCallback<ClickEvent>(OnItemClicked);
+            
+            var previewer = ve.Q<MultitexturePreviewer>("mtexPreviewer");
+            previewer.DisplayTextures(textures, textureWidth, textureHeight);
+        }
+        
+        private void OnItemClicked(ClickEvent evt)
+        {
+            if (!(evt.currentTarget is VisualElement ve) 
+                || !itemClickLink.TryGetValue(ve, out var obj))
+                return;
+            
+            if (evt.clickCount == 1)
+            {
+                onItemSelected?.Invoke(obj);
+            }
         }
 
-        private void Refresh()
+        public void Refresh()
         {
             listViewer.Refresh();
         }
-
-        private List<ScriptableObject> workingList = new List<ScriptableObject>();
+        
         private void FilterList(string searchString)
         {
-            workingList = new List<ScriptableObject>();
-            foreach (ScriptableObject o in objects)
+            workingList = new List<Object>();
+            searchString = searchString.ToLower();
+            foreach (Object o in listReference)
             {
-                if (o.name.Contains(searchString))
+                if (o.name.ToLower().Contains(searchString))
                 {
                     workingList.Add(o);
                 }
             }
+
+            if (listViewer.itemsSource.Count == workingList.Count)
+                return;
 
             listViewer.itemsSource = workingList;
             Refresh();

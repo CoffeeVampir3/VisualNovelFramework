@@ -2,5 +2,5 @@
     <uie:Toolbar name="toolbar">
         <uie:ToolbarSearchField focusable="true" name="searcher" style="width: auto; flex-grow: 1; flex-shrink: 1;" />
     </uie:Toolbar>
-    <ui:ListView focusable="true" name="listView" style="flex-grow: 1; flex-basis: auto; min-height: auto; flex-direction: column;" />
+    <ui:ListView focusable="true" name="listView" style="flex-grow: 1; flex-basis: auto; min-height: 400px; flex-direction: column;" />
 </ui:UXML>

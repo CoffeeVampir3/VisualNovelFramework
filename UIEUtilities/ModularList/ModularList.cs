@@ -125,13 +125,17 @@ namespace VisualNovelFramework.Elements.Utils
             itemLabel.text = targetObj.name;
             itemLabel.Bind(so);
 
+            if (labelClickLink.ContainsKey(itemLabel))
+            {
+                labelClickLink.Remove(itemLabel);
+            }
             labelClickLink.Add(itemLabel, targetObj);
 
-            if (!objectItemLink.ContainsKey(targetObj))
+            if (objectItemLink.ContainsKey(targetObj))
             {
                 objectItemLink.Remove(targetObj);
-                objectItemLink.Add(targetObj, itemContainer);
             }
+            objectItemLink.Add(targetObj, itemContainer);
 
             itemLabel.RegisterCallback<ClickEvent>(OnLabelClicked);
 

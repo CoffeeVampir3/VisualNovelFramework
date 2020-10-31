@@ -14,9 +14,11 @@ namespace VisualNovelFramework.Elements
         
         private void DisplayOutfitLayer(CharacterOutfit outfit, CharacterLayer layer, float scalingSize)
         {
-            if (!outfit.outfitDictionary.TryGetValue(layer, out var currentLayerItems) 
-                || currentLayerItems.Count <= 0 )
+            var currentLayerItems = outfit.GetLayerIfNotEmpty(layer);
+            if (currentLayerItems == null)
+            {
                 return;
+            }
             
             //Single layers can be displayed using the same method because they have only one index.
             foreach (var item in currentLayerItems)
@@ -32,7 +34,7 @@ namespace VisualNovelFramework.Elements
         public void DisplayOutfit(CharacterOutfit outfit, float scalingSize = 1f)
         {
             this.Clear();
-            foreach (var layer in outfit.utilizedLayers)
+            foreach (var layer in outfit.GetCurrentUtilizedLayers())
             {
                 DisplayOutfitLayer(outfit, layer, scalingSize);
             }
