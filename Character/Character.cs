@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using VisualNovelFramework.GenericInterfaces;
+using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.Outfitting;
 
 namespace VisualNovelFramework
@@ -18,7 +18,12 @@ namespace VisualNovelFramework
         {
             return characterGUID;
         }
-        
+
+        public void SetCoffeeGUID(string GUID)
+        {
+            characterGUID = GUID;
+        }
+
         public void InitializeChar(string charName)
         {
             compositor = CreateInstance<CharacterCompositor>();
@@ -48,16 +53,19 @@ namespace VisualNovelFramework
             outfits = newOutfits;
         }
 
-        public Character SaveExisting(Character characterAsset)
+        public Character Serialize(bool saveAs = false)
         {
-            var obs = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(characterAsset));
+            var charAsset = CoffeeAssetDatabase.
+                FindAssetWithCoffeeGUID<Character>(this.characterGUID);
+            if(saveAs || charAsset == null) 
+                return CreateAsAsset();
+            
+            return SaveExisting(charAsset);
+        }
 
-            //Remove all old objects from the old character.
-            foreach (var o in obs)
-            {
-                if(o != characterAsset)
-                    AssetDatabase.RemoveObjectFromAsset(o);
-            }
+        private Character SaveExisting(Character characterAsset)
+        {
+            CoffeeAssetDatabase.CleanAllSubAssets(characterAsset);
             
             AssetDatabase.StartAssetEditing();
             try
@@ -71,52 +79,15 @@ namespace VisualNovelFramework
             {
                 AssetDatabase.StopAssetEditing();
             }
-            
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
 
             return characterAsset;
         }
 
-        public Character Serialize(bool saveAs = false)
+        private Character CreateAsAsset()
         {
-            var charAsset = CoffeeAssetDatabase.
-                FindAssetWithCoffeeGUID<Character>(this.characterGUID);
-            if(saveAs || charAsset == null) 
-                return CreateAsAsset();
-            
-            return SaveExisting(charAsset);
-        }
+            var clone = CoffeeAssetDatabase.ClonedSaveAs(this);
 
-        private string GetSavePath()
-        {
-            string savePath;
-            try
-            {
-                savePath = EditorUtility.SaveFilePanelInProject(
-                    "Save Character",
-                    name,
-                    "asset", 
-                    "Saved Character!");
-            }
-            catch
-            {
-                return "";
-            }
-
-            return savePath;
-        }
-        
-        public Character CreateAsAsset()
-        {
-            string path = GetSavePath();
-            if (path == "")
-                return null;
-            
-            var clone = Instantiate(this);
-            AssetDatabase.CreateAsset(clone, path);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
             AssetDatabase.StartAssetEditing();
             try
             {
@@ -129,10 +100,7 @@ namespace VisualNovelFramework
             {
                 AssetDatabase.StopAssetEditing();
             }
-            
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
             return clone;
         }
         

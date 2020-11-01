@@ -67,13 +67,14 @@ namespace VisualNovelFramework.Outfitter
         {
             var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
             
-            menu.menu.AppendAction("Load Character", LoadCharacterMenu);
-            menu.menu.AppendAction("New Outfit", NewOutfitMenu);
+            menu.menu.AppendAction("Load Character (Ctrl+L)", LoadCharacterMenu);
+            menu.menu.AppendAction("New Outfit (Ctrl+N)", NewOutfitMenu);
             menu.menu.AppendSeparator();
-            menu.menu.AppendAction("Rename Outfit", RenameOutfitMenu);
-            menu.menu.AppendAction("Save Outfit to Character", SaveOutfitMenu);
+            menu.menu.AppendAction("Rename Outfit (Ctrl+R)", RenameOutfitMenu);
+            menu.menu.AppendAction("Delete Outfit", DeleteOutfitMenu);
             menu.menu.AppendSeparator();
-            menu.menu.AppendAction("Delete Outfit From Character", DeleteOutfitMenu);
+            menu.menu.AppendAction("Save Outfit (Ctrl+S)", SaveOutfitMenu);
+            menu.menu.AppendAction("Save Outfit As (Ctrl+Shift+S)", SaveOutfitAsMenu);
         }
 
         private OutfitDropdownWindow outfitDropdown = null;

@@ -76,13 +76,13 @@ namespace VisualNovelFramework.CharacterBuilder
         {
             var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
             
-            menu.menu.AppendAction("New", CreateNewCharacterMenu);
-            menu.menu.AppendAction("Load", LoadCharacterMenu);
+            menu.menu.AppendAction("New (Ctrl+N)", CreateNewCharacterMenu);
+            menu.menu.AppendAction("Load (Ctrl+L)", LoadCharacterMenu);
             menu.menu.AppendSeparator();
-            menu.menu.AppendAction("Rename", RenameCharacterMenu);
+            menu.menu.AppendAction("Rename (Ctrl+R)", RenameCharacterMenu);
             menu.menu.AppendSeparator();
-            menu.menu.AppendAction("Save", SaveCharacterMenu);
-            menu.menu.AppendAction("Save As", SaveCharacterAsMenu);
+            menu.menu.AppendAction("Save (Ctrl+S)", SaveCharacterMenu);
+            menu.menu.AppendAction("Save As (Ctrl+Shift+S)", SaveCharacterAsMenu);
         }
         
         public void OnEnable()

@@ -4,7 +4,7 @@ using Sirenix.OdinInspector;
 using Sirenix.Serialization;
 using UnityEditor;
 using UnityEngine;
-using VisualNovelFramework.GenericInterfaces;
+using VisualNovelFramework.EditorExtensions;
 
 namespace VisualNovelFramework.Outfitting
 {
@@ -29,6 +29,11 @@ namespace VisualNovelFramework.Outfitting
         public string GetCoffeeGUID()
         {
             return outfitGUID;
+        }
+        
+        public void SetCoffeeGUID(string GUID)
+        {
+            outfitGUID = GUID;
         }
         
         public void Initialize(string charName)
@@ -214,11 +219,14 @@ namespace VisualNovelFramework.Outfitting
             return this;
         }
 
-        public void DeleteFromCharacter()
+        public void DeleteFromCharacter(Character character)
         {
-            AssetDatabase.RemoveObjectFromAsset(this);
-        }
+            var outfitAsset = CoffeeAssetDatabase.
+                DeleteSubAssetFrom(this, character);
 
+            character.outfits.Remove(outfitAsset);
+        }
+        
         public List<Texture2D> GetLayerIfNotEmpty(CharacterLayer layer)
         {
             if(!outfitDictionary.TryGetValue(layer, out var layerItems))
@@ -243,12 +251,8 @@ namespace VisualNovelFramework.Outfitting
 
         public void SerializeToCharacter(Character saveTo)
         {
-            var clone = Instantiate(this);
-            clone.name = this.name;
+            var clone = CoffeeAssetDatabase.ClonedSave(this, saveTo);
             saveTo.outfits.Add(clone);
-            AssetDatabase.AddObjectToAsset(clone, saveTo);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
         }
     }
 }

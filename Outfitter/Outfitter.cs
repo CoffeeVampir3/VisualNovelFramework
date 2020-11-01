@@ -49,7 +49,7 @@ namespace VisualNovelFramework.Outfitter
         private Label outfitLabel;
         
         #region FileMenu
-        
+
         private void LoadCharacterMenu(DropdownMenuAction dma)
         {
             if (charSelector == null) 
@@ -64,12 +64,22 @@ namespace VisualNovelFramework.Outfitter
 
             objectFieldSelector.SendEvent(clickEvent);
         }
-        
+
         private void SaveOutfitMenu(DropdownMenuAction dma)
         {
             if (workingOutfit == null || currentCharacter == null)
                 return;
             
+            Debug.Log("Saved.");
+            workingOutfit.SerializeToCharacter(currentCharacter);
+        }
+        
+        private void SaveOutfitAsMenu(DropdownMenuAction dma)
+        {
+            if (workingOutfit == null || currentCharacter == null)
+                return;
+            
+            Debug.Log("Saved.");
             workingOutfit.SerializeToCharacter(currentCharacter);
         }
 
@@ -78,9 +88,9 @@ namespace VisualNovelFramework.Outfitter
             if (workingOutfit == null || currentCharacter == null)
                 return;
 
-            workingOutfit.DeleteFromCharacter();
+            workingOutfit.DeleteFromCharacter(currentCharacter);
         }
-
+        
         private void NewOutfitMenu(DropdownMenuAction dma)
         {
             if (currentCharacter == null)
@@ -92,6 +102,7 @@ namespace VisualNovelFramework.Outfitter
             NamerPopup popup = new NamerPopup(CreateNamedOutfit);
             popup.Popup();
         }
+        
 
         private void RenameOutfitMenu(DropdownMenuAction dma)
         {
