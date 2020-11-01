@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="/Assets/VisualNovelFramework/EditorOnly/UIEUtilities/Styles/MultitextureImage.uss" />
+    <uie:Toolbar name="toolbar">
+        <uie:ToolbarSearchField focusable="true" name="searcher" style="width: auto; flex-grow: 1; flex-shrink: 1;" />
+    </uie:Toolbar>
+    <ui:ListView focusable="true" name="listView" style="flex-grow: 1; flex-basis: auto; min-height: auto; flex-direction: column;" />
+</ui:UXML>

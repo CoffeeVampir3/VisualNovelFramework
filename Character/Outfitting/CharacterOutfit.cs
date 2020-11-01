@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Sirenix.Serialization;
-using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 
@@ -14,16 +13,17 @@ namespace VisualNovelFramework.Outfitting
     /// out of synch with the character outfit. When deserializing the outfit we must ensure
     /// each texture actually exists within the character layer, and, if not, warn the user!
     /// </summary>
+    /// Outfits maintain their refs and it's fine to directly ref or access VIA guid.
     public class CharacterOutfit : SerializedScriptableObject, HasCoffeeGUID
     {
         public CharacterPose outfitPose = null;
         [SerializeField]
         private string outfitGUID;
 
-        [OdinSerialize] private Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
+        [OdinSerialize] public Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
             new Dictionary<CharacterLayer, List<Texture2D>>();
 
-        [OdinSerialize] private Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
+        [OdinSerialize] public Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
             new Dictionary<CharacterPose, HashSet<CharacterLayer>>();
 
         public string GetCoffeeGUID()
@@ -180,53 +180,6 @@ namespace VisualNovelFramework.Outfitting
             return true;
         }
 
-        public CharacterOutfit UpdateSerializationReferences(Character saveTo)
-        {
-            var newUtilLayers = new HashSet<CharacterLayer>();
-            var newLayerDict = new Dictionary<CharacterLayer, List<Texture2D>>();
-            CharacterCompositor compositor = saveTo.compositor;
-            
-            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
-            {
-                utilizedLayers = new HashSet<CharacterLayer>();
-                poseToUtilized.Add(outfitPose, utilizedLayers);
-            }
-
-            foreach (var cl in utilizedLayers)
-            {
-                if(compositor.posedLayerSerializationDict.TryGetValue(cl, out var newLayer))
-                {
-                    var textures = outfitDictionary[cl];
-                    newUtilLayers.Add(newLayer);
-                    newLayerDict.Add(newLayer, textures);
-                }
-            }
-
-            if (newUtilLayers.Count == 0)
-                return null;
-            
-            if(compositor.poseSerializationDict.TryGetValue(outfitPose, out var newPose))
-            {
-                outfitPose = newPose;
-            }
-            
-            outfitDictionary = newLayerDict;
-            poseToUtilized.Clear();
-            poseToUtilized.Add(outfitPose, newUtilLayers);
-
-            AssetDatabase.RemoveObjectFromAsset(this);
-            AssetDatabase.AddObjectToAsset(this, saveTo);
-            return this;
-        }
-
-        public void DeleteFromCharacter(Character character)
-        {
-            var outfitAsset = CoffeeAssetDatabase.
-                DeleteSubAssetFrom(this, character);
-
-            character.outfits.Remove(outfitAsset);
-        }
-        
         public List<Texture2D> GetLayerIfNotEmpty(CharacterLayer layer)
         {
             if(!outfitDictionary.TryGetValue(layer, out var layerItems))
@@ -247,12 +200,6 @@ namespace VisualNovelFramework.Outfitting
                 return null;
             }
             return utilizedLayers;
-        }
-
-        public void SerializeToCharacter(Character saveTo)
-        {
-            var clone = CoffeeAssetDatabase.ClonedSave(this, saveTo);
-            saveTo.outfits.Add(clone);
         }
     }
 }

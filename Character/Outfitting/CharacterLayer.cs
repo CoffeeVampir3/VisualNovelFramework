@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace VisualNovelFramework.Outfitting
@@ -15,16 +14,6 @@ namespace VisualNovelFramework.Outfitting
                 return textures[index];
 
             return null;
-        }
-
-        public void SerializeRecursive(CharacterCompositor saveTo)
-        {
-            var clone = Instantiate(this);
-            clone.name = this.name;
-            AssetDatabase.AddObjectToAsset(clone, saveTo);
-            saveTo.layers.Add(clone);
-
-            saveTo.layerSerializationDict.Add(this, clone);
         }
     }
 }

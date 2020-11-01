@@ -1,5 +1,4 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace VisualNovelFramework.Outfitting
 {
@@ -17,30 +16,5 @@ namespace VisualNovelFramework.Outfitting
             lp.posedLayer = targetLayer;
             return lp;
         }
-        
-        public void SerializeRecursive(CharacterCompositor saveTo)
-        {
-            //Discard if the layer was deleted.
-            if (!saveTo.layerSerializationDict.TryGetValue(layer, out var newLayer))
-            {
-                return;
-            }
-            if (!saveTo.poseSerializationDict.TryGetValue(pose, out var newPose))
-            {
-                return;
-            }
-             
-            var clone = Instantiate(posedLayer);
-            clone.name = "pl_" + pose.name + "-" + layer.name;
-            AssetDatabase.AddObjectToAsset(clone, saveTo);
-
-            var clonedLayeredPose = Create(newLayer, newPose, clone);
-            clonedLayeredPose.name = pose.name + "-" + layer.name;
-            AssetDatabase.AddObjectToAsset(clonedLayeredPose, saveTo);
-            saveTo.layeredPoses.Add(clonedLayeredPose);
-
-            saveTo.posedLayerSerializationDict.Add(posedLayer, clone);
-        }
-        
     }
 }
