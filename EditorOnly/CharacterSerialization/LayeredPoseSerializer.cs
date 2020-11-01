@@ -15,7 +15,7 @@ namespace VisualNovelFramework.EditorOnly.CharacterSerializer
                 return;
 
             var clone = ScriptableObject.Instantiate(lp.posedLayer);
-            clone.name = "pl_" + lp.pose.name + "-" + lp.layer.name;
+            clone.name = "Pose: " + lp.pose.name + " Layer: " + lp.layer.name;
             AssetDatabase.AddObjectToAsset(clone, saveTo);
 
             var clonedLayeredPose = LayeredPose.Create(newLayer, newPose, clone);

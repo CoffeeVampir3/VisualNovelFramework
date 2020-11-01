@@ -36,7 +36,7 @@ namespace VisualNovelFramework.Outfitter
 
         private List<Texture2D> OutfitPreviewFactory(Object o)
         {
-            if (o != null && o is CharacterOutfit co) return co.GetPreviewTextures();
+            if (o != null && o is CharacterOutfit co) return co.GetOutfitTextures();
             return null;
         }
     }

@@ -42,16 +42,44 @@ namespace VisualNovelFramework.Outfitting
             outfitGUID = Guid.NewGuid().ToString();
         }
 
-        public List<Texture2D> GetPreviewTextures()
+        public List<Texture2D> GetOutfitTextures()
         {
             var previewTextures = new List<Texture2D>();
-            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) return null;
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) 
+                return null;
 
             foreach (var layer in utilizedLayers)
                 if (outfitDictionary.TryGetValue(layer, out var texs))
                     previewTextures.AddRange(texs);
 
             return previewTextures;
+        }
+
+        public IEnumerable<CharacterLayer> GetOutfitLayers()
+        {
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) 
+                return null;
+
+            return utilizedLayers;
+        }
+
+        public List<Texture2D> GetLayerTextures(CharacterLayer cl)
+        {
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) 
+                return null;
+
+            foreach (var layer in utilizedLayers)
+            {
+                if (layer == cl)
+                {
+                    if (outfitDictionary.TryGetValue(layer, out var texs))
+                    {
+                        return texs;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void SetLayerDefault(CharacterPose inPose, CharacterLayer layer)
