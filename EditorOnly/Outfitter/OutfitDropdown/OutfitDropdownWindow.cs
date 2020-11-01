@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Elements.Utils;
 using VisualNovelFramework.Outfitting;
-using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.Outfitter
 {
@@ -14,17 +13,17 @@ namespace VisualNovelFramework.Outfitter
             "Assets/VisualNovelFramework/EditorOnly/Outfitter/OutfitDropdown/OutfitDropdownWindow.uxml";
 
         public PreviewSearchableBrowser browser;
-        
+
         public static void ShowExample()
         {
-            OutfitDropdownWindow wnd = GetWindow<OutfitDropdownWindow>();
+            var wnd = GetWindow<OutfitDropdownWindow>();
             wnd.titleContent = new GUIContent("dropdownWindow");
         }
 
         public void OnEnable()
         {
             // Each editor window contains a root VisualElement object
-            VisualElement root = rootVisualElement;
+            var root = rootVisualElement;
 
             // Import UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(windowXMLPath);
@@ -37,12 +36,8 @@ namespace VisualNovelFramework.Outfitter
 
         private List<Texture2D> OutfitPreviewFactory(Object o)
         {
-            if(o != null && o is CharacterOutfit co)
-            {
-                return co.GetPreviewTextures();
-            }
+            if (o != null && o is CharacterOutfit co) return co.GetPreviewTextures();
             return null;
         }
     }
-
 }

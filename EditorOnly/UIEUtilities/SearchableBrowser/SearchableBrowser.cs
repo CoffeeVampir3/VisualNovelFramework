@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Outfitting;
-using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.Elements.Utils
 {
@@ -14,12 +12,25 @@ namespace VisualNovelFramework.Elements.Utils
     {
         private const string SearchableBrowserPath =
             "Assets/VisualNovelFramework/EditorOnly/UIEUtilities/SearchableBrowser/SearchableBrowser.uxml";
+
         private const string SearchableItemPath =
             "Assets/VisualNovelFramework/EditorOnly/UIEUtilities/Elements/DynamicLabelWithIcon.uxml";
-        
+
+        private readonly Dictionary<Object, VisualElement> objectItemLink =
+            new Dictionary<Object, VisualElement>();
+
         private readonly VisualElement root;
         private readonly ToolbarSearchField searcher;
-        private ListView listViewer;
+
+        private VisualTreeAsset listItemProto;
+        private readonly ListView listViewer;
+
+        private readonly List<ScriptableObject> objects = new List<ScriptableObject>();
+
+        private System.Func<Object, Texture2D> textureFactory = null;
+
+        private List<ScriptableObject> workingList = new List<ScriptableObject>();
+
         public SearchableBrowser()
         {
             var listUxml =
@@ -36,26 +47,24 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer = root.Q<ListView>("listView");
 
             searcher.RegisterValueChangedCallback(OnTextChanged);
-            
+
             SetupListView();
             DebugList();
             List();
         }
 
-        private VisualTreeAsset listItemProto;
         private void SetupListView()
         {
             listItemProto =
-                    AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(SearchableItemPath);
-            
+                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(SearchableItemPath);
+
             listViewer.reorderable = true;
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
             listViewer.itemHeight = 21;
             listViewer.makeItem = () => listItemProto.Instantiate();
         }
 
-        private Func<Object, Texture2D> textureFactory = null;
-        public void BindIconFactory(Func<Object, Texture2D> texFac)
+        public void BindIconFactory(System.Func<Object, Texture2D> texFac)
         {
             textureFactory = texFac;
         }
@@ -69,17 +78,13 @@ namespace VisualNovelFramework.Elements.Utils
                 var path = AssetDatabase.GUIDToAssetPath(pathGUID);
                 var o = AssetDatabase.LoadAllAssetsAtPath(path);
                 foreach (var m in o)
-                {
                     if (m is CharacterOutfit q)
-                    {
                         objects.Add(q);
-                    }
-                }
             }
+
             Refresh();
         }
 
-        private List<ScriptableObject> objects = new List<ScriptableObject>();
         private void List()
         {
             workingList = objects;
@@ -88,27 +93,22 @@ namespace VisualNovelFramework.Elements.Utils
             Refresh();
         }
 
-        private readonly Dictionary<Object, VisualElement> objectItemLink = 
-            new Dictionary<Object, VisualElement>();
         private void BindListItem<T>(VisualElement e, int i) where T : Object
         {
-            VisualElement ve = e;
-            Label itemLabel = ve.Q<Label>("itemLabel");
+            var ve = e;
+            var itemLabel = ve.Q<Label>("itemLabel");
 
-            T targetObj = listViewer.itemsSource[i] as T;
-            SerializedObject so = new SerializedObject(targetObj);
+            var targetObj = listViewer.itemsSource[i] as T;
+            var so = new SerializedObject(targetObj);
             itemLabel.text = targetObj.name;
             itemLabel.Bind(so);
 
             if (textureFactory != null)
             {
-                VisualElement icon = ve.Q<VisualElement>("icon");
-                Texture2D t = textureFactory.Invoke(targetObj);
+                var icon = ve.Q<VisualElement>("icon");
+                var t = textureFactory.Invoke(targetObj);
 
-                if (t != null)
-                {
-                    icon.style.backgroundImage = new StyleBackground(t);
-                }
+                if (t != null) icon.style.backgroundImage = new StyleBackground(t);
             }
 
             if (!objectItemLink.ContainsKey(targetObj))
@@ -123,17 +123,12 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer.Refresh();
         }
 
-        private List<ScriptableObject> workingList = new List<ScriptableObject>();
         private void FilterList(string searchString)
         {
             workingList = new List<ScriptableObject>();
-            foreach (ScriptableObject o in objects)
-            {
+            foreach (var o in objects)
                 if (o.name.Contains(searchString))
-                {
                     workingList.Add(o);
-                }
-            }
 
             listViewer.itemsSource = workingList;
             Refresh();
@@ -143,12 +138,14 @@ namespace VisualNovelFramework.Elements.Utils
         {
             FilterList(change.newValue);
         }
-        
+
         #region UXML
-        
+
         [Preserve]
-        public new class UxmlFactory : UxmlFactory<SearchableBrowser, UxmlTraits> { }
-   
+        public new class UxmlFactory : UxmlFactory<SearchableBrowser, UxmlTraits>
+        {
+        }
+
         [Preserve]
         public new class UxmlTraits : BindableElement.UxmlTraits
         {

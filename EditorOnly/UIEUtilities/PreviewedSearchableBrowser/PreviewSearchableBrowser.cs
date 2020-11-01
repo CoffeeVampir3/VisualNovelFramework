@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
-using VisualNovelFramework.Outfitting;
 using VisualNovelFramework.UIEUtilities.Elements;
-using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.Elements.Utils
 {
@@ -17,21 +13,29 @@ namespace VisualNovelFramework.Elements.Utils
     {
         private const string SearchableBrowserPath =
             "Assets/VisualNovelFramework/EditorOnly/UIEUtilities/PreviewedSearchableBrowser/PreviewSearchableBrowser.uxml";
+
         private const string SearchableItemPath =
             "Assets/VisualNovelFramework/EditorOnly/UIEUtilities/PreviewedSearchableBrowser/PreviewedLabelItem.uxml";
 
         private const float DefaultTexturePreviewSize = 100f;
 
+        private readonly Dictionary<VisualElement, Object> itemClickLink =
+            new Dictionary<VisualElement, Object>();
+
         private readonly VisualElement root;
         private readonly ToolbarSearchField searcher;
-        private ListView listViewer;
-        private Func<Object, List<Texture2D>> textureFactory = null;
-        private float textureWidth = DefaultTexturePreviewSize;
-        private float textureHeight = DefaultTexturePreviewSize;
-        
+
+        private VisualTreeAsset listItemProto;
+
         private IList listReference;
+        private readonly ListView listViewer;
+
+        private System.Action<Object> onItemSelected;
+        private System.Func<Object, List<Texture2D>> textureFactory = null;
+        private float textureHeight = DefaultTexturePreviewSize;
+        private float textureWidth = DefaultTexturePreviewSize;
         private IList workingList;
-        
+
         public PreviewSearchableBrowser()
         {
             var listUxml =
@@ -48,23 +52,22 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer = root.Q<ListView>("listView");
 
             searcher.RegisterValueChangedCallback(OnTextChanged);
-            
+
             SetupListView();
         }
 
-        private VisualTreeAsset listItemProto;
         private void SetupListView()
         {
             listItemProto =
-                    AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(SearchableItemPath);
-            
+                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(SearchableItemPath);
+
             listViewer.reorderable = true;
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
             listViewer.itemHeight = 100;
             listViewer.makeItem = () => listItemProto.Instantiate();
         }
-        
-        public void BindPreviewFactory(int width, int height, Func<Object, List<Texture2D>> texFac)
+
+        public void BindPreviewFactory(int width, int height, System.Func<Object, List<Texture2D>> texFac)
         {
             textureFactory = texFac;
             textureWidth = width;
@@ -73,8 +76,7 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer.itemHeight = height;
         }
 
-        private Action<Object> onItemSelected;
-        public void BindToList<T>(List<T> listOfObjects, Action<Object> onSelectAction = null) where T : Object
+        public void BindToList<T>(List<T> listOfObjects, System.Action<Object> onSelectAction = null) where T : Object
         {
             listReference = listOfObjects;
             workingList = listReference;
@@ -84,62 +86,50 @@ namespace VisualNovelFramework.Elements.Utils
             Refresh();
         }
 
-        private readonly Dictionary<VisualElement, Object> itemClickLink = 
-            new Dictionary<VisualElement, Object>();
         private void BindListItem<T>(VisualElement e, int i) where T : Object
         {
-            VisualElement ve = e;
-            Label itemLabel = ve.Q<Label>("itemLabel");
+            var ve = e;
+            var itemLabel = ve.Q<Label>("itemLabel");
 
-            T targetObj = listViewer.itemsSource[i] as T;
-            SerializedObject so = new SerializedObject(targetObj);
+            var targetObj = listViewer.itemsSource[i] as T;
+            var so = new SerializedObject(targetObj);
             itemLabel.text = targetObj.name;
             itemLabel.Bind(so);
 
-            if (itemClickLink.ContainsKey(ve))
-            {
-                itemClickLink.Remove(ve);
-            }
+            if (itemClickLink.ContainsKey(ve)) itemClickLink.Remove(ve);
             itemClickLink.Add(ve, targetObj);
 
             var textures = textureFactory?.Invoke(targetObj);
-            if (textures == null) 
+            if (textures == null)
                 return;
-            
+
             ve.RegisterCallback<ClickEvent>(OnItemClicked);
-            
+
             var previewer = ve.Q<MultitexturePreviewer>("mtexPreviewer");
             previewer.DisplayTextures(textures, textureWidth, textureHeight);
         }
-        
+
         private void OnItemClicked(ClickEvent evt)
         {
-            if (!(evt.currentTarget is VisualElement ve) 
+            if (!(evt.currentTarget is VisualElement ve)
                 || !itemClickLink.TryGetValue(ve, out var obj))
                 return;
-            
-            if (evt.clickCount == 1)
-            {
-                onItemSelected?.Invoke(obj);
-            }
+
+            if (evt.clickCount == 1) onItemSelected?.Invoke(obj);
         }
 
         public void Refresh()
         {
             listViewer.Refresh();
         }
-        
+
         private void FilterList(string searchString)
         {
             workingList = new List<Object>();
             searchString = searchString.ToLower();
             foreach (Object o in listReference)
-            {
                 if (o.name.ToLower().Contains(searchString))
-                {
                     workingList.Add(o);
-                }
-            }
 
             if (listViewer.itemsSource.Count == workingList.Count)
                 return;
@@ -152,12 +142,14 @@ namespace VisualNovelFramework.Elements.Utils
         {
             FilterList(change.newValue);
         }
-        
+
         #region UXML
-        
+
         [Preserve]
-        public new class UxmlFactory : UxmlFactory<PreviewSearchableBrowser, UxmlTraits> { }
-   
+        public new class UxmlFactory : UxmlFactory<PreviewSearchableBrowser, UxmlTraits>
+        {
+        }
+
         [Preserve]
         public new class UxmlTraits : BindableElement.UxmlTraits
         {

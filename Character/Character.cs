@@ -8,11 +8,11 @@ namespace VisualNovelFramework
     //Characters maintain their refs and they're fine to directly reference.
     public class Character : ScriptableObject, HasCoffeeGUID
     {
-        public CharacterCompositor compositor;
-        [SerializeField]
-        public List<CharacterOutfit> outfits = new List<CharacterOutfit>();
-        [SerializeField]
+        [SerializeField] 
         private string characterGUID = "";
+        public CharacterCompositor compositor;
+        [SerializeField] 
+        public List<CharacterOutfit> outfits = new List<CharacterOutfit>();
 
         public string GetCoffeeGUID()
         {
@@ -23,6 +23,5 @@ namespace VisualNovelFramework
         {
             characterGUID = GUID;
         }
-
     }
 }

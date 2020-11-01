@@ -9,39 +9,39 @@ using VisualNovelFramework.Outfitting;
 namespace VisualNovelFramework.CharacterBuilder
 {
     /// <summary>
-    /// Window initialization for the character builder.
+    ///     Window initialization for the character builder.
     /// </summary>
     public partial class CharacterBuilder
     {
         public const string CharacterBuilderPath =
             "Assets/VisualNovelFramework/EditorOnly/CharacterBuilder/CharacterBuilder.uxml";
-        
+
         [MenuItem("VNFramework/Character Builder")]
         public static void ShowExample()
         {
-            CharacterBuilder wnd = GetWindow<CharacterBuilder>();
+            var wnd = GetWindow<CharacterBuilder>();
             wnd.titleContent = new GUIContent("CharacterBuilder");
         }
-        
+
         private void SetupCompositorFrame()
         {
             layerList = rootVisualElement.Q<ModularList>("layerList");
             poseList = rootVisualElement.Q<ModularList>("poseList");
-            
-            CreateNamedItemButton layerListOnAddClicked =
-                new CreateNamedItemButton(layerList, 
+
+            var layerListOnAddClicked =
+                new CreateNamedItemButton(layerList,
                     CreateInstance<CharacterLayer>, OnLayerItemSelected, "+");
 
-            CreateNamedItemButton poseListOnAddClicked =
-                new CreateNamedItemButton(poseList, 
+            var poseListOnAddClicked =
+                new CreateNamedItemButton(poseList,
                     CreateInstance<CharacterPose>, OnPoseItemSelected, "+");
-            
+
             layerList.AddFoldoutDynamicButton(layerListOnAddClicked);
             poseList.AddFoldoutDynamicButton(poseListOnAddClicked);
-            
+
             var layerRemoveBtn = new RemoveElementButton(layerList, OnLayerItemDelete, "-");
             var poseRemoveBtn = new RemoveElementButton(poseList, OnPoseItemDelete, "-");
-            
+
             layerList.AddListItemDynamicButton(layerRemoveBtn);
             poseList.AddListItemDynamicButton(poseRemoveBtn);
         }
@@ -50,19 +50,16 @@ namespace VisualNovelFramework.CharacterBuilder
         {
             textureList = rootVisualElement.Q<ModularList>("layerTextures");
             multilayerToggle = rootVisualElement.Q<Toggle>("isLayerMultilayer");
-            
+
             var searchAction = new SearchForTypeButton<Texture2D>(AddPickedItemToLayerList, "+");
             var removeButton = new RemoveElementButton(textureList, null, "-");
-            
+
             textureList.AddFoldoutDynamicButton(searchAction);
             textureList.AddListItemDynamicButton(removeButton);
-            
-            multilayerToggle.RegisterValueChangedCallback( (e) =>
+
+            multilayerToggle.RegisterValueChangedCallback(e =>
             {
-                if (currentWorkingLayer != null)
-                {
-                    currentWorkingLayer.isMultilayer = e.newValue;
-                }
+                if (currentWorkingLayer != null) currentWorkingLayer.isMultilayer = e.newValue;
             });
         }
 
@@ -78,7 +75,7 @@ namespace VisualNovelFramework.CharacterBuilder
         private void SetupFileMenu()
         {
             var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
-            
+
             menu.menu.AppendAction("New (Ctrl+N)", CreateNewCharacterMenu);
             menu.menu.AppendAction("Load (Ctrl+L)", LoadCharacterMenu);
             menu.menu.AppendSeparator();
@@ -87,11 +84,11 @@ namespace VisualNovelFramework.CharacterBuilder
             menu.menu.AppendAction("Save (Ctrl+S)", SaveCharacterMenu);
             menu.menu.AppendAction("Save As (Ctrl+Shift+S)", SaveCharacterAsMenu);
         }
-        
+
         public void OnEnable()
         {
             // Each editor window contains a root VisualElement object
-            VisualElement root = rootVisualElement;
+            var root = rootVisualElement;
 
             // Import UXML
             var visualTree =
@@ -107,12 +104,9 @@ namespace VisualNovelFramework.CharacterBuilder
             previewer = root.Q<VisualElement>("previewImageContainer");
 
             aspectRatioField = root.Q<FloatField>("aspectRatio");
-            aspectRatioField.RegisterCallback<ChangeEvent<float>>((e) =>
+            aspectRatioField.RegisterCallback<ChangeEvent<float>>(e =>
             {
-                if (currentCompositor != null)
-                {
-                    currentCompositor.layerAspectRatio = e.newValue;
-                }
+                if (currentCompositor != null) currentCompositor.layerAspectRatio = e.newValue;
             });
 
             //Setup order does not matter.
@@ -120,7 +114,7 @@ namespace VisualNovelFramework.CharacterBuilder
             SetupLayerSelector();
             SetupCompositorFrame();
             SetupCharacterSelector();
-            
+
             HideCompositorFrame();
         }
     }

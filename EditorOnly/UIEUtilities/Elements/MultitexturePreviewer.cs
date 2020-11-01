@@ -8,7 +8,7 @@ namespace VisualNovelFramework.UIEUtilities.Elements
     public class MultitexturePreviewer : VisualElement
     {
         private const string MultitextureCssClass = "--multitextured-image";
-        
+
         public MultitexturePreviewer()
         {
             style.alignSelf = new StyleEnum<Align>(Align.Center);
@@ -18,15 +18,15 @@ namespace VisualNovelFramework.UIEUtilities.Elements
 
         public void DisplayTextures(List<Texture2D> textures, float width, float height)
         {
-            this.Clear();
+            Clear();
             foreach (var item in textures)
             {
-                Texture2D cTex = new Texture2D(item.width, item.height, item.format, true);
+                var cTex = new Texture2D(item.width, item.height, item.format, true);
                 Graphics.CopyTexture(item, cTex);
 
-                float inverseAspect = height / width;
-                TextureScaler.scale(cTex, (int)(width * inverseAspect), (int)height);
-                Image img = new Image {image = cTex};
+                var inverseAspect = height / width;
+                TextureScaler.scale(cTex, (int) (width * inverseAspect), (int) height);
+                var img = new Image {image = cTex};
                 img.style.width = width;
                 img.style.height = height;
                 img.style.maxWidth = width;
@@ -35,15 +35,17 @@ namespace VisualNovelFramework.UIEUtilities.Elements
                 img.style.minWidth = height;
 
                 img.AddToClassList(MultitextureCssClass);
-                this.Add(img);
+                Add(img);
             }
         }
 
         #region UXML
-        
+
         [Preserve]
-        public new class UxmlFactory : UxmlFactory<MultitexturePreviewer, UxmlTraits> { }
-   
+        public new class UxmlFactory : UxmlFactory<MultitexturePreviewer, UxmlTraits>
+        {
+        }
+
         [Preserve]
         public new class UxmlTraits : VisualElement.UxmlTraits
         {

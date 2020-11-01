@@ -1,16 +1,15 @@
-﻿using System;
-using UnityEngine;
-using Object = UnityEngine.Object;
+﻿using UnityEngine;
 
 namespace VisualNovelFramework.Elements.Utils
 {
     public class CreateNamedItemButton : DynamicButton
     {
+        private readonly System.Func<Object> factoryFunction = null;
         private readonly ModularList targetDynamicList;
-        private readonly Func<Object> factoryFunction = null;
-        private Action<Object> onCreateCallback = null;
+        private readonly System.Action<Object> onCreateCallback = null;
 
-        public CreateNamedItemButton(ModularList targetList, Func<Object> creationFunction, Action<Object> callback, string text)
+        public CreateNamedItemButton(ModularList targetList, System.Func<Object> creationFunction,
+            System.Action<Object> callback, string text)
         {
             factoryFunction = creationFunction;
             targetDynamicList = targetList;
@@ -27,24 +26,25 @@ namespace VisualNovelFramework.Elements.Utils
 
             NameItemPopup();
         }
-        
+
         private void NameItemPopup()
         {
-            NamerPopup popup = new NamerPopup(CreateNewNamedItem);
-            
+            var popup = new NamerPopup(CreateNewNamedItem);
+
             popup.Popup();
         }
 
         private void CreateNewNamedItem(string newName)
         {
-            Object newItem = factoryFunction.Invoke();
+            var newItem = factoryFunction.Invoke();
             if (newItem == null)
             {
                 Debug.LogError("Unable to instantiate a pretty list item as the activator function returned null.");
                 return;
             }
+
             newItem.name = newName;
-            
+
             targetDynamicList.listViewer.itemsSource.Add(newItem);
             targetDynamicList.RefreshList();
             onCreateCallback?.Invoke(newItem);

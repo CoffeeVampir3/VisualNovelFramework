@@ -12,7 +12,7 @@ namespace VisualNovelFramework.EditorOnly.CharacterSerializer
             clone.name = pose.name;
             AssetDatabase.AddObjectToAsset(clone, saveTo);
             saveTo.poses.Add(clone);
-            
+
             CompositorSerializer.poseSerializationDict.Add(pose, clone);
         }
     }

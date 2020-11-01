@@ -13,48 +13,46 @@ namespace VisualNovelFramework.Outfitter
 {
     //Why the fuck didin't I make this a state machine???
     /// <summary>
-    /// Event Paths:
-    /// Initialization Events
+    ///     Event Paths:
+    ///     Initialization Events
     ///     SetupOutfitDropdown()    -> outfitDropdown -> OnOutfitClicked
-    ///	    SetupCharacterSelector() -> charSelectorOnValueChanged -> LoadCharacter
-    ///    	SetupLayerListView()     -> OnLayerItemClicked
-    ///	    File Menu
-    ///		    SetupFileMenu() -> LoadCharacterMenu -> CharSelectorSynthesis /w Object Field Click
-    ///		    SetupFileMenu() -> NewOutfitMenu -> CreateNamedOutfit -> LoadCharacterDefault
-    ///							-> LoadNewPoseToWorking -> DisplayOutfit
-    ///		    SetupFileMenu() -> SaveOutfitMenu
-    ///		    SetupFileMenu() -> DeleteOutfitMenu
-    ///
-    /// Operational Events
-    /// OnPoseItemSelected 	-> LoadNewPoseToWorking
-    ///					    -> OnCompositorItemSelect -> LoadPosedLayerTextureList
-    /// OnLayerItemSelected	-> OnCompositorItemSelect -> LoadPosedLayerTextureList
-    /// 
-    /// OnTextureItemClicked -> DisplayOutfit
+    ///     SetupCharacterSelector() -> charSelectorOnValueChanged -> LoadCharacter
+    ///     SetupLayerListView()     -> OnLayerItemClicked
+    ///     File Menu
+    ///     SetupFileMenu() -> LoadCharacterMenu -> CharSelectorSynthesis /w Object Field Click
+    ///     SetupFileMenu() -> NewOutfitMenu -> CreateNamedOutfit -> LoadCharacterDefault
+    ///     -> LoadNewPoseToWorking -> DisplayOutfit
+    ///     SetupFileMenu() -> SaveOutfitMenu
+    ///     SetupFileMenu() -> DeleteOutfitMenu
+    ///     Operational Events
+    ///     OnPoseItemSelected 	-> LoadNewPoseToWorking
+    ///     -> OnCompositorItemSelect -> LoadPosedLayerTextureList
+    ///     OnLayerItemSelected	-> OnCompositorItemSelect -> LoadPosedLayerTextureList
+    ///     OnTextureItemClicked -> DisplayOutfit
     /// </summary>
     public partial class Outfitter : EditorWindow
     {
+        private readonly List<Texture2D> images = new List<Texture2D>();
+        private readonly Dictionary<Image, int> imageToIndex = new Dictionary<Image, int>();
+        private ObjectField charSelector = null;
         private Character currentCharacter = null;
         private CharacterCompositor currentCompositor = null;
         private CharacterLayer currentLayer = null;
         private CharacterPose currentPose = null;
         private CharacterLayer currentPosedLayer = null;
         private ListView layerImageLister;
-        private readonly Dictionary<Image, int> imageToIndex = new Dictionary<Image, int>();
-        private readonly List<Texture2D> images = new List<Texture2D>();
-        private CharacterOutfit workingOutfit = null;
-        private ModularList poseList = null;
         private ModularList layerList = null;
-        private ObjectField charSelector = null;
         private Label outfitLabel;
-        
+        private ModularList poseList = null;
+        private CharacterOutfit workingOutfit = null;
+
         #region FileMenu
 
         private void LoadCharacterMenu(DropdownMenuAction dma)
         {
-            if (charSelector == null) 
+            if (charSelector == null)
                 return;
-            
+
             var btnQuery = charSelector.Query<VisualElement>(null, "unity-object-field__selector");
             var objectFieldSelector = btnQuery.First();
             if (objectFieldSelector == null)
@@ -69,17 +67,18 @@ namespace VisualNovelFramework.Outfitter
         {
             if (workingOutfit == null || currentCharacter == null)
                 return;
-            
+
             Debug.Log("Saved.");
             OutfitSerializer.SerializeToCharacter(currentCharacter, workingOutfit);
         }
 
         private Action<Character, CharacterOutfit> postRenameAction = null;
+
         private void SaveOutfitAsMenu(DropdownMenuAction dma)
         {
             if (workingOutfit == null || currentCharacter == null)
                 return;
-            
+
             postRenameAction = OutfitSerializer.SerializeToCharacter;
             RenameOutfitMenu(null);
         }
@@ -88,10 +87,10 @@ namespace VisualNovelFramework.Outfitter
         {
             if (workingOutfit == null || currentCharacter == null)
                 return;
-            
+
             OutfitSerializer.DeleteFromCharacter(currentCharacter, workingOutfit);
         }
-        
+
         private void NewOutfitMenu(DropdownMenuAction dma)
         {
             if (currentCharacter == null)
@@ -99,22 +98,22 @@ namespace VisualNovelFramework.Outfitter
                 Debug.LogError("Must select a character before you can create an outfit!");
                 return;
             }
-            
-            NamerPopup popup = new NamerPopup(CreateNamedOutfit);
+
+            var popup = new NamerPopup(CreateNamedOutfit);
             popup.Popup();
         }
-        
+
         private void RenameOutfitMenu(DropdownMenuAction dma)
         {
             if (workingOutfit == null || currentCharacter == null)
                 return;
-            
-            NamerPopup popup = new NamerPopup(RenameCurrentOutfit);
+
+            var popup = new NamerPopup(RenameCurrentOutfit);
             popup.Popup();
         }
 
         #endregion
-        
+
         #region Outfit
 
         private void RenameCurrentOutfit(string newName)
@@ -127,16 +126,12 @@ namespace VisualNovelFramework.Outfitter
                 postRenameAction = null;
             }
         }
-        
+
         private void CreateNamedOutfit(string charName)
         {
             if (charName == "")
-            {
                 if (workingOutfit == null)
-                {
                     DisableOutfitFrame();
-                }
-            }
 
             workingOutfit = CreateInstance<CharacterOutfit>();
             workingOutfit.Initialize(charName);
@@ -158,21 +153,21 @@ namespace VisualNovelFramework.Outfitter
             currentPose = workingOutfit.outfitPose;
             currentLayer = currentCharacter.compositor.layers[0];
             outfitPreviewer.DisplayOutfit(workingOutfit);
-            
+
             poseList.HighlightItem(currentPose);
             layerList.HighlightItem(currentLayer);
         }
-        
+
         private void OnOutfitLoaded()
         {
             outfitLabel.text = workingOutfit.name;
             EnableOutfitFrame();
         }
-        
+
         #endregion
 
         #region Frame Primary
-        
+
         private void LoadCharacterDefault(CharacterCompositor compositor)
         {
             if (compositor.layers.Count == 0 || compositor.poses.Count == 0)
@@ -186,21 +181,19 @@ namespace VisualNovelFramework.Outfitter
             OnPoseItemSelected(compositor.poses[0]);
             LoadNewPoseToWorking(compositor);
         }
-        
+
         private void LoadNewPoseToWorking(CharacterCompositor compositor)
         {
             var unusedLayers = workingOutfit.SwitchPose(currentPose, compositor);
             for (var index = 0; index < compositor.layers.Count; index++)
-            {
                 layerList.SetItemEnabled(index, !unusedLayers.Contains(index));
-            }
 
             outfitPreviewer.DisplayOutfit(workingOutfit);
         }
 
         private void LoadCharacter(ChangeEvent<Object> evt)
         {
-            Character character = evt.newValue as Character;
+            var character = evt.newValue as Character;
 
             if (character == null)
             {
@@ -210,16 +203,17 @@ namespace VisualNovelFramework.Outfitter
             }
 
             currentCharacter = character;
-            CharacterCompositor compositor = character.compositor;
+            var compositor = character.compositor;
             if (compositor == null)
             {
-                Debug.LogError("This character file is malformed and does not have a compositor, it's not able to be loaded!");
+                Debug.LogError(
+                    "This character file is malformed and does not have a compositor, it's not able to be loaded!");
                 return;
             }
 
             LoadCompositor(compositor);
         }
-        
+
         private void LoadCompositor(CharacterCompositor compositor)
         {
             currentCompositor = compositor;
@@ -228,7 +222,7 @@ namespace VisualNovelFramework.Outfitter
 
             DisableOutfitFrame();
         }
-        
+
         private void OnCompositorItemSelect(CharacterLayer cl, CharacterPose cp)
         {
             if (currentPose != null && currentLayer != null)
@@ -236,36 +230,33 @@ namespace VisualNovelFramework.Outfitter
                 var posedLayer = currentCompositor.GetPosedLayer(cl, cp);
                 if (posedLayer == null)
                     return;
-                
+
                 LoadPosedLayerTextureList(posedLayer);
             }
         }
-        
+
         private void LoadPosedLayerTextureList(CharacterLayer posedLayer)
         {
             if (workingOutfit == null)
                 return;
-            
+
             images.Clear();
             currentPosedLayer = posedLayer;
-            for (int i = 0; i < posedLayer.textures.Count; i++)
-            {
-                images.Add(posedLayer.GetTextureAt(i));
-            }
+            for (var i = 0; i < posedLayer.textures.Count; i++) images.Add(posedLayer.GetTextureAt(i));
 
             layerImageLister.ClearSelection();
             layerImageLister.Refresh();
             layerImageLister.ScrollToItem(0);
             layerImageLister.SetSelection(0);
         }
-        
+
         #endregion
-        
+
         #region List Controls
-        
+
         private void OnLayerItemSelected(Object targetItem)
         {
-            if (!(targetItem is CharacterLayer cl)) 
+            if (!(targetItem is CharacterLayer cl))
                 return;
 
             if (cl == currentLayer)
@@ -278,9 +269,9 @@ namespace VisualNovelFramework.Outfitter
 
         private void OnPoseItemSelected(Object targetItem)
         {
-            if (!(targetItem is CharacterPose cp)) 
+            if (!(targetItem is CharacterPose cp))
                 return;
-            
+
             if (cp == currentPose)
                 return;
 
@@ -289,24 +280,24 @@ namespace VisualNovelFramework.Outfitter
             LoadNewPoseToWorking(currentCompositor);
             OnCompositorItemSelect(currentLayer, currentPose);
         }
-        
+
         private void OnTextureItemClicked(ClickEvent e)
         {
             if (currentPosedLayer == null)
                 return;
 
-            if (!(e.currentTarget is Image img)) 
+            if (!(e.currentTarget is Image img))
                 return;
 
-            if (!imageToIndex.TryGetValue(img, out var index)) 
+            if (!imageToIndex.TryGetValue(img, out var index))
                 return;
-            
+
             workingOutfit.AddOrRemoveExistingItem(currentPosedLayer, index);
             outfitPreviewer.DisplayOutfit(workingOutfit);
         }
-        
+
         #endregion
-        
+
         #region FrameHelpers
 
         private void EnableOutfitFrame()
@@ -326,8 +317,7 @@ namespace VisualNovelFramework.Outfitter
             layerImageLister.SetEnabled(false);
             workingOutfit = null;
         }
-        
+
         #endregion
-        
     }
 }

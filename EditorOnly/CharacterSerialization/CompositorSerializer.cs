@@ -7,15 +7,15 @@ namespace VisualNovelFramework.EditorOnly.CharacterSerializer
 {
     public static class CompositorSerializer
     {
-        public static Dictionary<CharacterLayer, CharacterLayer> layerSerializationDict 
+        public static Dictionary<CharacterLayer, CharacterLayer> layerSerializationDict
             = new Dictionary<CharacterLayer, CharacterLayer>();
-        
-        public static Dictionary<CharacterPose, CharacterPose> poseSerializationDict 
+
+        public static Dictionary<CharacterPose, CharacterPose> poseSerializationDict
             = new Dictionary<CharacterPose, CharacterPose>();
-        
-        public static Dictionary<CharacterLayer, CharacterLayer> posedLayerSerializationDict 
+
+        public static Dictionary<CharacterLayer, CharacterLayer> posedLayerSerializationDict
             = new Dictionary<CharacterLayer, CharacterLayer>();
-        
+
         public static CharacterCompositor SerializeRecursive(Character saveTo, CharacterCompositor compositor)
         {
             var clone = ScriptableObject.Instantiate(compositor);

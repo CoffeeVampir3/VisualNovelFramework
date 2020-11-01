@@ -6,79 +6,73 @@ using UnityEngine.UIElements;
 using VisualNovelFramework.EditorOnly.CharacterSerializer;
 using VisualNovelFramework.Elements.Utils;
 using VisualNovelFramework.Outfitting;
-using Button = UnityEngine.UIElements.Button;
-using Object = UnityEngine.Object;
-using Toggle = UnityEngine.UIElements.Toggle;
 
 namespace VisualNovelFramework.CharacterBuilder
 {
     /// <summary>
-    /// Event Paths:
-    /// Window:
-    /// SetupFileMenu -> New -> CreateNewCharacterMenu
-    /// SetupFileMenu -> Load -> LoadCharacterMenu
-    /// SetupFileMenu -> Rename -> RenameCharacterMenu
-    /// SetupFileMenu -> Save -> SaveCharacterMenu
-    /// SetupFileMenu -> Save As -> SaveCharacterAsMenu
-    /// 
-    /// Character:
-    /// SetupCharSelector -> LoadCharacter -> LoadCompositor
-    /// SetupNewCharBtn -> NewCharBtnClicked -> CreateNamedCharacter
-    /// aspectRatioField -> OnValueChanged (initialization implicit)
-    /// SetupCharSelector -> OnCharacterFieldClicked -> RenameCurrentCharacter
-    ///
-    /// Compositor:
-    /// LoadCompositor -> OnCompositorItemSelect -> SetupLayerInspector
-    ///
-    /// Layers:
-    /// SetupLayerInspector -> OnLayerItemSelected
-    /// LayerListSearcher -> AddPickedItemToLayerList
+    ///     Event Paths:
+    ///     Window:
+    ///     SetupFileMenu -> New -> CreateNewCharacterMenu
+    ///     SetupFileMenu -> Load -> LoadCharacterMenu
+    ///     SetupFileMenu -> Rename -> RenameCharacterMenu
+    ///     SetupFileMenu -> Save -> SaveCharacterMenu
+    ///     SetupFileMenu -> Save As -> SaveCharacterAsMenu
+    ///     Character:
+    ///     SetupCharSelector -> LoadCharacter -> LoadCompositor
+    ///     SetupNewCharBtn -> NewCharBtnClicked -> CreateNamedCharacter
+    ///     aspectRatioField -> OnValueChanged (initialization implicit)
+    ///     SetupCharSelector -> OnCharacterFieldClicked -> RenameCurrentCharacter
+    ///     Compositor:
+    ///     LoadCompositor -> OnCompositorItemSelect -> SetupLayerInspector
+    ///     Layers:
+    ///     SetupLayerInspector -> OnLayerItemSelected
+    ///     LayerListSearcher -> AddPickedItemToLayerList
     /// </summary>
     public partial class CharacterBuilder : EditorWindow
     {
-        private VisualElement previewer;
+        private FloatField aspectRatioField;
+        private ObjectField charSelector = null;
         private Character currentCharacter = null;
         private CharacterCompositor currentCompositor = null;
         private CharacterLayer currentLayer = null;
-        private ModularList textureList = null;
-        private ModularList poseList = null;
-        private FloatField aspectRatioField;
-        private ObjectField charSelector = null;
-        private ModularList layerList;
         private CharacterPose currentPose;
         private CharacterLayer currentWorkingLayer;
+        private ModularList layerList;
         private Toggle multilayerToggle;
-        
+        private ModularList poseList = null;
+        private VisualElement previewer;
+        private ModularList textureList = null;
+
         #region Window
-        
+
         private void SaveCharacterMenu(DropdownMenuAction dma)
         {
             if (currentCharacter != null)
             {
                 var c = CharacterSerializer.Serialize(currentCharacter);
-                if(c != null)
+                if (c != null)
                     LoadCharacter(c);
             }
         }
-        
+
         private void SaveCharacterAsMenu(DropdownMenuAction dma)
         {
             if (currentCharacter != null)
             {
                 var c = CharacterSerializer.Serialize(currentCharacter);
-                if(c != null)
+                if (c != null)
                     LoadCharacter(c);
             }
         }
 
         /// <summary>
-        /// Synthesizes a mouse click on the object field selector.
+        ///     Synthesizes a mouse click on the object field selector.
         /// </summary>
         private void LoadCharacterMenu(DropdownMenuAction dma)
         {
-            if (charSelector == null) 
+            if (charSelector == null)
                 return;
-            
+
             var btnQuery = charSelector.Query<VisualElement>(null, "unity-object-field__selector");
             var objectFieldSelector = btnQuery.First();
             if (objectFieldSelector == null)
@@ -86,7 +80,7 @@ namespace VisualNovelFramework.CharacterBuilder
 
             var clickEvent = new MouseDownEvent();
             clickEvent.target = objectFieldSelector;
-            
+
             objectFieldSelector.SendEvent(clickEvent);
         }
 
@@ -94,7 +88,7 @@ namespace VisualNovelFramework.CharacterBuilder
         {
             if (currentCharacter != null)
             {
-                NamerPopup renamerPopup = new NamerPopup(RenameCurrentCharacter);
+                var renamerPopup = new NamerPopup(RenameCurrentCharacter);
                 renamerPopup.Popup();
             }
         }
@@ -110,11 +104,11 @@ namespace VisualNovelFramework.CharacterBuilder
             currentLayer = null;
             currentPose = null;
             currentWorkingLayer = null;
-            
+
             if (character != null)
             {
                 currentCharacter = character;
-                CharacterCompositor compositor = character.compositor;
+                var compositor = character.compositor;
                 if (compositor == null)
                 {
                     Debug.LogError("Null compositor!");
@@ -132,14 +126,14 @@ namespace VisualNovelFramework.CharacterBuilder
 
         private void LoadCharacter(ChangeEvent<Object> evt)
         {
-            Character character = evt.newValue as Character;
+            var character = evt.newValue as Character;
 
             LoadCharacter(character);
         }
 
         private void CreateNewCharacterMenu(DropdownMenuAction dma)
         {
-            NamerPopup popup = new NamerPopup(CreateNamedCharacter);
+            var popup = new NamerPopup(CreateNamedCharacter);
 
             popup.Popup();
         }
@@ -154,26 +148,26 @@ namespace VisualNovelFramework.CharacterBuilder
             currentPose = null;
             currentWorkingLayer = null;
 
-            Character nChar = CreateInstance<Character>();
+            var nChar = CreateInstance<Character>();
             CharacterSerializer.InitializeChar(nChar, charName);
             nChar.compositor.layerAspectRatio = 1.0f;
-            SerializedObject so = new SerializedObject(nChar);
+            var so = new SerializedObject(nChar);
             charSelector.Bind(so);
             charSelector.value = nChar;
         }
-        
+
         private void OnCharacterFieldClicked(ClickEvent evt)
         {
-            if (evt.target is Button 
-                || !(evt.currentTarget is ObjectField of) 
-                || currentCharacter == null 
+            if (evt.target is Button
+                || !(evt.currentTarget is ObjectField of)
+                || currentCharacter == null
                 || of.value != currentCharacter)
                 return;
-            
+
             if (evt.clickCount == 2)
             {
                 //Rename (double click)
-                NamerPopup renamerPopup = new NamerPopup(RenameCurrentCharacter);
+                var renamerPopup = new NamerPopup(RenameCurrentCharacter);
                 renamerPopup.Popup();
                 evt.StopImmediatePropagation();
             }
@@ -181,12 +175,12 @@ namespace VisualNovelFramework.CharacterBuilder
 
         private void RenameCurrentCharacter(string newName)
         {
-            if (currentCharacter == null) 
+            if (currentCharacter == null)
                 return;
-            
+
             currentCharacter.name = newName;
-            
-            string path = AssetDatabase.GetAssetPath(currentCharacter);
+
+            var path = AssetDatabase.GetAssetPath(currentCharacter);
             if (path != "")
             {
                 AssetDatabase.RenameAsset(path, newName);
@@ -207,10 +201,10 @@ namespace VisualNovelFramework.CharacterBuilder
         private void LoadCompositor(CharacterCompositor compositor)
         {
             aspectRatioField.value = compositor.layerAspectRatio;
-            
+
             currentLayer = null;
             currentPose = null;
-            
+
             currentCompositor = compositor;
             layerList.BindToList(compositor.layers, OnLayerItemSelected);
             poseList.BindToList(compositor.poses, OnPoseItemSelected);
@@ -224,14 +218,10 @@ namespace VisualNovelFramework.CharacterBuilder
         private void LoadCharacterDefaults()
         {
             if (currentCompositor.layers != null && currentCompositor.layers.Count > 0)
-            {
                 OnLayerItemSelected(currentCompositor.layers[0]);
-            }
 
             if (currentCompositor.poses != null && currentCompositor.poses.Count > 0)
-            {
                 OnPoseItemSelected(currentCompositor.poses[0]);
-            }
         }
 
         private void HideCompositorFrame()
@@ -300,22 +290,19 @@ namespace VisualNovelFramework.CharacterBuilder
 
         private void DisplayLayerSelector(CharacterLayer layer)
         {
-            if (layer.textures == null)
-            {
-                layer.textures = new List<Texture2D>();
-            }
+            if (layer.textures == null) layer.textures = new List<Texture2D>();
 
             currentWorkingLayer = layer;
 
             textureList.BindToList(layer.textures, OnTextureSelected);
-            
+
             textureList.FoldoutText = currentPose.name + "-" + currentLayer.name;
             textureList.visible = true;
             textureList.SetEnabled(true);
             multilayerToggle.visible = true;
             multilayerToggle.SetEnabled(true);
             multilayerToggle.value = currentWorkingLayer.isMultilayer;
-            
+
             //Default Select
             if (currentCompositor.layeredPoses.Count > 0)
             {
@@ -359,6 +346,5 @@ namespace VisualNovelFramework.CharacterBuilder
         }
 
         #endregion
-
     }
 }

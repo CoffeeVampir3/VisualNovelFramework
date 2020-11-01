@@ -1,13 +1,12 @@
-﻿using System;
-using Object = UnityEngine.Object;
+﻿using UnityEngine;
 
 namespace VisualNovelFramework.Elements.Utils
 {
     public class SearchForTypeButton<T> : DynamicButton where T : Object
     {
-        private readonly Action<Object> pickeredAction = null;
+        private readonly System.Action<Object> pickeredAction = null;
 
-        public SearchForTypeButton(Action<Object> onSearchPick, string text)
+        public SearchForTypeButton(System.Action<Object> onSearchPick, string text)
         {
             pickeredAction = onSearchPick;
             button = DynamicButtonFactory.CreateDefaultDynamicListButton(text);
@@ -16,8 +15,8 @@ namespace VisualNovelFramework.Elements.Utils
 
         public void OnButtonClicked()
         {
-            SearcherPopup<T> p = new SearcherPopup<T>(pickeredAction);
-            
+            var p = new SearcherPopup<T>(pickeredAction);
+
             p.Popup();
         }
     }

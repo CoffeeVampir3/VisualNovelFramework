@@ -8,20 +8,20 @@ using VisualNovelFramework.EditorExtensions;
 namespace VisualNovelFramework.Outfitting
 {
     /// <summary>
-    /// Serialization Note::
-    /// Items are going to be serialized as Textures! This means the character layer can drift
-    /// out of synch with the character outfit. When deserializing the outfit we must ensure
-    /// each texture actually exists within the character layer, and, if not, warn the user!
+    ///     Serialization Note::
+    ///     Items are going to be serialized as Textures! This means the character layer can drift
+    ///     out of synch with the character outfit. When deserializing the outfit we must ensure
+    ///     each texture actually exists within the character layer, and, if not, warn the user!
     /// </summary>
     /// Outfits maintain their refs and it's fine to directly ref or access VIA guid.
     public class CharacterOutfit : SerializedScriptableObject, HasCoffeeGUID
     {
-        public CharacterPose outfitPose = null;
-        [SerializeField]
-        private string outfitGUID;
-
         [OdinSerialize] public Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
             new Dictionary<CharacterLayer, List<Texture2D>>();
+
+        [SerializeField] private string outfitGUID;
+
+        public CharacterPose outfitPose = null;
 
         [OdinSerialize] public Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
             new Dictionary<CharacterPose, HashSet<CharacterLayer>>();
@@ -30,12 +30,12 @@ namespace VisualNovelFramework.Outfitting
         {
             return outfitGUID;
         }
-        
+
         public void SetCoffeeGUID(string GUID)
         {
             outfitGUID = GUID;
         }
-        
+
         public void Initialize(string charName)
         {
             name = charName;
@@ -44,19 +44,12 @@ namespace VisualNovelFramework.Outfitting
 
         public List<Texture2D> GetPreviewTextures()
         {
-            List<Texture2D> previewTextures = new List<Texture2D>();
-            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
-            {
-                return null;
-            }
+            var previewTextures = new List<Texture2D>();
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) return null;
 
             foreach (var layer in utilizedLayers)
-            {
                 if (outfitDictionary.TryGetValue(layer, out var texs))
-                {
                     previewTextures.AddRange(texs);
-                }
-            }
 
             return previewTextures;
         }
@@ -65,10 +58,7 @@ namespace VisualNovelFramework.Outfitting
         {
             var tex = layer.GetTextureAt(0);
             outfitPose = inPose;
-            if (layer.GetTextureAt(0) != null)
-            {
-                AddLayerItem(layer, tex);
-            }
+            if (layer.GetTextureAt(0) != null) AddLayerItem(layer, tex);
         }
 
         private List<int> FindPoseUnusedDefaultable(CharacterCompositor compositor, bool setDefaults)
@@ -83,11 +73,11 @@ namespace VisualNovelFramework.Outfitting
                     unusedLayers.Add(index);
                     continue;
                 }
-                
+
                 if (posedLayer.isMultilayer)
                     continue;
-                
-                if(setDefaults)
+
+                if (setDefaults)
                     SetLayerDefault(outfitPose, posedLayer);
             }
 
@@ -97,7 +87,7 @@ namespace VisualNovelFramework.Outfitting
         public List<int> SwitchPose(CharacterPose inPose, CharacterCompositor compositor)
         {
             outfitPose = inPose;
-            
+
             if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
             {
                 utilizedLayers = new HashSet<CharacterLayer>();
@@ -115,13 +105,13 @@ namespace VisualNovelFramework.Outfitting
                 utilizedLayers = new HashSet<CharacterLayer>();
                 poseToUtilized.Add(outfitPose, utilizedLayers);
             }
-            
+
             if (outfitDictionary.TryGetValue(layer, out var layerItemList))
             {
-                if(!layer.isMultilayer)
+                if (!layer.isMultilayer)
                     layerItemList.Clear();
-                
-                if(!layerItemList.Contains(targetTex))
+
+                if (!layerItemList.Contains(targetTex))
                     layerItemList.Add(targetTex);
             }
             else
@@ -140,7 +130,7 @@ namespace VisualNovelFramework.Outfitting
         }
 
         /// <summary>
-        /// True if added false if removed.
+        ///     True if added false if removed.
         /// </summary>
         /// <returns></returns>
         public bool AddOrRemoveExistingItem(CharacterLayer layer, Texture2D targetTex)
@@ -150,13 +140,13 @@ namespace VisualNovelFramework.Outfitting
                 utilizedLayers = new HashSet<CharacterLayer>();
                 poseToUtilized.Add(outfitPose, utilizedLayers);
             }
-            
+
             if (outfitDictionary.TryGetValue(layer, out var layerItemList))
             {
                 if (!layer.isMultilayer)
                 {
                     layerItemList.Clear();
-                    
+
                     if (!layerItemList.Contains(targetTex))
                         layerItemList.Add(targetTex);
                 }
@@ -167,7 +157,7 @@ namespace VisualNovelFramework.Outfitting
                         layerItemList.Remove(targetTex);
                         return false;
                     }
- 
+
                     layerItemList.Add(targetTex);
                 }
             }
@@ -182,10 +172,7 @@ namespace VisualNovelFramework.Outfitting
 
         public List<Texture2D> GetLayerIfNotEmpty(CharacterLayer layer)
         {
-            if(!outfitDictionary.TryGetValue(layer, out var layerItems))
-            {
-                return null;
-            }
+            if (!outfitDictionary.TryGetValue(layer, out var layerItems)) return null;
 
             if (layerItems.Count == 0)
                 return null;
@@ -195,10 +182,7 @@ namespace VisualNovelFramework.Outfitting
 
         public HashSet<CharacterLayer> GetCurrentUtilizedLayers()
         {
-            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers))
-            {
-                return null;
-            }
+            if (!poseToUtilized.TryGetValue(outfitPose, out var utilizedLayers)) return null;
             return utilizedLayers;
         }
     }

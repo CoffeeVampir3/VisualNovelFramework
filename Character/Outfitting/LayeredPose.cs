@@ -10,7 +10,7 @@ namespace VisualNovelFramework.Outfitting
 
         public static LayeredPose Create(CharacterLayer cl, CharacterPose pose, CharacterLayer targetLayer)
         {
-            LayeredPose lp = CreateInstance<LayeredPose>();
+            var lp = CreateInstance<LayeredPose>();
             lp.layer = cl;
             lp.pose = pose;
             lp.posedLayer = targetLayer;

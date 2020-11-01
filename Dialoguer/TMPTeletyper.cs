@@ -5,15 +5,15 @@ namespace VisualNovelFramework
 {
     public class TMPTeletyper : MonoBehaviour
     {
-        public TMP_Text target;
-
         private int cursor = 0;
-        [SerializeField] 
-        private float vnTickRate = .1f;
-        [SerializeField]
-        private bool running = false;
+
+        [SerializeField] private bool running = false;
+
+        public TMP_Text target;
         private float timeOffset = 0f;
         private int totalVisible = 0;
+
+        [SerializeField] private float vnTickRate = .1f;
 
         public void ClearAndSet(string targetString)
         {
@@ -35,11 +35,11 @@ namespace VisualNovelFramework
         {
             if (!running)
                 return;
-            if (!(Time.time - timeOffset > vnTickRate)) 
+            if (!(Time.time - timeOffset > vnTickRate))
                 return;
 
             timeOffset = Time.time;
-            
+
             if (cursor <= totalVisible)
             {
                 target.maxVisibleCharacters = cursor;
@@ -49,6 +49,7 @@ namespace VisualNovelFramework
                 running = false;
                 return;
             }
+
             cursor++;
         }
     }

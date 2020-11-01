@@ -5,8 +5,8 @@ namespace VisualNovelFramework.Outfitting
 {
     public class CharacterLayer : ScriptableObject
     {
-        [SerializeField] public List<Texture2D> textures = new List<Texture2D>();
         public bool isMultilayer = false;
+        [SerializeField] public List<Texture2D> textures = new List<Texture2D>();
 
         public Texture2D GetTextureAt(int index)
         {

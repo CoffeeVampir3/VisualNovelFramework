@@ -7,10 +7,10 @@ namespace VisualNovelFramework.Elements.Utils
 {
     public class NamerPopup : VisualElement
     {
-        private EditorWindow window = null;
-        private readonly TextField nameField = null;
         private readonly Action<string> namedCallback = null;
-        
+        private readonly TextField nameField = null;
+        private EditorWindow window = null;
+
         public NamerPopup(Action<string> onNameCallback)
         {
             var popupTree =
@@ -52,8 +52,8 @@ namespace VisualNovelFramework.Elements.Utils
             window.rootVisualElement.StretchToParentSize();
             window.name = "Renamer";
             window.titleContent = new GUIContent("Naming Item:");
-            
-            Vector2 scrnCenter = new Vector2(Screen.width /2f, Screen.height/2f);
+
+            var scrnCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
             window.position = new Rect(scrnCenter.x, scrnCenter.y, 325f, 110f);
             window.maxSize = new Vector2(325f, 110f);
             window.minSize = window.maxSize;
@@ -67,15 +67,12 @@ namespace VisualNovelFramework.Elements.Utils
 
         private void OnOkay()
         {
-            if (nameField.value.Length <= 0)
-            {
-                return;
-            }
+            if (nameField.value.Length <= 0) return;
 
             namedCallback(nameField.value);
             window.Close();
         }
-        
+
         private void OnCancel()
         {
             window.Close();

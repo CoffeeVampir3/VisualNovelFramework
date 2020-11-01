@@ -11,16 +11,20 @@ namespace VisualNovelFramework.Outfitter
 {
     public partial class Outfitter
     {
-        public const string OutfitterXMLPath = 
+        public const string OutfitterXMLPath =
             "Assets/VisualNovelFramework/EditorOnly/Outfitter/Outfitter2.0.uxml";
-        
+
+        private OutfitDropdownWindow outfitDropdown = null;
+
+        private OutfitPreviewer outfitPreviewer;
+
         [MenuItem("VNFramework/Outfitter")]
         public static void ShowOutfitter()
         {
-            Outfitter wnd = GetWindow<Outfitter>();
+            var wnd = GetWindow<Outfitter>();
             wnd.titleContent = new GUIContent("Outfitter");
         }
-        
+
         private void SetupCharacterSelector()
         {
             charSelector = rootVisualElement.Q<ObjectField>("characterSelector");
@@ -29,11 +33,10 @@ namespace VisualNovelFramework.Outfitter
             charSelector.RegisterValueChangedCallback(LoadCharacter);
         }
 
-        private OutfitPreviewer outfitPreviewer;
         private void SetupPreviewer()
         {
             var prvwPane = rootVisualElement.Q<VisualElement>("previewerPane");
-            
+
             outfitPreviewer = new OutfitPreviewer();
             prvwPane.style.alignSelf = new StyleEnum<Align>(Align.Center);
             prvwPane.Add(outfitPreviewer);
@@ -54,26 +57,26 @@ namespace VisualNovelFramework.Outfitter
 
             layerImageLister.bindItem = (e, i) =>
             {
-                Image img = (e as Image);
+                var img = e as Image;
                 img.image = images[i];
 
                 imageToIndex.Add(img, i);
                 img.AddToClassList("charImgStyle");
-                
-                float aspectRatio = (float) images[i].height / images[i].width;
+
+                var aspectRatio = (float) images[i].height / images[i].width;
                 img.style.width = layerImageLister.layout.width;
                 img.style.height = layerImageLister.layout.width * aspectRatio;
 
-                layerImageLister.itemHeight = (int)(layerImageLister.layout.width * aspectRatio);
+                layerImageLister.itemHeight = (int) (layerImageLister.layout.width * aspectRatio);
 
                 img.RegisterCallback<ClickEvent>(OnTextureItemClicked);
             };
         }
-        
+
         private void SetupFileMenu()
         {
             var menu = rootVisualElement.Q<ToolbarMenu>("fileMenu");
-            
+
             menu.menu.AppendAction("Load Character (Ctrl+L)", LoadCharacterMenu);
             menu.menu.AppendAction("New Outfit (Ctrl+N)", NewOutfitMenu);
             menu.menu.AppendSeparator();
@@ -84,35 +87,34 @@ namespace VisualNovelFramework.Outfitter
             menu.menu.AppendAction("Save Outfit As (Ctrl+Shift+S)", SaveOutfitAsMenu);
         }
 
-        private OutfitDropdownWindow outfitDropdown = null;
         private void SetupOutfitDropdown()
         {
             var menu = rootVisualElement.Q<ToolbarMenu>("outfitDropdown");
 
-            menu.RegisterCallback<ClickEvent>((e) =>
+            menu.RegisterCallback<ClickEvent>(e =>
             {
                 if (currentCharacter == null)
                     return;
-                
-                Rect newPos = new Rect(this.position.x + menu.worldBound.x,
-                    this.position.y - 360, 200, 400);
+
+                var newPos = new Rect(position.x + menu.worldBound.x,
+                    position.y - 360, 200, 400);
                 outfitDropdown = CreateInstance<OutfitDropdownWindow>();
                 outfitDropdown.ShowAsDropDown(newPos, new Vector2(200, 400));
-                
+
                 outfitDropdown.browser.BindToList(currentCharacter.outfits, OnOutfitClicked);
             });
         }
 
-        private void OnOutfitClicked(UnityEngine.Object target)
+        private void OnOutfitClicked(Object target)
         {
-            if (target == null || !(target is CharacterOutfit co)) 
+            if (target == null || !(target is CharacterOutfit co))
                 return;
-            
+
             LoadOutfit(co);
-            if(outfitDropdown != null)
+            if (outfitDropdown != null)
                 outfitDropdown.Close();
         }
-        
+
         private void SetupOutfitLabel()
         {
             var label = rootVisualElement.Q<VisualElement>("outfitLabel");
@@ -120,11 +122,11 @@ namespace VisualNovelFramework.Outfitter
             outfitLabel.SetEnabled(false);
             outfitLabel.text = "No Outfit Selected.";
         }
-        
+
         public void OnEnable()
         {
             // Each editor window contains a root VisualElement object
-            VisualElement root = rootVisualElement;
+            var root = rootVisualElement;
 
             // Import UXML
             var visualTree =
@@ -137,7 +139,7 @@ namespace VisualNovelFramework.Outfitter
             templateContainer.style.flexGrow = 1;
             templateContainer.style.flexShrink = 1;
             templateContainer.style.flexBasis = new StyleLength(100f);
-            
+
             layerList = rootVisualElement.Q<ModularList>("layerList");
             poseList = rootVisualElement.Q<ModularList>("poseList");
 

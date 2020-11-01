@@ -5,20 +5,17 @@ using VisualNovelFramework;
 
 public class TextDisplayer : MonoBehaviour
 {
-    [SerializeField] 
-    private TMP_Text targetTextOutputField = null;
-    [SerializeField]
-    [TextArea(10,10)]
-    public string testText = "This is the <b>thing<b> to display.";
+    private readonly TTFParser parser = new TTFParser();
 
-    [SerializeField] 
-    private float vnTickRate = .1f;
-    [SerializeField]
-    private bool start = false;
+    [SerializeField] private bool start = false;
+
+    [SerializeField] private TMP_Text targetTextOutputField = null;
+
+    [SerializeField] [TextArea(10, 10)] public string testText = "This is the <b>thing<b> to display.";
 
     private float timeOffset = 0f;
 
-    private TTFParser parser = new TTFParser();
+    [SerializeField] private float vnTickRate = .1f;
 
     [Button]
     public void Parse()
@@ -33,9 +30,9 @@ public class TextDisplayer : MonoBehaviour
     private void DisplayLine()
     {
         //Display rate limiter
-        if (!(Time.time - timeOffset > vnTickRate)) 
+        if (!(Time.time - timeOffset > vnTickRate))
             return;
-        
+
         if (parser.ParsingDone)
         {
             Debug.Log("done");
@@ -43,9 +40,9 @@ public class TextDisplayer : MonoBehaviour
             timeOffset = 0f;
             return;
         }
-        
+
         targetTextOutputField.text = parser.Step();
-        
+
         timeOffset = Time.time;
     }
 
@@ -53,7 +50,7 @@ public class TextDisplayer : MonoBehaviour
     {
         if (start == false)
             return;
-        
+
         DisplayLine();
     }
 }

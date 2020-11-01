@@ -4,26 +4,19 @@ using UnityEngine.UIElements;
 namespace VisualNovelFramework.Outfitter
 {
     /// <summary>
-    /// Pans the content container of a Visual Element that implements IHasContentViewContainer.
+    ///     Pans the content container of a Visual Element that implements IHasContentViewContainer.
     /// </summary>
     public class ContentDragger : MouseManipulator
     {
         /// <summary>
-        /// Local coordinates of dragged element where it was touched when dragging began.
-        /// </summary>
-        private Vector2 m_Start;
-
-        /// <summary>
-        /// True if target has captured mouse and is being dragged.
+        ///     True if target has captured mouse and is being dragged.
         /// </summary>
         protected bool m_Active;
 
-        //public Vector2 panSpeed { get; set; }
-
         /// <summary>
-        /// True if the dragged VisualElement should be clamped to its parent's boundaries. 
+        ///     Local coordinates of dragged element where it was touched when dragging began.
         /// </summary>
-        public bool clampToParentEdges { get; set; }
+        private Vector2 m_Start;
 
         public ContentDragger()
         {
@@ -33,6 +26,13 @@ namespace VisualNovelFramework.Outfitter
             activators.Add(new ManipulatorActivationFilter {button = MouseButton.MiddleMouse});
             clampToParentEdges = true;
         }
+
+        //public Vector2 panSpeed { get; set; }
+
+        /// <summary>
+        ///     True if the dragged VisualElement should be clamped to its parent's boundaries.
+        /// </summary>
+        public bool clampToParentEdges { get; set; }
 
         protected override void RegisterCallbacksOnTarget()
         {
@@ -55,16 +55,14 @@ namespace VisualNovelFramework.Outfitter
                 evt.StopImmediatePropagation();
                 return;
             }
-            if (evt.target == null)
-            {
-                return;
-            }
+
+            if (evt.target == null) return;
 
             var pork = evt.currentTarget as VisualElement;
             var chicken = pork.parent;
 
             Vector2 dist = pork.transform.position - chicken.transform.position;
-            
+
             m_Start = evt.mousePosition - dist;
             m_Active = true;
             target.CaptureMouse();
@@ -75,15 +73,12 @@ namespace VisualNovelFramework.Outfitter
         {
             if (!m_Active)
                 return;
-            
-            if (evt.target == null)
+
+            if (evt.target == null) return;
+
+            if (evt.currentTarget is VisualElement ve)
             {
-                return;
-            }
-            
-            if ((evt.currentTarget is VisualElement ve))
-            {          
-                Vector2 scaledPos = evt.mousePosition;
+                var scaledPos = evt.mousePosition;
                 ve.transform.position = scaledPos - m_Start;
             }
 

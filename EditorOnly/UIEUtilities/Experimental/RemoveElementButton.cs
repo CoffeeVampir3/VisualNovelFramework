@@ -1,15 +1,14 @@
-﻿using System;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.Elements.Utils
 {
     public class RemoveElementButton : BindingDynamicButton
     {
+        private readonly System.Action<Object> onDeleteCallback;
         private readonly ModularList targetDynamicList;
-        private readonly Action<Object> onDeleteCallback;
 
-        public RemoveElementButton(ModularList targetList, Action<Object> callback, string text)
+        public RemoveElementButton(ModularList targetList, System.Action<Object> callback, string text)
         {
             targetDynamicList = targetList;
             button = DynamicButtonFactory.CreateDefaultDynamicListButton(text);
@@ -19,7 +18,8 @@ namespace VisualNovelFramework.Elements.Utils
 
         private void OnRemovePressed(ClickEvent evt)
         {
-            if(bindingObject != null && evt.currentTarget is Button) {
+            if (bindingObject != null && evt.currentTarget is Button)
+            {
                 boundView.itemsSource.Remove(bindingObject);
                 onDeleteCallback?.Invoke(bindingObject);
                 targetDynamicList.RefreshList();
@@ -29,7 +29,7 @@ namespace VisualNovelFramework.Elements.Utils
 
         public override BindingDynamicButton DeepCopy()
         {
-            RemoveElementButton rmb = new RemoveElementButton(targetDynamicList, onDeleteCallback, button.text);
+            var rmb = new RemoveElementButton(targetDynamicList, onDeleteCallback, button.text);
             return rmb;
         }
     }

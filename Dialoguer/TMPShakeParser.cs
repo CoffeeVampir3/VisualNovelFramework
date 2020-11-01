@@ -9,7 +9,7 @@ namespace VisualNovelFramework
     public class TMPShakeParser : MonoBehaviour
     {
         public TMP_Text target;
-        
+
         public List<ShakeRegion> ParseString(string stuff)
         {
             target.text = stuff;
@@ -19,26 +19,14 @@ namespace VisualNovelFramework
             var info = GetTMPROWithoutTags();
             return ParseShakeRegions(ref info);
         }
-        
-        public readonly struct ShakeRegion
-        {
-            public readonly int start;
-            public readonly int end;
-
-            public ShakeRegion(int s, int e)
-            {
-                start = s;
-                end = e;
-            }
-        }
 
         private string GetTMPROWithoutTags()
         {
             var info = target.textInfo.characterInfo;
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
-            for (int i = 0; i < info.Length; i++)
+            for (var i = 0; i < info.Length; i++)
             {
                 builder.Append(info[i].character);
             }
@@ -48,8 +36,8 @@ namespace VisualNovelFramework
 
         private List<ShakeRegion> ParseShakeRegions(ref string inputString)
         {
-            Regex shakeRegex = new Regex("<shake>");
-            Regex shakeClosingRegex = new Regex("</shake>");
+            var shakeRegex = new Regex("<shake>");
+            var shakeClosingRegex = new Regex("</shake>");
 
             var shakeOpen = shakeRegex.Matches(inputString);
             var shakeClose = shakeClosingRegex.Matches(inputString);
@@ -64,12 +52,12 @@ namespace VisualNovelFramework
                 Debug.LogError("Malformed or missing tags detected in shake-string parse: " + inputString);
             }
 
-            List<ShakeRegion> shakeRegions = new List<ShakeRegion>();
-            int offset = 0;
-            for (int i = 0; i < shakeOpen.Count; i++)
+            var shakeRegions = new List<ShakeRegion>();
+            var offset = 0;
+            for (var i = 0; i < shakeOpen.Count; i++)
             {
-                int start = shakeOpen[i].Index - offset;
-                int end = shakeClose[i].Index - offset - 7; //length of <shake>
+                var start = shakeOpen[i].Index - offset;
+                var end = shakeClose[i].Index - offset - 7; //length of <shake>
 
                 shakeRegions.Add(new ShakeRegion(start, end));
                 offset += 15; // length of <shake> + </shake>
@@ -78,6 +66,18 @@ namespace VisualNovelFramework
             target.text = target.text.Replace("<shake>", "");
             target.text = target.text.Replace("</shake>", "");
             return shakeRegions;
+        }
+
+        public readonly struct ShakeRegion
+        {
+            public readonly int start;
+            public readonly int end;
+
+            public ShakeRegion(int s, int e)
+            {
+                start = s;
+                end = e;
+            }
         }
     }
 }

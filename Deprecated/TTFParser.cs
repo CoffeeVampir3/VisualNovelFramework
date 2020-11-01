@@ -6,18 +6,21 @@ namespace VisualNovelFramework
 {
     public class TTFParser
     {
-        private string unparsedString;
-        private string currentString;
-        private int textLength;
-        private int cursorPosition = 0;
-        private char lastKnownChar;
-        
         private const char openingTag = '<';
         private const char tagCancel = '/';
         private const char spaceChar = ' ';
         private const char enclosingTag = '>';
-        
+
         private readonly List<string> enclosingTags = new List<string>();
+        private string currentString;
+        private int cursorPosition = 0;
+        private char lastKnownChar;
+        private int textLength;
+        private string unparsedString;
+
+        public bool ParsingDone => cursorPosition >= textLength;
+
+        private bool CanPeekNext => cursorPosition < textLength;
 
         public void Parse(string text)
         {
@@ -26,25 +29,20 @@ namespace VisualNovelFramework
             cursorPosition = 0;
             currentString = "";
             lastKnownChar = ' '; //Will cut prepending spaces from the text.
-            
+
             enclosingTags.Clear();
         }
 
         public string Step()
         {
-            if(CanPeekNext)
+            if (CanPeekNext)
                 PeekAndAdd();
             return AddEnclosingTags(currentString);
         }
 
-        public bool ParsingDone => cursorPosition >= textLength;
-
         private string AddEnclosingTags(string cur)
         {
-            for (int i = 0; i < enclosingTags.Count; i++)
-            {
-                cur += enclosingTags[i];
-            }
+            for (var i = 0; i < enclosingTags.Count; i++) cur += enclosingTags[i];
             return cur;
         }
 
@@ -53,19 +51,14 @@ namespace VisualNovelFramework
             return unparsedString[cursorPosition];
         }
 
-        private bool CanPeekNext => cursorPosition < textLength;
-
         private string CaptureTag()
         {
-            string captureString = "<";
+            var captureString = "<";
             while (CanPeekNext)
             {
-                char nextChar = PeekNext();
+                var nextChar = PeekNext();
                 captureString += nextChar;
-                if (nextChar == enclosingTag)
-                {
-                    return captureString;
-                }
+                if (nextChar == enclosingTag) return captureString;
                 cursorPosition++;
             }
 
@@ -79,26 +72,26 @@ namespace VisualNovelFramework
                 currentString += openingTag;
                 return;
             }
-            
+
             cursorPosition++;
-            char nextChar = PeekNext();
+            var nextChar = PeekNext();
             if (nextChar != tagCancel)
             {
-                string incTag = CaptureTag();
+                var incTag = CaptureTag();
                 if (incTag == null)
                 {
                     Debug.LogError("Parsing text failed due to malformed or missing tags.");
                     return;
                 }
 
-                string endingTag = incTag.Insert(1, "/");
+                var endingTag = incTag.Insert(1, "/");
                 enclosingTags.Add(endingTag);
 
                 currentString += incTag;
             }
             else
             {
-                string incTag = CaptureTag();
+                var incTag = CaptureTag();
                 if (incTag == null)
                 {
                     Debug.LogError("Parsing text failed due to malformed or missing closing tags.");
@@ -106,8 +99,8 @@ namespace VisualNovelFramework
                 }
 
                 currentString += incTag;
-                if(enclosingTags.Any())
-                    enclosingTags.RemoveAt(enclosingTags.Count-1);
+                if (enclosingTags.Any())
+                    enclosingTags.RemoveAt(enclosingTags.Count - 1);
             }
         }
 
@@ -115,15 +108,11 @@ namespace VisualNovelFramework
         {
             while (CanPeekNext)
             {
-                char nextChar = PeekNext();
+                var nextChar = PeekNext();
                 if (nextChar == spaceChar)
-                {
                     cursorPosition++;
-                }
                 else
-                {
                     return;
-                }
             }
         }
 
@@ -132,21 +121,22 @@ namespace VisualNovelFramework
             if (lastKnownChar == spaceChar)
             {
                 SkipWhitespace();
-                if(CanPeekNext)
+                if (CanPeekNext)
                     PeekAndAdd();
                 return;
             }
+
             currentString += cursorChar;
             lastKnownChar = cursorChar;
             cursorPosition++;
             SkipWhitespace();
-            if(CanPeekNext)
+            if (CanPeekNext)
                 PeekAndAdd();
         }
 
         private void PeekAndAdd()
         {
-            char cursorChar = unparsedString[cursorPosition];
+            var cursorChar = unparsedString[cursorPosition];
 
             switch (cursorChar)
             {
@@ -161,6 +151,7 @@ namespace VisualNovelFramework
                     currentString += cursorChar;
                     break;
             }
+
             cursorPosition++;
         }
     }

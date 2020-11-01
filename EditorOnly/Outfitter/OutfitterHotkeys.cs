@@ -6,7 +6,7 @@ namespace VisualNovelFramework.Outfitter
     {
         private void OnGUI()
         {
-            Event current = Event.current;
+            var current = Event.current;
             if (current.type != EventType.KeyDown)
                 return;
 
@@ -22,6 +22,7 @@ namespace VisualNovelFramework.Outfitter
                         NewOutfitMenu(null);
                         current.Use();
                     }
+
                     return;
                 case KeyCode.R:
                     if (current.control)
@@ -30,6 +31,7 @@ namespace VisualNovelFramework.Outfitter
                         RenameOutfitMenu(null);
                         current.Use();
                     }
+
                     return;
                 case KeyCode.L:
                     if (current.control)
@@ -38,6 +40,7 @@ namespace VisualNovelFramework.Outfitter
                         LoadCharacterMenu(null);
                         current.Use();
                     }
+
                     return;
             }
         }

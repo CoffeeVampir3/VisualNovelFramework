@@ -3,7 +3,7 @@
 namespace VisualNovelFramework.Elements.Utils
 {
     /// <summary>
-    /// A dynamic button which is directly added the the ModularLists frame.
+    ///     A dynamic button which is directly added the the ModularLists frame.
     /// </summary>
     public class DynamicButton
     {
