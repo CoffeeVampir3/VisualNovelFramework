@@ -1,0 +1,19 @@
+{
+    "name": "UAPI",
+    "rootNamespace": "",
+    "references": [
+        "GUID:6a9648163fa9da749a4516d6e64aba4b",
+        "GUID:1353bbf99270a6d4aa255b299ef7e232"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
