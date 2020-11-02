@@ -5,13 +5,17 @@ namespace VisualNovelFramework
 {
     public class VNDialogueController : MonoBehaviour
     {
-        [SerializeField] private TMPShakeParser shakeParser = null;
+        [TextArea(10, 10)] 
+        public string testText = "This is the <b>thing</b> to display.";
 
-        [SerializeField] private TMPTeletyper teletyper = null;
+        [SerializeField] 
+        private TMPShakeParser shakeParser = null;
 
-        [TextArea(10, 10)] public string testText = "This is the <b>thing<b> to display.";
-
-        [SerializeField] private TMPVertexer vertexManipulator = null;
+        [SerializeField] 
+        private TMPTeletyper teletyper = null;
+        
+        [SerializeField] 
+        private TMPVertexer vertexManipulator = null;
 
         private void DisplayString(string tString)
         {

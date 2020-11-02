@@ -1,21 +1,21 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="true">
     <ui:VisualElement style="flex-grow: 1;">
         <uie:Toolbar>
-            <uie:ToolbarMenu display-tooltip-when-elided="true" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgba(49, 49, 49, 255); border-right-color: rgba(49, 49, 49, 255); border-top-color: rgba(49, 49, 49, 255); border-bottom-color: rgba(49, 49, 49, 255); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
+            <uie:ToolbarMenu display-tooltip-when-elided="true" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgb(49, 49, 49); border-right-color: rgb(49, 49, 49); border-top-color: rgb(49, 49, 49); border-bottom-color: rgb(49, 49, 49); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
             <uie:ObjectField label="Character:" name="characterSelector" style="height: auto; visibility: visible;" />
         </uie:Toolbar>
         <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
-            <ui:VisualElement style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-right: 0; border-left-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29);">
-                <ui:VisualElement name="previewImageContainer" style="flex-grow: 1; flex-direction: column; background-image: none; max-width: none; max-height: none; justify-content: center; align-items: center;" />
+            <ui:VisualElement style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-right: 0; border-left-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); border-right-width: 1px;">
+                <ui:VisualElement name="previewImageContainer" style="flex-grow: 1; flex-direction: column; justify-content: center; align-items: center;" />
             </ui:VisualElement>
-            <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-left: 0; padding-right: 0; border-right-width: 0; border-top-width: 5px; border-left-width: 0; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29);">
+            <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-left: 0; padding-right: 0; border-right-width: 0; border-top-width: 5px; border-left-width: 0; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); background-color: rgba(49, 49, 49, 0.5);">
                 <uie:FloatField label="Character Aspect Ratio:" value="1.01" name="aspectRatio" />
                 <VisualNovelFramework.Elements.Utils.ModularList name="poseList" FoldoutText="Pose" />
                 <VisualNovelFramework.Elements.Utils.ModularList name="layerList" FoldoutText="Layer" />
             </ui:VisualElement>
-            <ui:VisualElement name="LayerInspectorPane" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-bottom-color: rgba(0, 0, 0, 0.29); border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29);">
+            <ui:VisualElement name="LayerInspectorPane" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; border-right-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-bottom-color: rgba(0, 0, 0, 0.29); border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); background-color: rgba(49, 49, 49, 0.5);">
                 <ui:Toggle label="Multilayer" name="isLayerMultilayer" style="visibility: hidden;" />
-                <VisualNovelFramework.Elements.Utils.ModularList FoldoutText="LayerTextures" name="layerTextures" style="visibility: row;" />
+                <VisualNovelFramework.Elements.Utils.ModularList FoldoutText="LayerTextures" name="layerTextures"/>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

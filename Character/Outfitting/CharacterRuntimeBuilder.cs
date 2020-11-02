@@ -22,7 +22,7 @@ namespace VisualNovelFramework.Outfitting
             DisplayOutfit(targetOutfit);
         }
 
-        public GameObject CreateEmptyGO()
+        private GameObject CreateEmptyGO()
         {
             var newGo = new GameObject();
             newGo.transform.SetParent(transform);
