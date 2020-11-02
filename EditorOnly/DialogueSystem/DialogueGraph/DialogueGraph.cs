@@ -7,6 +7,8 @@ namespace VisualNovelFramework.DialogueGraph
     public class DialogueGraph : EditorWindow
     {
         private DialogueGraphView graphView;
+        private const string assetDir =
+            @"Assets/VisualNovelFramework/EditorOnly/DialogueSystem/DialogueGraph/";
 
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
@@ -19,12 +21,20 @@ namespace VisualNovelFramework.DialogueGraph
 
         private void OnEnable()
         {
+            var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                assetDir + "DialogueGraphWindow.uxml");
+
+            var instance = tree.Instantiate();
+            rootVisualElement.Add(instance);
+
+            var flexer = instance.Q<VisualElement>("flexContainer");
+            
             graphView = new DialogueGraphView
             {
-                name = "Coffee Behaviour Graph"
+                name = "Coffee Dialogue Graph"
             };
+            flexer.Add(graphView);
             graphView.StretchToParentSize();
-            rootVisualElement.Add(graphView);
         }
 
         private void OnDisable()

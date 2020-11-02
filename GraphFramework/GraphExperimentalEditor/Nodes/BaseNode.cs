@@ -18,7 +18,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         {
             var copy = ScriptableObject.Instantiate(nodeEditorData);
             editorData = copy;
-            editorData.name = editorData.name.Replace("(Clone)", "");
+            editorData.name = nodeEditorData.name;
             title = editorData.name;
         }
 

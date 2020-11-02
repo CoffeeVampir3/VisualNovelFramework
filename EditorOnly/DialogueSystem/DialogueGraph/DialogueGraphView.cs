@@ -1,29 +1,45 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.EditorOnly.DialogueSystem.Nodes;
 
 namespace VisualNovelFramework.DialogueGraph
 {
     public class DialogueGraphView : GraphView
     {
         #region Window Specific
-        private const string assetDir =
-            @"Assets/GraphFramework/GraphExperimentalEditor/UITK/";
-        
+
         public DialogueGraphView()
         {
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                assetDir + "BehaviourGraph.uss");
-
-            styleSheets.Add(styleSheet);
-            
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
 
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
+        }
+        
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            base.BuildContextualMenu(evt);
+            
+            //We need this so we don't pollute the blackboard menus.
+            if (evt.target is GraphView || evt.target is Node)
+            {
+                evt.menu.AppendAction("A/Create Node", MenuAddDebugNode);
+            }
+        }
+        
+        private void MenuAddDebugNode(DropdownMenuAction act)
+        {
+            var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
+                new Vector2(50, 75));
+            
+            var spawnPos = new Rect(pos.x, pos.y, 100, 150);
+            var node = new DialogueNode();
+            node.Initialize("Dialogue Node");
+            node.SetPosition(spawnPos);
+            AddElement(node);
         }
 
         #endregion

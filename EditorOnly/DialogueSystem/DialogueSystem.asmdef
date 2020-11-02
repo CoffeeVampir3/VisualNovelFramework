@@ -1,0 +1,20 @@
+{
+    "name": "DialogueSystem",
+    "rootNamespace": "",
+    "references": [
+        "GUID:b21648eec87e1be4580b847a2999e252",
+        "GUID:1353bbf99270a6d4aa255b299ef7e232",
+        "GUID:6a9648163fa9da749a4516d6e64aba4b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
