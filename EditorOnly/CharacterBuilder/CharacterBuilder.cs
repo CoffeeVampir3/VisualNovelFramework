@@ -3,11 +3,11 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.EditorOnly.CharacterSerializer;
-using VisualNovelFramework.Elements.Utils;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.Editor.Elements;
+using VisualNovelFramework.Editor.Serialization;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.CharacterBuilder
+namespace VisualNovelFramework.Editor.CharacterBuilder
 {
     /// <summary>
     ///     Event Paths:

@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     /// <summary>
     ///     This whole thing is a giant hack. It's a transparent window listening for picker events.

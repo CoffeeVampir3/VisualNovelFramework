@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace VisualNovelFramework.Outfitting
+namespace VisualNovelFramework.VNCharacter
 {
     public class CharacterLayer : ScriptableObject
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     /// <summary>
     ///     A dynamic button which is directly added the the ModularLists frame.

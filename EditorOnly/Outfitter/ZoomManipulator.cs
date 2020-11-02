@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Outfitter
+namespace VisualNovelFramework.Editor.Outfitter
 {
     public class ZoomManipulator : Manipulator
     {

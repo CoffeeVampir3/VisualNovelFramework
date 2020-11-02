@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     public class RenamerPopupWindow : EditorWindow
     {

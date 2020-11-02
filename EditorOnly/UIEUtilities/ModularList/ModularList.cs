@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     /// <summary>
     ///     Brief functionality overview:

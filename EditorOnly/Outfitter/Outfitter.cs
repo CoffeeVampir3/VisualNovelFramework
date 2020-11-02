@@ -4,12 +4,12 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.EditorOnly.CharacterSerializer;
-using VisualNovelFramework.Elements.Utils;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.Editor.Elements;
+using VisualNovelFramework.Editor.Serialization;
+using VisualNovelFramework.VNCharacter;
 using Object = UnityEngine.Object;
 
-namespace VisualNovelFramework.Outfitter
+namespace VisualNovelFramework.Editor.Outfitter
 {
     //Why the fuck didin't I make this a state machine???
     /// <summary>

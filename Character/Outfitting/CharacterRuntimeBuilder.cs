@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace VisualNovelFramework.Outfitting
+namespace VisualNovelFramework.VNCharacter
 {
     public class CharacterRuntimeBuilder : MonoBehaviour
     {

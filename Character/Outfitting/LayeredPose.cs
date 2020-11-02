@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace VisualNovelFramework.Outfitting
+namespace VisualNovelFramework.VNCharacter
 {
     public class LayeredPose : ScriptableObject
     {

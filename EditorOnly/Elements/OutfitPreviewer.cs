@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.Elements
+namespace VisualNovelFramework.Editor.Elements
 {
     public class OutfitPreviewer : VisualElement
     {

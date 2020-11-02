@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     public class SearcherPopup<T> : VisualElement where T : Object
     {

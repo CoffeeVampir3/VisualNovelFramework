@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace VisualNovelFramework.CharacterBuilder
+namespace VisualNovelFramework.Editor.CharacterBuilder
 {
     public partial class CharacterBuilder
     {

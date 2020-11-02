@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.EditorOnly.CharacterSerializer
+namespace VisualNovelFramework.Editor.Serialization
 {
     /// <summary>
     ///     Full serialization suite for the VN Character

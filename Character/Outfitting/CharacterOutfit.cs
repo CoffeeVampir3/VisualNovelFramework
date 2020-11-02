@@ -5,7 +5,7 @@ using Sirenix.Serialization;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 
-namespace VisualNovelFramework.Outfitting
+namespace VisualNovelFramework.VNCharacter
 {
     /// <summary>
     ///     Serialization Note::

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.Outfitting;
 
-namespace VisualNovelFramework
+namespace VisualNovelFramework.VNCharacter
 {
     //Characters maintain their refs and they're fine to directly reference.
     public class Character : ScriptableObject, HasCoffeeGUID

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     /// <summary>
     ///     Helper functions to create consistent dynamic UI

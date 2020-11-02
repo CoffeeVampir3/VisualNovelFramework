@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.UIEUtilities.Elements
+namespace VisualNovelFramework.Editor.Elements
 {
     public class MultitexturePreviewer : VisualElement
     {

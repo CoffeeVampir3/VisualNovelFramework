@@ -4,9 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
-using VisualNovelFramework.Outfitting;
-
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     public class SearchableBrowser : BindableElement
     {
@@ -49,7 +47,6 @@ namespace VisualNovelFramework.Elements.Utils
             searcher.RegisterValueChangedCallback(OnTextChanged);
 
             SetupListView();
-            DebugList();
             List();
         }
 
@@ -62,27 +59,6 @@ namespace VisualNovelFramework.Elements.Utils
             listViewer.style.alignContent = new StyleEnum<Align>(Align.Center);
             listViewer.itemHeight = 21;
             listViewer.makeItem = () => listItemProto.Instantiate();
-        }
-
-        public void BindIconFactory(System.Func<Object, Texture2D> texFac)
-        {
-            textureFactory = texFac;
-        }
-
-        private void DebugList()
-        {
-            var stuff = AssetDatabase.FindAssets("t:CharacterOutfit");
-
-            foreach (var pathGUID in stuff)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(pathGUID);
-                var o = AssetDatabase.LoadAllAssetsAtPath(path);
-                foreach (var m in o)
-                    if (m is CharacterOutfit q)
-                        objects.Add(q);
-            }
-
-            Refresh();
         }
 
         private void List()

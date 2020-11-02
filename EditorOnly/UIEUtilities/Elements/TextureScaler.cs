@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace VisualNovelFramework.UIEUtilities.Elements
+namespace VisualNovelFramework.Editor.Elements
 {
     /// A unility class with functions to scale Texture2D Data.
     /// 

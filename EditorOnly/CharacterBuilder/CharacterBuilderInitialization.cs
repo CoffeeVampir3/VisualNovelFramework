@@ -3,10 +3,10 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.Elements.Utils;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.Editor.Elements;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.CharacterBuilder
+namespace VisualNovelFramework.Editor.CharacterBuilder
 {
     /// <summary>
     ///     Window initialization for the character builder.

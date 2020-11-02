@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace VisualNovelFramework.Outfitter
+namespace VisualNovelFramework.Editor.Outfitter
 {
     public partial class Outfitter
     {

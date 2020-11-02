@@ -1,8 +1,8 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.EditorOnly.CharacterSerializer
+namespace VisualNovelFramework.Editor.Serialization
 {
     public static class LayerSerializer
     {

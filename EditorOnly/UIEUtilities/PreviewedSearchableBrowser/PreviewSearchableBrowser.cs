@@ -5,9 +5,8 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Scripting;
 using UnityEngine.UIElements;
-using VisualNovelFramework.UIEUtilities.Elements;
 
-namespace VisualNovelFramework.Elements.Utils
+namespace VisualNovelFramework.Editor.Elements
 {
     public class PreviewSearchableBrowser : BindableElement
     {

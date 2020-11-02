@@ -3,11 +3,10 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.Elements;
-using VisualNovelFramework.Elements.Utils;
-using VisualNovelFramework.Outfitting;
+using VisualNovelFramework.Editor.Elements;
+using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.Outfitter
+namespace VisualNovelFramework.Editor.Outfitter
 {
     public partial class Outfitter
     {

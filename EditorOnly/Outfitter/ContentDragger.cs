@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace VisualNovelFramework.Outfitter
+namespace VisualNovelFramework.Editor.Outfitter
 {
     /// <summary>
     ///     Pans the content container of a Visual Element that implements IHasContentViewContainer.
