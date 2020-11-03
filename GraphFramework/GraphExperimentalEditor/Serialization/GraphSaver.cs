@@ -29,7 +29,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             {
                 AssetDatabase.StartAssetEditing();
                 foreach (var nodeData in serializedNodeData)
-                {
+                { 
                     serializedGraph.WriteSerializedNode(nodeData);
                 }
             }
@@ -37,6 +37,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             {
                 AssetDatabase.StopAssetEditing();
             }
+            
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(serializedGraph));
         }
 
         private static SerializedGraph FindGraphAsset()
@@ -84,6 +87,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 ScriptableObject.CreateInstance<NodeSerializationData>();
             
             serializationData.nodeEditorData = node.editorData;
+            serializationData.nodeRuntimeData = node.runtimeData;
             serializedNodeData.Add(serializationData);
             
             foreach (var port in ports)

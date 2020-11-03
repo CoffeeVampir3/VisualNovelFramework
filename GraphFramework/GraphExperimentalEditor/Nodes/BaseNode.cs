@@ -2,6 +2,7 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.Editor.Serialization;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
@@ -18,10 +19,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// </summary>
         public void Initialize(NodeSerializationData data)
         {
-            LoadNodeData(data.nodeEditorData);
+            LoadNodeData(data);
+            OnNodeCreation();
             SetupBaseNodeUI();
             RebuildPortsFromSerialization(data);
-            OnNodeCreation();
         }
         
         /// <summary>
@@ -30,19 +31,22 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public void Initialize(string initialName)
         {
             GenerateNewNodeData(initialName);
+            OnNodeCreation();
             SetupBaseNodeUI();
             InstantiatePorts();
-            OnNodeCreation();
         }
 
         protected abstract void OnNodeCreation();
 
         protected abstract void InstantiatePorts();
 
-        private void LoadNodeData(NodeEditorData nodeEditorData)
+        private void LoadNodeData(NodeSerializationData serializationData)
         {
-            editorData = ScriptableObject.Instantiate(nodeEditorData);
-            editorData.name = nodeEditorData.name;
+            runtimeData = ScriptableObject.Instantiate(serializationData.nodeRuntimeData);
+            runtimeData.name = serializationData.nodeRuntimeData.name;
+
+            editorData = ScriptableObject.Instantiate(serializationData.nodeEditorData);
+            editorData.name = serializationData.nodeEditorData.name;
             title = editorData.name;
         }
         

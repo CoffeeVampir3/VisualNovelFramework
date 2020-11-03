@@ -27,13 +27,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             }
         }
 
-        private IVisualElementScheduledItem recuringPositionUpdateFunc = null;
+        //Not using geometry change event because it's called too often and causes lag.
         private void UpdateNodePosition()
         {
             editorData.position = GetPosition();
-            if (recuringPositionUpdateFunc == null) 
-                recuringPositionUpdateFunc = schedule.Execute(UpdateNodePosition);
-            
             schedule.Execute(UpdateNodePosition).StartingIn(125);
         }
         

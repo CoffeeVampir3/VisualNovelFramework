@@ -1,5 +1,6 @@
 ﻿using UnityEditor.Experimental.GraphView;
-
+using VisualNovelFramework.GraphFramework.GraphRuntime;
+/*
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {
     public class RootNode : BaseNode
@@ -16,3 +17,4 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
     }
 }
+*/

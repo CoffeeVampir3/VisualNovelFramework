@@ -13,9 +13,14 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         #region Node UI Construction
 
+        protected virtual VisualElement CreateNodeGUI()
+        {
+            return CreateEditorFromNodeData();
+        }
+
         private VisualElement CreateEditorFromNodeData()
         {
-            SerializedObject soEditor = new UnityEditor.SerializedObject(editorData);
+            SerializedObject soEditor = new UnityEditor.SerializedObject(runtimeData);
             var container = new VisualElement();
             
             var it = soEditor.GetIterator();
@@ -44,21 +49,21 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
             return container;
         }
-        
-        protected void SetupBaseNodeUI()
+
+        private void SetupBaseNodeUI()
         {
             //Add port containers
             inputContainer.Add(inputPortsContainer);
             outputContainer.Add(outputPortsContainer);
             
             //Add inline data editor
-            outputContainer.Add(CreateEditorFromNodeData());
+            outputContainer.Add(CreateNodeGUI());
 
             SetPosition(editorData.position);
             Repaint();
         }
 
-        protected void Repaint()
+        private void Repaint()
         {
             RefreshExpandedState();
             RefreshPorts();

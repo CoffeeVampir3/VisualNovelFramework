@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
@@ -9,5 +10,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
         [SerializeField] 
         public NodeEditorData nodeEditorData;
+        [SerializeField]
+        public NodeRuntimeData nodeRuntimeData;
     }
 }

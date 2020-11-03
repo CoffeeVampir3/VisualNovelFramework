@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
@@ -12,16 +13,23 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         private void CreateSerializedNodeAsset(NodeSerializationData serializedNode)
         {
             //Copy data.
-            NodeEditorData editorDataCopy = Instantiate(serializedNode.nodeEditorData);
             NodeSerializationData serializationCopy = Instantiate(serializedNode);
+            NodeEditorData editorDataCopy = Instantiate(serializedNode.nodeEditorData);
+            NodeRuntimeData runtimeDataCopy = Instantiate(serializedNode.nodeRuntimeData);
+            
+            //Rename data
             editorDataCopy.name = serializedNode.nodeEditorData.name;
             serializationCopy.nodeEditorData = editorDataCopy;
             serializationCopy.name = "S_" + editorDataCopy.name;
+            serializationCopy.nodeRuntimeData = runtimeDataCopy;
+            runtimeDataCopy.name = "R_" + editorDataCopy.name;
             
             AssetDatabase.AddObjectToAsset(serializationCopy, this);
             AssetDatabase.AddObjectToAsset(serializationCopy.nodeEditorData, this);
+            AssetDatabase.AddObjectToAsset(serializationCopy.nodeRuntimeData, this);
             EditorUtility.SetDirty(serializationCopy);
             EditorUtility.SetDirty(serializationCopy.nodeEditorData);
+            EditorUtility.SetDirty(serializationCopy.nodeRuntimeData);
         }
         
         public void WriteSerializedNode(NodeSerializationData serializedNode)
