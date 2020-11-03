@@ -9,6 +9,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     public abstract partial class BaseNode : Node
     {
         public NodeEditorData editorData;
+        public NodeRuntimeData runtimeData;
 
         #region Node Data Handling
         
