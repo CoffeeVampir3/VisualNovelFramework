@@ -2,15 +2,15 @@
     <ui:Template name="DynamicLabelWithIcon" src="/Assets/VisualNovelFramework/EditorOnly/UIEUtilities/Elements/DynamicLabelWithIcon.uxml" />
     <Style src="CharacterImageStyle.uss" />
     <uie:Toolbar>
-        <uie:ToolbarMenu display-tooltip-when-elided="True" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgb(49, 49, 49); border-right-color: rgb(49, 49, 49); border-top-color: rgb(49, 49, 49); border-bottom-color: rgb(49, 49, 49); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
+        <uie:ToolbarMenu display-tooltip-when-elided="true" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgb(49, 49, 49); border-right-color: rgb(49, 49, 49); border-top-color: rgb(49, 49, 49); border-bottom-color: rgb(49, 49, 49); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
         <uie:ObjectField label="Character:" name="characterSelector" style="height: auto; justify-content: flex-start; align-items: stretch; -unity-text-align: upper-left; max-width: none; max-height: none; min-width: auto; min-height: auto; flex-direction: row; flex-wrap: nowrap;" />
-        <uie:ToolbarMenu display-tooltip-when-elided="True" text="Outfit Selector" name="outfitDropdown" />
+        <uie:ToolbarMenu display-tooltip-when-elided="true" text="Outfit Selector" name="outfitDropdown" />
     </uie:Toolbar>
     <ui:VisualElement style="flex-direction: row; height: auto; width: auto; flex-grow: 1; flex-basis: 100%; align-items: auto; min-width: 20%;">
         <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: auto; height: auto; padding-left: 0; padding-right: 0; border-right-width: 2px; border-top-width: 2px; border-left-width: 2px; border-bottom-width: 2px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); min-width: 20%;">
             <ui:Instance template="DynamicLabelWithIcon" name="outfitLabel" />
-            <VisualNovelFramework.Elements.Utils.ModularList name="poseList" FoldoutText="Pose" />
-            <VisualNovelFramework.Elements.Utils.ModularList name="layerList" FoldoutText="Layer" />
+            <VisualNovelFramework.Editor.Elements.ModularList name="poseList" FoldoutText="Pose" />
+            <VisualNovelFramework.Editor.Elements.ModularList name="layerList" FoldoutText="Layer" />
             <ui:ListView focusable="true" name="layerImageList" style="flex: 1; align-items: center; justify-content: center;" />
         </ui:VisualElement>
         <ui:VisualElement name="characterDisplayerRoot" style="flex: 3; flex-direction: row; align-items: center; justify-content: center; flex-grow: 4; overflow: hidden; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgb(58, 58, 58); visibility: visible; flex-basis: auto; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); flex-shrink: 1; min-width: 80%; min-height: 100%;">

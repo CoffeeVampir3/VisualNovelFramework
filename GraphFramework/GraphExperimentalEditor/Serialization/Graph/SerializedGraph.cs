@@ -6,7 +6,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
     public class SerializedGraph : ScriptableObject
     {
         //TODO:: Rework temporary debug path.
-        private const string _DEBUG_assetPath = @"Assets/GraphFramework/GraphExperimentalEditor/TestTrashbin/";
+        private const string _DEBUG_assetPath = @"Assets/!TestTrashbin/";
  
         public static string _DEBUG_SAVE_PATH => _DEBUG_assetPath + "debug" + ".asset";
         private void CreateSerializedNodeAsset(NodeSerializationData serializedNode)
@@ -14,10 +14,10 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             //Copy data.
             NodeEditorData editorDataCopy = Instantiate(serializedNode.nodeEditorData);
             NodeSerializationData serializationCopy = Instantiate(serializedNode);
+            editorDataCopy.name = serializedNode.nodeEditorData.name;
             serializationCopy.nodeEditorData = editorDataCopy;
             serializationCopy.name = "S_" + editorDataCopy.name;
-
-            Debug.Log(serializationCopy.name);
+            
             AssetDatabase.AddObjectToAsset(serializationCopy, this);
             AssetDatabase.AddObjectToAsset(serializationCopy.nodeEditorData, this);
             EditorUtility.SetDirty(serializationCopy);

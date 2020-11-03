@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
@@ -17,7 +16,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         
         private static SerializedGraph serializedGraph;
 
-        public static void SerializeGraph(BaseGraphView graphView)
+        public static void SerializeGraph(GraphView graphView)
         {
             outputPortToEdges.Clear();
             serializedNodeData.Clear();
@@ -106,7 +105,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// <summary>
         /// Walks each edge and creates a dictionary of Output Port -> List of Edges
         /// </summary>
-        private static void EnumerateEdges(BaseGraphView graphView)
+        private static void EnumerateEdges(GraphView graphView)
         {
             var edges = graphView.edges.ToList();
             foreach (Edge edge in edges)
@@ -120,7 +119,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             }
         }
 
-        private static void WalkNodes(BaseGraphView graphView)
+        private static void WalkNodes(GraphView graphView)
         {
             var enumerationOfNodes = graphView.nodes.ToList();
             foreach (var node in enumerationOfNodes)

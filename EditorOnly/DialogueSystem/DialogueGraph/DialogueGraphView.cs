@@ -21,13 +21,13 @@ namespace VisualNovelFramework.DialogueGraph
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            base.BuildContextualMenu(evt);
-            
             //We need this so we don't pollute the blackboard menus.
             if (evt.target is GraphView || evt.target is Node)
             {
                 evt.menu.AppendAction("A/Create Node", MenuAddDebugNode);
             }
+            
+            base.BuildContextualMenu(evt);
         }
         
         private void MenuAddDebugNode(DropdownMenuAction act)

@@ -10,42 +10,19 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     {
         public NodeEditorData editorData;
 
-        //TODO::Debugging RT data.
-
         #region Node Data Handling
-
-        private void LoadNodeData(NodeEditorData nodeEditorData)
-        {
-            var copy = ScriptableObject.Instantiate(nodeEditorData);
-            editorData = copy;
-            editorData.name = nodeEditorData.name;
-            title = editorData.name;
-        }
-
-        protected abstract void OnNodeUnserialized();
-
-        protected abstract void OnNodeCreation();
-
+        
         /// <summary>
         /// Deserialization initialization
         /// </summary>
         public void Initialize(NodeSerializationData data)
         {
             LoadNodeData(data.nodeEditorData);
-            OnNodeUnserialized();
+            SetupBaseNodeUI();
             RebuildPortsFromSerialization(data);
+            OnNodeCreation();
         }
-
-        protected void GenerateNewNodeData(string initialName)
-        {
-            editorData = ScriptableObject.CreateInstance<NodeEditorData>();
-            editorData.GUID = Guid.NewGuid().ToString();
-            editorData.name = initialName;
-            editorData.nodeType = new SerializableType(GetType());
-            title = editorData.name;
-        }
-
-        //TODO:: Temporary shit.
+        
         /// <summary>
         /// Initial (new node) creation
         /// </summary>
@@ -53,7 +30,28 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         {
             GenerateNewNodeData(initialName);
             SetupBaseNodeUI();
+            InstantiatePorts();
             OnNodeCreation();
+        }
+
+        protected abstract void OnNodeCreation();
+
+        protected abstract void InstantiatePorts();
+
+        private void LoadNodeData(NodeEditorData nodeEditorData)
+        {
+            editorData = ScriptableObject.Instantiate(nodeEditorData);
+            editorData.name = nodeEditorData.name;
+            title = editorData.name;
+        }
+        
+        private void GenerateNewNodeData(string initialName)
+        {
+            editorData = ScriptableObject.CreateInstance<NodeEditorData>();
+            editorData.GUID = Guid.NewGuid().ToString();
+            editorData.name = initialName;
+            editorData.nodeType = new SerializableType(GetType());
+            title = editorData.name;
         }
 
         #endregion

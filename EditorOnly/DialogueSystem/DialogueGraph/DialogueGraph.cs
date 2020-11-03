@@ -4,12 +4,10 @@ using UnityEngine.UIElements;
 
 namespace VisualNovelFramework.DialogueGraph
 {
-    public class DialogueGraph : EditorWindow
+    public partial class DialogueGraph : EditorWindow
     {
         private DialogueGraphView graphView;
-        private const string assetDir =
-            @"Assets/VisualNovelFramework/EditorOnly/DialogueSystem/DialogueGraph/";
-
+        
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
         {
@@ -21,25 +19,20 @@ namespace VisualNovelFramework.DialogueGraph
 
         private void OnEnable()
         {
-            var tree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                assetDir + "DialogueGraphWindow.uxml");
-
-            var instance = tree.Instantiate();
-            rootVisualElement.Add(instance);
-
-            var flexer = instance.Q<VisualElement>("flexContainer");
-            
             graphView = new DialogueGraphView
             {
                 name = "Coffee Dialogue Graph"
             };
-            flexer.Add(graphView);
             graphView.StretchToParentSize();
+            rootVisualElement.Add(graphView);
+
+            graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
-        private void OnDisable()
+        private void OnGeometryChanged(GeometryChangedEvent e)
         {
-            rootVisualElement.Clear();
+            GenerateToolbar();
+            graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
     }
     

@@ -23,7 +23,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         
         #endregion
         
-        private void InstantiatePorts()
+        protected override void InstantiatePorts()
         {
             var port = InstantiatePort(Orientation.Horizontal, 
                 Direction.Input, Port.Capacity.Single, typeof(int));
@@ -34,18 +34,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             inputPortsContainer.Add(port);
         }
 
-        protected override void OnNodeUnserialized()
-        {
-            SetupBaseNodeUI();
-            var addButton = new Button(DynamicPortTest) {text = "Add Port"};
-            titleButtonContainer.Add(addButton);
-            var removeButton = new Button(DynamicPortRemover) {text = "Remove Port"};
-            titleButtonContainer.Add(removeButton);
-        }
-
         protected override void OnNodeCreation()
         {
-            InstantiatePorts();
             var addButton = new Button(DynamicPortTest) {text = "Add Port"};
             titleButtonContainer.Add(addButton);
             var removeButton = new Button(DynamicPortRemover) {text = "Remove Port"};
