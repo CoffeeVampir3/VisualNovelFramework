@@ -2,7 +2,8 @@
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
-    public class NodeRuntimeData : ScriptableObject
+    public class SerializedGraph : ScriptableObject
     {
+        public RuntimeNode rootNode;
     }
 }

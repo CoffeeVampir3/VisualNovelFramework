@@ -17,7 +17,7 @@ namespace VisualNovelFramework
         [SerializeField] 
         private TMPVertexer vertexManipulator = null;
 
-        private void DisplayString(string tString)
+        public void DisplayString(string tString)
         {
             vertexManipulator.StopShake();
 

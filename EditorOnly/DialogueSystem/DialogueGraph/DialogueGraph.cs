@@ -32,6 +32,7 @@ namespace VisualNovelFramework.DialogueGraph
         private void OnGeometryChanged(GeometryChangedEvent e)
         {
             GenerateToolbar();
+            graphView.OnGeometryResizeInitialization();
             graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
     }

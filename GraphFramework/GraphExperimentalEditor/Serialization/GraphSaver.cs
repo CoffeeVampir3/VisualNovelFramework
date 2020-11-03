@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
+using Sirenix.Utilities;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
     public static class GraphSaver
     {
-        private static readonly Dictionary<Port, List<Edge>> outputPortToEdges = 
-            new Dictionary<Port, List<Edge>>();
         private static readonly List<NodeSerializationData> serializedNodeData = 
             new List<NodeSerializationData>();
         
@@ -18,19 +18,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
         public static void SerializeGraph(GraphView graphView)
         {
-            outputPortToEdges.Clear();
             serializedNodeData.Clear();
-            EnumerateEdges(graphView);
             WalkNodes(graphView);
-
+            
             serializedGraph = FindGraphAsset();
 
+            GraphSerializer.ClearSavedAssets();
             try
             {
                 AssetDatabase.StartAssetEditing();
                 foreach (var nodeData in serializedNodeData)
                 { 
-                    serializedGraph.WriteSerializedNode(nodeData);
+                    GraphSerializer.WriteSerializedNode(serializedGraph, nodeData);
                 }
             }
             finally
@@ -38,45 +37,59 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 AssetDatabase.StopAssetEditing();
             }
             
+            GraphSerializer.FlushRemovedAssets(serializedGraph);
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(serializedGraph));
+            EditorUtility.SetDirty(serializedGraph);
         }
 
         private static SerializedGraph FindGraphAsset()
         {
-            var graph = AssetDatabase.LoadAssetAtPath<SerializedGraph>(SerializedGraph._DEBUG_SAVE_PATH);
+            var graph = AssetDatabase.LoadAssetAtPath<SerializedGraph>(GraphSerializer._DEBUG_SAVE_PATH);
             if (graph == null)
             {
-                return serializedGraph = SerializedGraph.CreateGraphDataAsset();
+                return GraphSerializer.CreateGraphDataAsset();
             }
             
-            graph.FlushSavedAssets();
             return graph;
         }
 
         /// <summary>
         /// Output ports hold the edge information, input ports do not.
         /// </summary>
-        private static SerializedPortData SerializeOutputPort(Port port)
+        private static SerializedPortData SerializeOutputPort(Port port, RuntimeNode runtimeData)
         {
             SerializedPortData serializedPort = new SerializedPortData(port);
-            //If the output port has edges.
-            if (outputPortToEdges.TryGetValue(port, out var gottenEdges))
+            foreach (var edge in port.connections)
             {
-                //Enumerate the edges and serialize them to the output port edge list.
-                foreach (var edge in gottenEdges)
-                {
-                    serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
-                }
+                if(edge.input.node is BaseNode bn)
+                    AddOutputRuntimeLink(runtimeData, bn.runtimeData);
+                serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
             }
 
             return serializedPort;
         }
 
-        private static SerializedPortData SerializeInputPort(Port port)
+        private static SerializedPortData SerializeInputPort(Port port, RuntimeNode runtimeData)
         {
             SerializedPortData serializedPort = new SerializedPortData(port);
+            foreach (var edge in port.connections)
+            {
+                if(edge.output.node is BaseNode bn)
+                    AddInputRuntimeLink(runtimeData, bn.runtimeData);
+            }
+            
             return serializedPort;
+        }
+
+        private static void AddOutputRuntimeLink(RuntimeNode addingTo, RuntimeNode connection)
+        {
+            addingTo.outputConnections.Add(connection);
+        }
+        
+        private static void AddInputRuntimeLink(RuntimeNode addingTo, RuntimeNode connection)
+        {
+            addingTo.inputConnections.Add(connection);
         }
 
         private static void SerializeNode(BaseNode node)
@@ -87,45 +100,32 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 ScriptableObject.CreateInstance<NodeSerializationData>();
             
             serializationData.nodeEditorData = node.editorData;
-            serializationData.nodeRuntimeData = node.runtimeData;
+            serializationData.runtimeNode = node.runtimeData;
             serializedNodeData.Add(serializationData);
             
-            foreach (var port in ports)
+            serializationData.runtimeNode.outputConnections.Clear();
+            serializationData.runtimeNode.inputConnections.Clear();
+
+            foreach(var port in ports)
             {
                 switch (port.direction)
                 {
                     case Direction.Output:
                         serializationData.serializedPorts.
-                            Add(SerializeOutputPort(port));
+                            Add(SerializeOutputPort(port, serializationData.runtimeNode));
                         continue;
                     case Direction.Input:
                         serializationData.serializedPorts.
-                            Add(SerializeInputPort(port));
+                            Add(SerializeInputPort(port, serializationData.runtimeNode));
                         continue;
                 }
             }
         }
 
-        /// <summary>
-        /// Walks each edge and creates a dictionary of Output Port -> List of Edges
-        /// </summary>
-        private static void EnumerateEdges(GraphView graphView)
-        {
-            var edges = graphView.edges.ToList();
-            foreach (Edge edge in edges)
-            {
-                if (!outputPortToEdges.TryGetValue(edge.output, out var listOfEdges))
-                {
-                    listOfEdges = new List<Edge> {edge};
-                    outputPortToEdges.Add(edge.output, listOfEdges);
-                }
-                listOfEdges.Add(edge);
-            }
-        }
-
+        private static List<Node> enumerationOfNodes;
         private static void WalkNodes(GraphView graphView)
         {
-            var enumerationOfNodes = graphView.nodes.ToList();
+            enumerationOfNodes = graphView.nodes.ToList();
             foreach (var node in enumerationOfNodes)
             {
                 SerializeNode(node as BaseNode);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
@@ -34,19 +35,17 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             schedule.Execute(UpdateNodePosition).StartingIn(125);
         }
         
-        private static readonly Type detachEventType = typeof(DetachFromPanelEvent);
-        private static readonly Type attachEventType = typeof(AttachToPanelEvent);
         public override void HandleEvent(EventBase evt)
         {
             //This is called when a node is added to the panel (Instantiation event, basically.)
-            if (evt.GetType() == attachEventType)
+            if (evt is AttachToPanelEvent)
             {
                 //Update our position after a short delay, it will recur automagically.
                 var k = schedule.Execute(UpdateNodePosition);
                 k.StartingIn(400);
             } 
             //This is called when a node is deleted, or "removed" from the panel.
-            else if (evt.GetType() == detachEventType)
+            else if (evt is DetachFromPanelEvent)
             {
                 OnNodeDeleted();
             }

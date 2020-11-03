@@ -20,7 +20,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             guidToNodeDict.Clear();
             edges.Clear();
             
-            var items = AssetDatabase.LoadAllAssetsAtPath(SerializedGraph._DEBUG_SAVE_PATH);
+            var items = AssetDatabase.LoadAllAssetsAtPath(GraphSerializer._DEBUG_SAVE_PATH);
             var serializedNodes = new List<NodeSerializationData>((items.Length/2)+1);
             
             ClearGraph(graphView);

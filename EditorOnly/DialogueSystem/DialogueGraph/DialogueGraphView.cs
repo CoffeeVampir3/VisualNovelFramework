@@ -8,7 +8,9 @@ namespace VisualNovelFramework.DialogueGraph
 {
     public class DialogueGraphView : GraphView
     {
-        #region Window Specific
+        private DialogueRoot rootNode;
+        
+        #region Window Setup
 
         public DialogueGraphView()
         {
@@ -17,6 +19,25 @@ namespace VisualNovelFramework.DialogueGraph
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
+        }
+
+        public void OnGeometryResizeInitialization()
+        {
+            SpawnRootNode();
+        }
+        
+        private void SpawnRootNode()
+        {
+            rootNode = new DialogueRoot();
+            var width = worldBound.width;
+            var height = worldBound.height;
+            
+            var spawnWidth = (width - 150) / 5;
+            var spawnHeight = (height - 75) / 2;
+            
+            rootNode.Initialize("Root Node");
+            rootNode.SetPosition(new Rect(spawnWidth, spawnHeight, 150, 150));
+            AddElement(rootNode); 
         }
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -29,7 +50,7 @@ namespace VisualNovelFramework.DialogueGraph
             
             base.BuildContextualMenu(evt);
         }
-        
+
         private void MenuAddDebugNode(DropdownMenuAction act)
         {
             var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
@@ -42,6 +63,23 @@ namespace VisualNovelFramework.DialogueGraph
             AddElement(node);
         }
 
+        #endregion
+        
+        #region Events
+        
+        public override void HandleEvent(EventBase evt)
+        {
+            //Prevents the root node from being copied/deleted/weird shit
+            if (evt is ExecuteCommandEvent)
+            {
+                if (this.selection.Contains(rootNode))
+                {
+                    this.selection.Remove(rootNode);
+                }
+            }
+            base.HandleEvent(evt);
+        }
+        
         #endregion
 
         #region Literal Garbage

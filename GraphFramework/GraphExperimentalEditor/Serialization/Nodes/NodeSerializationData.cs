@@ -11,6 +11,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         public NodeEditorData nodeEditorData;
         [SerializeField]
-        public NodeRuntimeData nodeRuntimeData;
+        public RuntimeNode runtimeNode;
     }
 }
