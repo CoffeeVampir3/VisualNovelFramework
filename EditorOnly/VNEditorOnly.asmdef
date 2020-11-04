@@ -2,7 +2,8 @@
     "name": "VNEditorOnly",
     "rootNamespace": "",
     "references": [
-        "GUID:1353bbf99270a6d4aa255b299ef7e232"
+        "GUID:1353bbf99270a6d4aa255b299ef7e232",
+        "GUID:650f5d7751bbedc4597324ed0871ceac"
     ],
     "includePlatforms": [
         "Editor"

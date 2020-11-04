@@ -10,6 +10,7 @@ namespace VisualNovelFramework.Editor.Elements
         {
             style.alignContent = new StyleEnum<Align>(Align.Center);
             style.justifyContent = new StyleEnum<Justify>(Justify.Center);
+            style.position = new StyleEnum<Position>(Position.Absolute);
         }
 
         private void DisplayOutfitLayer(CharacterOutfit outfit, CharacterLayer layer, bool resize, float targetSize)

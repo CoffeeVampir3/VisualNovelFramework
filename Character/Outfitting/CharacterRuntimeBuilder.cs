@@ -4,6 +4,7 @@ using Sirenix.Utilities;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.VNCharacter
 {
@@ -12,6 +13,9 @@ namespace VisualNovelFramework.VNCharacter
         public Character character;
         public CharacterOutfit targetOutfit;
         public List<RawImage> layerImages;
+        
+        public SceneAction action;
+        public Canvas canvas;
 
         [Button]
         public void TestDisplayOutfit()
@@ -33,8 +37,20 @@ namespace VisualNovelFramework.VNCharacter
 
         private void DisplayOutfit(CharacterOutfit co)
         {
+            layerImages.Clear();
+            
             var outfitLayers = co.GetOutfitLayers();
             outfitLayers.ForEach( e => DisplayOutfitLayer(co, e));
+
+            RectTransform rt = transform as RectTransform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            transform.localScale = action.transform.scale;
+            
+            rt.anchoredPosition = action.transform.GetScreenPositionUnity(1920, 1080);
+
+            Debug.Log(action.transform.anchorPosition);
+            Debug.Log(rt.anchoredPosition);
         }
 
         private void DisplayOutfitLayer(CharacterOutfit co, CharacterLayer cl)

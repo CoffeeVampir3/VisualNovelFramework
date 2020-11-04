@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="/Assets/VisualNovelFramework/EditorOnly/Outfitter/CharacterImageStyle.uss" />
+    <uie:Toolbar>
+        <ui:Button text="save" display-tooltip-when-elided="True" name="testButton" />
+    </uie:Toolbar>
+    <ui:VisualElement name="background" style="background-image: url(&apos;/Assets/VisualNovelFramework/Settings/Preview Scene Texture.asset&apos;); flex-grow: 1;" />
+</ui:UXML>
