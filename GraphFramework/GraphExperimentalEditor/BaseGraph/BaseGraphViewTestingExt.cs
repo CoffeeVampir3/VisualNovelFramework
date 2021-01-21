@@ -16,7 +16,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             //We need this so we don't pollute the blackboard menus.
             if (evt.target is GraphView || evt.target is Node)
             {
-                evt.menu.AppendAction("A/Create Node", MenuAddDebugNode);
+                evt.menu.AppendAction("A/Create Noad", MenuAddDebugNode);
             }
         }
 

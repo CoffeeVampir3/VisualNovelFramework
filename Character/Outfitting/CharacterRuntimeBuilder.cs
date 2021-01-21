@@ -43,14 +43,7 @@ namespace VisualNovelFramework.VNCharacter
             outfitLayers.ForEach( e => DisplayOutfitLayer(co, e));
 
             RectTransform rt = transform as RectTransform;
-            rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
             transform.localScale = action.transform.scale;
-            
-            rt.anchoredPosition = action.transform.GetScreenPositionUnity(1920, 1080);
-
-            Debug.Log(action.transform.anchorPosition);
-            Debug.Log(rt.anchoredPosition);
         }
 
         private void DisplayOutfitLayer(CharacterOutfit co, CharacterLayer cl)
@@ -67,8 +60,8 @@ namespace VisualNovelFramework.VNCharacter
             layerImages.Add(raw);
             raw.rectTransform.sizeDelta =
                 new Vector2(
-                    300,
-                    300 * character.compositor.layerAspectRatio);
+                    512,
+                    512 * character.compositor.layerAspectRatio);
             raw.texture = tex;
         }
 

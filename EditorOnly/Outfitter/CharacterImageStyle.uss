@@ -4,3 +4,12 @@
     -unity-background-scale-mode: scale-to-fit;
     width: initial;
 }
+
+.absoluteLayerImage {
+    background-image: url('/Assets/VisualNovelFramework/Settings/Preview Scene Texture.asset');
+    flex-grow: 0;
+    flex-shrink: 1;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}

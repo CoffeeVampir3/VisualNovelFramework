@@ -22,11 +22,12 @@ namespace VisualNovelFramework.Editor.Elements
             foreach (var item in currentLayerItems)
             {
                 var img = new Image {image = item};
-
-                float newHeight = item.height;
+                
                 var resizeRatio = 1f;
                 if (resize) resizeRatio = targetSize / item.height;
 
+                style.minHeight = item.height;
+                style.minWidth = item.width;
                 transform.scale = new Vector3(resizeRatio, resizeRatio, 1f);
                 img.AddToClassList("charImgStyle");
                 Add(img);
@@ -36,8 +37,13 @@ namespace VisualNovelFramework.Editor.Elements
         public void DisplayOutfit(CharacterOutfit outfit, bool resize = false, float targetSize = 0f)
         {
             Clear();
-            foreach (var layer in outfit.GetCurrentUtilizedLayers())
-                DisplayOutfitLayer(outfit, layer, resize, targetSize);
+
+            var utilLayers = outfit.GetCurrentUtilizedLayers();
+            if (utilLayers.Count > 0)
+            {
+                foreach (var layer in outfit.GetCurrentUtilizedLayers())
+                    DisplayOutfitLayer(outfit, layer, resize, targetSize);
+            }
         }
     }
 }

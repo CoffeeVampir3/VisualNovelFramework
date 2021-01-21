@@ -1,3 +1,18 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 518d2620ab5b42319dff4358b4c6bbfb
-timeCreated: 1604488939
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ViewDataDictionary: {instanceID: 0}
+  - windowXML: {fileID: 9197481963319205126, guid: 7048c08b727ae7f4890990fef6b6139b, type: 3}
+  - charStyleXML: {fileID: 7433441132597879392, guid: 8e3f5e5aae15f6a438ff48a37f0e35f1, type: 3}
+  - targetCharacter: {fileID: 11400000, guid: 8865b82b45c6f3149a2c2286633f788d, type: 2}
+  - targetOutfit: {fileID: -1173870091096530328, guid: 8865b82b45c6f3149a2c2286633f788d, type: 2}
+  - targetAction: {fileID: 11400000, guid: 5c49612c5a3e3e347a25a56d11542bae, type: 2}
+  - settings: {fileID: 11400000, guid: 06b0244e927fe564c8c1cb4eeaef0206, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

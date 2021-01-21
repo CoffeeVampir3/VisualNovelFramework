@@ -100,7 +100,7 @@ namespace VisualNovelFramework.DialogueGraph
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             var compPorts = new List<Port>();
-            
+
             ports.ForEach(port =>
             {
                 if (startPort != port && startPort.node != port.node)

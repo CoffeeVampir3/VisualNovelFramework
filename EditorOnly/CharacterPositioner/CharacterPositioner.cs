@@ -8,15 +8,24 @@ using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.VNCharacter;
 using ContentDragger = VisualNovelFramework.Editor.Outfitter.ContentDragger;
+using Debug = UnityEngine.Debug;
 
 namespace VisualNovelFramework.EditorOnly.CharacterPositioner
 {
     public class CharacterPositioner : EditorWindow
     {
-        private const string windowXMLPath =
-            "Assets/VisualNovelFramework/EditorOnly/CharacterPositioner/CharacterPositioner.uxml";
-
-        private const string charStyleXML = "Assets/VisualNovelFramework/EditorOnly/Outfitter/CharacterImageStyle.uss";
+        [SerializeField]
+        private VisualTreeAsset windowXML;
+        [SerializeField] 
+        private StyleSheet charStyleXML;
+        [SerializeField]
+        public Character targetCharacter;
+        [SerializeField] 
+        public CharacterOutfit targetOutfit;
+        [SerializeField] 
+        public SceneAction targetAction;
+        [SerializeField] 
+        private VNGlobalSettings settings;
         
         [MenuItem("VNFramework/CharacterPositioner")]
         private static void ShowWindow()
@@ -26,29 +35,18 @@ namespace VisualNovelFramework.EditorOnly.CharacterPositioner
         }
 
         private OutfitPreviewer outfitPreviewer;
-        private void TestSetup()
+        private void InitializeSetup()
         {
-            var m = CoffeeAssetDatabase.FindAssetsOfType<Character>();
-            if (m.Count == 0)
-                return;
-
-            var testChar = m[0];
-            var testOutfit = testChar.outfits[0];
-            
             outfitPreviewer = new OutfitPreviewer();
-
-            outfitPreviewer.style.minWidth = rootVisualElement.layout.width;
-            outfitPreviewer.style.minHeight = rootVisualElement.layout.height;
-
-            var style = AssetDatabase.LoadAssetAtPath<StyleSheet>(charStyleXML);
-            outfitPreviewer.styleSheets.Add(style);
+            outfitPreviewer.styleSheets.Add(charStyleXML);
             
-            outfitPreviewer.DisplayOutfit(testOutfit);
+            outfitPreviewer.DisplayOutfit(targetOutfit);
             outfitPreviewer.AddManipulator(new MouseWheelResizer(outfitPreviewer));
             outfitPreviewer.AddManipulator(new ContentDragger());
 
-            rootVisualElement.Add(outfitPreviewer);
-            
+            var cl = rootVisualElement.Q<VisualElement>("characterLayer");
+            cl.Add(outfitPreviewer);
+
             outfitPreviewer.RegisterCallback<GeometryChangedEvent>(OnPreviewerGeo);
         }
 
@@ -61,40 +59,68 @@ namespace VisualNovelFramework.EditorOnly.CharacterPositioner
 
         private void OnClick()
         {
-            var m = CoffeeAssetDatabase.FindAssetsOfType<SceneAction>();
-            if (m.Count == 0)
-                return;
+            curWindowWidth = rootVisualElement.parent.layout.width;
+            curWindowHeight = rootVisualElement.parent.layout.height;
 
-            float anchorX = rootVisualElement.parent.layout.width;
-            float anchorY = rootVisualElement.parent.layout.height;
-            float posPointX = outfitPreviewer.transform.position.x / anchorX;
-            float posPointY = outfitPreviewer.transform.position.y / anchorY;
+            var currentPos = outfitPreviewer.transform.position;
+
+            float posPointX = (currentPos.x) / curWindowWidth;
+            float posPointY = (currentPos.y) / curWindowHeight;
+
+            targetAction.transform.position = new Vector2(posPointX, posPointY);
+            targetAction.transform.scale = targetAction.transform.ScaleFromWindow(
+                outfitPreviewer.transform.scale, 
+                curWindowWidth, curWindowHeight,
+                settings.targetResolution.x, 
+                settings.targetResolution.y);
+        }
+
+        private float curWindowWidth;
+        private float curWindowHeight;
+        /// <summary>
+        /// Rescales the outfit previewers
+        /// </summary>
+        private void OnWindowResize(GeometryChangedEvent geo)
+        {
+            var oldPos = outfitPreviewer.transform.position;
+            float posPointX = (oldPos.x) / curWindowWidth;
+            float posPointY = (oldPos.y) / curWindowHeight;
             
-            m[0].transform.anchorPosition = new Vector2(posPointX, posPointY);
-            m[0].transform.scale = outfitPreviewer.transform.scale;
+            curWindowWidth = rootVisualElement.parent.layout.width;
+            curWindowHeight = rootVisualElement.parent.layout.height;
+            
+            Vector3 scale = targetAction.transform.ScaleToWindow(
+                curWindowWidth, curWindowHeight, 
+                settings.targetResolution.x, 
+                settings.targetResolution.y);
+
+            outfitPreviewer.transform.scale = scale;
+            
+            var newPos = new Vector3(posPointX * curWindowWidth, posPointY * curWindowHeight);
+            outfitPreviewer.transform.position = newPos;
         }
 
         private void OnPreviewerGeo(GeometryChangedEvent geoChange)
         {
-            var m = CoffeeAssetDatabase.FindAssetsOfType<SceneAction>();
-            if (m.Count == 0)
-                return;
+            curWindowWidth = rootVisualElement.parent.layout.width;
+            curWindowHeight = rootVisualElement.parent.layout.height;
             
-            float anchorX = rootVisualElement.parent.layout.width;
-            float anchorY = rootVisualElement.parent.layout.height;
-            outfitPreviewer.transform.position = m[0].transform.
-                GetScreenPositionUIE(anchorX, anchorY);
-            outfitPreviewer.transform.scale = m[0].transform.scale;
+            Vector3 scale = targetAction.transform.ScaleToWindow(
+                curWindowWidth, curWindowHeight, 
+                settings.targetResolution.x, 
+                settings.targetResolution.y);
+
+            outfitPreviewer.transform.position = targetAction.transform.
+                GetScreenPositionUIE(curWindowWidth, curWindowHeight);
+            outfitPreviewer.transform.scale = scale;
             
             outfitPreviewer.UnregisterCallback<GeometryChangedEvent>(OnPreviewerGeo);
         }
 
         private void OnInitializationGeo(GeometryChangedEvent geoChange)
         {
-            var visualTree =
-                AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(windowXMLPath);
-            VisualElement tree = visualTree.Instantiate();
-            rootVisualElement.Add(tree);
+            windowXML.Instantiate();
+            rootVisualElement.Add(windowXML.Instantiate());
             
             var templateContainer = rootVisualElement.Children().FirstOrDefault();
             Debug.Assert(templateContainer != null, nameof(templateContainer) + " != null");
@@ -103,9 +129,11 @@ namespace VisualNovelFramework.EditorOnly.CharacterPositioner
             templateContainer.style.flexBasis = new StyleLength(100f);
         
             SetupDebugSaveButton();
-            TestSetup();
+            InitializeSetup();
             
             rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnInitializationGeo);
+            
+            rootVisualElement.RegisterCallback<GeometryChangedEvent>(OnWindowResize);
         }
 
         private void OnEnable()

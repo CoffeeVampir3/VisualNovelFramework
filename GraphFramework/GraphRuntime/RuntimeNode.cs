@@ -9,5 +9,12 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
         public List<RuntimeNode> outputConnections = new List<RuntimeNode>();
         [SerializeField, HideInInspector]
         public List<RuntimeNode> inputConnections = new List<RuntimeNode>();
+
+        public virtual RuntimeNode GetNextNode()
+        {
+            
+            
+            return null;
+        }
     }
 }
