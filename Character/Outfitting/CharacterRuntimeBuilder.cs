@@ -55,7 +55,7 @@ namespace VisualNovelFramework.VNCharacter
         private void DisplayOutfitTextures(CharacterLayer layer, Texture2D tex)
         {
             var go = CreateEmptyGO();
-            go.name = ObjectNames.NicifyVariableName(layer.name);
+            go.name = layer.name;
             var raw = go.AddComponent<RawImage>();
             layerImages.Add(raw);
             raw.rectTransform.sizeDelta =
