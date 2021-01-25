@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
-namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
+namespace VisualNovelFramework.DialogueSystem.Nodes
 {
     public class RuntimeDialogueNode : RuntimeNode
     {

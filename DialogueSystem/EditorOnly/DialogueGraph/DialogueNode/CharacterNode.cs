@@ -1,4 +1,5 @@
 ﻿using UnityEditor.Experimental.GraphView;
+using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes

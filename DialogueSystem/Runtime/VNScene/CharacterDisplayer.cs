@@ -2,17 +2,17 @@
 using UnityEngine.UIElements;
 using VisualNovelFramework.VNCharacter;
 
-namespace VisualNovelFramework.Editor.Elements
+namespace VisualNovelFramework.DialogueSystem.VNScene
 {
-    public class OutfitPreviewer : VisualElement
+    public class CharacterDisplayer : VisualElement
     {
-        public OutfitPreviewer()
+        public CharacterDisplayer()
         {
             style.alignContent = new StyleEnum<Align>(Align.Center);
             style.justifyContent = new StyleEnum<Justify>(Justify.Center);
             style.position = new StyleEnum<Position>(Position.Absolute);
         }
-
+        
         private void DisplayOutfitLayer(CharacterOutfit outfit, CharacterLayer layer, bool resize, float targetSize)
         {
             var currentLayerItems = outfit.GetLayerIfNotEmpty(layer);
@@ -29,13 +29,12 @@ namespace VisualNovelFramework.Editor.Elements
                 style.minHeight = item.height;
                 style.minWidth = item.width;
                 transform.scale = new Vector3(resizeRatio, resizeRatio, 1f);
-                
                 //from CharacterImageStyle.css
                 img.AddToClassList("charImgStyle");
                 Add(img);
             }
         }
-
+        
         public void DisplayOutfit(CharacterOutfit outfit, bool resize = false, float targetSize = 0f)
         {
             Clear();
