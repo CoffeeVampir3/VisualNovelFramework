@@ -1,5 +1,5 @@
 {
-    "name": "DialogueSystem",
+    "name": "DialogueSystemEditor",
     "rootNamespace": "",
     "references": [
         "GUID:b21648eec87e1be4580b847a2999e252",
