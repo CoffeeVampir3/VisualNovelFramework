@@ -78,6 +78,27 @@ namespace VisualNovelFramework.EditorExtensions
             return savePath;
         }
 
+        public static T SaveOverwrite<T>(T original) where T : ScriptableObject, HasCoffeeGUID
+        {
+            var existing = FindAssetWithCoffeeGUID<T>(original.GetCoffeeGUID());
+            string path = "";
+            if (existing != null)
+            {
+                path = AssetDatabase.GetAssetPath(existing);
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(existing));
+                AssetDatabase.SaveAssets();
+            }
+            else
+            {
+                var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
+                path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
+            }
+            
+            AssetDatabase.CreateAsset(original, path);
+            AssetDatabase.SaveAssets();
+            return original;
+        }
+
         /// <summary>
         ///     Clones the original object, if the GUID already exists in an existing asset it will
         ///     create the as an asset with a new unique GUID, otherwise it will serialize as the

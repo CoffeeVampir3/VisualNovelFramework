@@ -1,57 +1,50 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.DialogueSystem.VNScene;
-using VisualNovelFramework.GraphFramework.GraphRuntime;
+using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.VNCharacter;
 
 public class CharacterPositionerWindow : EditorWindow
 {
     [SerializeField]
-    private CharacterOutfit testOutfit;
-    [SerializeField]
-    private SerializedGraph testGraph;
+    private RuntimeCharacterNode rtCharNode;
 
-    private RuntimeNode currentNode = null;
-    
     [MenuItem("VNFramework/Test Window")]
     private static void ShowWindow()
     {
         var wnd = GetWindow<CharacterPositionerWindow>();
         wnd.titleContent = new GUIContent("Tester Window");
     }
-    
-    public RuntimeNode WalkGraphNextNode()
-    {
-        if (currentNode == null)
-        {
-            currentNode = testGraph.rootNode;
-        }
 
-        currentNode = currentNode.outputConnections.FirstOrDefault();
-        return currentNode;
+    private void LoadCharacterNode()
+    {
+        var character = rtCharNode.swag;
+        
+        CharacterDisplayer cd = new CharacterDisplayer();
+        cd.DisplayOutfit(rtCharNode.outfit);
+
+        templateContainer.Q<VisualElement>("sceneContainer").Add(cd);
+        cd.SendToBack();
+        cd.RegisterCallback<GeometryChangedEvent>(Reposition);
     }
 
-    private List<CharacterDisplayer> displayers = new List<CharacterDisplayer>();
-    public void ProcessNode(RuntimeNode node)
+    private void Reposition(GeometryChangedEvent geoChange)
     {
-        if (node is RuntimeCharacterNode charNode)
-        {
-            CharacterDisplayer cd = new CharacterDisplayer(); 
-            Debug.Log(templateContainer.name);
-            cd.DisplayOutfit(charNode.outfit);
-            templateContainer.Q<VisualElement>("sceneContainer").Add(cd);
-            cd.SendToBack();
-            
-            cd.AddManipulator(new CharacterDragManipulator());
-            cd.AddManipulator(new CharacterWheelResizer(cd));
+        var cd = geoChange.currentTarget as CharacterDisplayer;
+        var sceneCont = templateContainer.Q<VisualElement>("sceneContainer");
+        var width = sceneCont.layout.width;
+        var height = sceneCont.layout.height;
 
-            displayers.Add(cd);
-        }
+        var posX = rtCharNode.spawnPosition.x * width;
+        var posY = rtCharNode.spawnPosition.y * height;
+
+        cd.transform.position = new Vector2(posX, posY);
+        cd.AddManipulator(new CharacterDragManipulator());
+        cd.AddManipulator(new CharacterWheelResizer(cd));
     }
 
     private VisualElement templateContainer;
@@ -67,36 +60,11 @@ public class CharacterPositionerWindow : EditorWindow
         templateContainer.style.flexShrink = 1;
         templateContainer.style.flexBasis = new StyleLength(100f);
 
-        WalkGraphNextNode();
-        ProcessNode(currentNode);
-        WalkGraphNextNode();
-        ProcessNode(currentNode);
-        
         var btn = rootVisualElement.Q<ToolbarButton>("dbgBtn");
 
-        btn.clicked += DebugObjectStates;
+        LoadCharacterNode();
 
         rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnInitializationGeo);
-    }
-
-    public void DebugObjectStates()
-    {
-        foreach (var disp in displayers)
-        {
-            var sceneCont = templateContainer.Q<VisualElement>("sceneContainer");
-
-            var width = sceneCont.layout.width;
-            var height = sceneCont.layout.height;
-
-            var posX = disp.transform.position.x / width;
-            var posY = disp.transform.position.y / height;
-            
-            Debug.Log("Character:");
-            Debug.Log(posX + " , " +  posY);
-            Debug.Log(disp.transform.scale);
-
-            disp.transform.position = new Vector2(width * .5f, height * .5f);
-        }
     }
 
     public void OnEnable()
