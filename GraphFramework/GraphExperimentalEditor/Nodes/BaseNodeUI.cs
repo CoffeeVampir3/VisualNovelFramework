@@ -10,6 +10,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     {
         protected readonly VisualElement outputPortsContainer = new VisualElement();
         protected readonly VisualElement inputPortsContainer = new VisualElement();
+        public SerializedObject serializedNode = null; //Allows us to write the runtime data correctly in the graph serializer.
 
         #region Node UI Construction
 
@@ -17,13 +18,13 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         {
             return CreateEditorFromNodeData();
         }
-
+        
         private VisualElement CreateEditorFromNodeData()
         {
-            SerializedObject soEditor = new UnityEditor.SerializedObject(runtimeData);
+            serializedNode = new SerializedObject(runtimeData);
             var container = new VisualElement();
             
-            var it = soEditor.GetIterator();
+            var it = serializedNode.GetIterator();
             if (!it.NextVisible(true)) 
                 return container;
             
@@ -34,10 +35,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                     { name = "PropertyField:" + it.propertyPath };
 
                 //Bind the property so we can edit the values.
-                propertyField.Bind(soEditor);
+                propertyField.Bind(serializedNode);
                     
                 //This ignores the label name field, it's ugly.
-                if (it.propertyPath == "m_Script" && soEditor.targetObject != null)
+                if (it.propertyPath == "m_Script" && serializedNode.targetObject != null)
                 {
                     propertyField.SetEnabled(false);
                     propertyField.visible = false;

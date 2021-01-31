@@ -88,9 +88,12 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             {
                 runtimeData = ScriptableObject.CreateInstance(runtimeType) as RuntimeNode;
             }
-            
+
             editorData.GUID = Guid.NewGuid().ToString();
             editorData.name = initialName;
+            
+            Debug.Assert(runtimeData != null, nameof(runtimeData) + " != null");
+            runtimeData.SetCoffeeGUID(editorData.GUID);
             editorData.nodeType = new SerializableType(GetType());
             title = editorData.name;
         }

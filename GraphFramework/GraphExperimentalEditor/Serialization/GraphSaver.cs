@@ -98,9 +98,16 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
             NodeSerializationData serializationData =
                 ScriptableObject.CreateInstance<NodeSerializationData>();
+
+            //Write any serialized changes.
+            node.serializedNode.ApplyModifiedPropertiesWithoutUndo();
             
             serializationData.nodeEditorData = node.editorData;
+            serializationData.SetCoffeeGUID(node.editorData.GUID);
+            
             serializationData.runtimeNode = node.runtimeData;
+            serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
+            
             serializedNodeData.Add(serializationData);
             
             serializationData.runtimeNode.outputConnections.Clear();

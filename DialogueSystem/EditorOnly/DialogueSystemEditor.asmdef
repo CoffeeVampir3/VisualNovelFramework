@@ -6,7 +6,8 @@
         "GUID:1353bbf99270a6d4aa255b299ef7e232",
         "GUID:6a9648163fa9da749a4516d6e64aba4b",
         "GUID:650f5d7751bbedc4597324ed0871ceac",
-        "GUID:1442e440e81e00d43b5d0a66f4bffafd"
+        "GUID:1442e440e81e00d43b5d0a66f4bffafd",
+        "GUID:d3e99d82168ea5a4799b82f07160e048"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
@@ -12,37 +13,69 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         
         private static List<Object> savedObjects = new List<Object>();
 
+        private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, T objectToCopyFrom) where T : ScriptableObject
+        {
+            SerializedObject copyingAsset = new SerializedObject(objectToCopyFrom);
+            SerializedObject savedAsset = new SerializedObject(objectBeingOverwritten);
+            
+            var it = copyingAsset.GetIterator();
+            if (!it.NextVisible(true)) 
+                return;
+            //Descends through serialized property children & allows us to edit them.
+            do
+            {
+                if (it.propertyPath == "m_Script" && savedAsset.targetObject != null)
+                {
+                    continue;
+                }
+
+                if (it.propertyPath == "nodeEditorData" || it.propertyPath == "runtimeNode")
+                {
+                    continue;
+                }
+
+                savedAsset.CopyFromSerializedProperty(it);
+            }
+            while (it.NextVisible(false));
+
+            savedAsset.ApplyModifiedProperties();
+            EditorUtility.SetDirty(objectBeingOverwritten);
+        }
+
+        private static T SaveAssetToGraph<T>(T item, string GUID, SerializedGraph graph) where T : ScriptableObject, HasCoffeeGUID
+        {
+            T savedToDiskAsset = CoffeeAssetDatabase.FindAssetWithCoffeeGUID<T>(GUID);
+            if (savedToDiskAsset == null)
+            {
+                savedToDiskAsset = item;
+                AssetDatabase.AddObjectToAsset(item, graph);
+            }
+            else
+            {
+                OverwriteScriptableObject(savedToDiskAsset, item);
+            }
+
+            return savedToDiskAsset;
+        }
+
         public static string _DEBUG_SAVE_PATH => _DEBUG_assetPath + "debug" + ".asset";
         /// <summary>
         /// Serializes the nodes
         /// </summary>
         private static void CreateSerializedNodeAsset(SerializedGraph graph, NodeSerializationData serializedNode)
         {
-            if (serializedNode.nodeEditorData.name.ToLower() == "root node") 
+            if (graph.rootNode == null && 
+                serializedNode.nodeEditorData.name.ToLower() == "root node") 
                 graph.rootNode = serializedNode.runtimeNode;
 
             serializedNode.name = "S_" + serializedNode.nodeEditorData.name;
             serializedNode.runtimeNode.name = "R_" + serializedNode.nodeEditorData.name;
 
-            if (AssetDatabase.GetAssetPath(serializedNode) == "")
-            {
-                AssetDatabase.AddObjectToAsset(serializedNode, graph);
-            }
-            if (AssetDatabase.GetAssetPath(serializedNode.nodeEditorData) == "")
-            {
-                AssetDatabase.AddObjectToAsset(serializedNode.nodeEditorData, graph);
-            }
-            if (AssetDatabase.GetAssetPath(serializedNode.runtimeNode) == "")
-            {
-                AssetDatabase.AddObjectToAsset(serializedNode.runtimeNode, graph);
-            }
-            
-            savedObjects.Add(serializedNode);
-            savedObjects.Add(serializedNode.nodeEditorData);
-            savedObjects.Add(serializedNode.runtimeNode);
-            EditorUtility.SetDirty(serializedNode);
-            EditorUtility.SetDirty(serializedNode.nodeEditorData);
-            EditorUtility.SetDirty(serializedNode.runtimeNode);
+            var nodeGUID = serializedNode.GetCoffeeGUID();
+
+            savedObjects.Add(SaveAssetToGraph(serializedNode, nodeGUID, graph));
+            savedObjects.Add(SaveAssetToGraph(serializedNode.nodeEditorData, nodeGUID, graph));
+            savedObjects.Add(SaveAssetToGraph(serializedNode.runtimeNode, nodeGUID, graph));
         }
 
         public static void WriteSerializedNode(SerializedGraph graph, NodeSerializationData serializedNode)
