@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,7 +8,8 @@ namespace VisualNovelFramework.DialogueGraph
     public partial class DialogueGraph : EditorWindow
     {
         private DialogueGraphView graphView;
-        
+        private string currentGraphGUID = "";
+
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
         {
@@ -25,6 +27,11 @@ namespace VisualNovelFramework.DialogueGraph
             };
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
+
+            if (currentGraphGUID == "")
+            {
+                currentGraphGUID = Guid.NewGuid().ToString();
+            }
 
             graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }

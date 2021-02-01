@@ -12,7 +12,7 @@ namespace VisualNovelFramework.DialogueGraph
             var toolbar = new Toolbar();
             
             var fileName = new TextField("File Name: ");
-            fileName.SetValueWithoutNotify(debugFileName);
+            fileName.SetValueWithoutNotify(currentGraphGUID);
             fileName.MarkDirtyRepaint();
             
             fileName.RegisterValueChangedCallback(

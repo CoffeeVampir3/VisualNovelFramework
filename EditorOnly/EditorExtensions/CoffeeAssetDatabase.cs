@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -56,6 +57,11 @@ namespace VisualNovelFramework.EditorExtensions
             return null;
         }
 
+        public static T GetSerializedAsset<T>(T item) where T : Object, HasCoffeeGUID
+        {
+            return FindAssetWithCoffeeGUID<T>(item.GetCoffeeGUID());
+        }
+
         /// <summary>
         ///     Opens a save-file browser and returns the target save path or empty string on fail.
         /// </summary>
@@ -78,27 +84,6 @@ namespace VisualNovelFramework.EditorExtensions
             return savePath;
         }
 
-        public static T SaveOverwrite<T>(T original) where T : ScriptableObject, HasCoffeeGUID
-        {
-            var existing = FindAssetWithCoffeeGUID<T>(original.GetCoffeeGUID());
-            string path = "";
-            if (existing != null)
-            {
-                path = AssetDatabase.GetAssetPath(existing);
-                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(existing));
-                AssetDatabase.SaveAssets();
-            }
-            else
-            {
-                var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
-                path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
-            }
-            
-            AssetDatabase.CreateAsset(original, path);
-            AssetDatabase.SaveAssets();
-            return original;
-        }
-
         /// <summary>
         ///     Clones the original object, if the GUID already exists in an existing asset it will
         ///     create the as an asset with a new unique GUID, otherwise it will serialize as the
@@ -111,6 +96,16 @@ namespace VisualNovelFramework.EditorExtensions
             if (path == "")
                 return null;
 
+            var existingAsset = GetSerializedAsset(original);
+            if (existingAsset != null)
+            {
+                if (path == AssetDatabase.GetAssetPath(existingAsset))
+                {
+                    CleanAllSubAssets(original);
+                    return original;
+                }
+            }
+
             var clone = ScriptableObject.Instantiate(original);
             clone.name = original.name;
             //Enforces unique GUID.
@@ -122,26 +117,37 @@ namespace VisualNovelFramework.EditorExtensions
             return clone;
         }
 
-        public static T ClonedSaveTo<T>(T original, Object saveTo) where T : ScriptableObject, HasCoffeeGUID
+        /// <summary>
+        ///     Saves an object using the standard save as dialogue.
+        /// </summary>
+        public static T SaveAs<T>(T original) where T : ScriptableObject, HasCoffeeGUID
         {
-            var clone = ScriptableObject.Instantiate(original);
-            clone.name = original.name;
-            //Enforces unique GUID.
-            if (FindAssetWithCoffeeGUID<T>(original.GetCoffeeGUID()) != null)
-                clone.SetCoffeeGUID(Guid.NewGuid().ToString());
-
-            var assetPath = AssetDatabase.GetAssetPath(saveTo);
-            if (assetPath == "")
-            {
-                Debug.LogError("Attempted to save: " + original.name + " to " + saveTo.name +
-                               " but it does not exist.");
+            var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
+            var path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
+            if (path == "")
                 return null;
+            
+            AssetDatabase.CreateAsset(original, path);
+            AssetDatabase.SaveAssets();
+            return original;
+        }
+
+        public static T SaveAsOrOverwriteExisting<T>(T original) where T : ScriptableObject, HasCoffeeGUID
+        {
+            Debug.Log(original.GetCoffeeGUID());
+            if (GetSerializedAsset(original) != null)
+            {
+                return original;
             }
 
-            AssetDatabase.AddObjectToAsset(clone, saveTo);
+            var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
+            var path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
+            if (path == "")
+                return null;
+            
+            AssetDatabase.CreateAsset(original, path);
             AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(assetPath);
-            return clone;
+            return original;
         }
 
         public static T SaveTo<T>(T original, Object saveTo) where T : ScriptableObject, HasCoffeeGUID

@@ -45,13 +45,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
         private static SerializedGraph FindGraphAsset()
         {
-            var graph = AssetDatabase.LoadAssetAtPath<SerializedGraph>(GraphSerializer._DEBUG_SAVE_PATH);
-            if (graph == null)
-            {
-                return GraphSerializer.CreateGraphDataAsset();
-            }
-            
-            return graph;
+            return GraphSerializer.CreateGraphDataAsset();
         }
 
         /// <summary>

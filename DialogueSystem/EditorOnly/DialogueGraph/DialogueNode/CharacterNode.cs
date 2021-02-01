@@ -1,4 +1,7 @@
-﻿using UnityEditor.Experimental.GraphView;
+﻿using UnityEditor;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
@@ -10,7 +13,20 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         
         protected override void OnNodeCreation()
         {
-            //Empty
+            var addButton = new Button(LaunchCharacterPositionerWindowTab) {text = "Position Character"};
+            titleButtonContainer.Add(addButton);
+        }
+
+        private void LaunchCharacterPositionerWindowTab()
+        {
+            var wnd = EditorWindow.GetWindow<CharacterPositionerWindow>();
+            
+            if(runtimeData == null)
+                Debug.Log("Null!");
+            
+            Debug.Log(runtimeData.outfit.name);
+            wnd.rtCharNode = runtimeData;
+            wnd.ShowTab();
         }
         
         protected override void InstantiatePorts()

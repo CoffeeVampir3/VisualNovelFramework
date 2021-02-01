@@ -1,13 +1,20 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using VisualNovelFramework.EditorExtensions;
 
 namespace VisualNovelFramework.VNCharacter
 {
-    public class CharacterCompositor : ScriptableObject
+    public class CharacterCompositor : ScriptableObject, HasCoffeeGUID
     {
+        [SerializeField]
+        public string GUID;
+        [SerializeField]
         public float layerAspectRatio;
+        [SerializeField]
         public List<LayeredPose> layeredPoses = new List<LayeredPose>();
+        [SerializeField]
         public List<CharacterLayer> layers = new List<CharacterLayer>();
+        [SerializeField]
         public List<CharacterPose> poses = new List<CharacterPose>();
 
         public CharacterLayer GetPosedLayer(CharacterLayer cl, CharacterPose cp)
@@ -29,6 +36,16 @@ namespace VisualNovelFramework.VNCharacter
                 }
 
             layeredPoses.Add(LayeredPose.Create(cl, cp, posedLayer));
+        }
+
+        public string GetCoffeeGUID()
+        {
+            return GUID;
+        }
+
+        public void SetCoffeeGUID(string newGUID)
+        {
+            GUID = newGUID;
         }
     }
 }

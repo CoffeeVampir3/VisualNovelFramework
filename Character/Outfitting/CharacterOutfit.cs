@@ -16,14 +16,17 @@ namespace VisualNovelFramework.VNCharacter
     /// Outfits maintain their refs and it's fine to directly ref or access VIA guid.
     public class CharacterOutfit : SerializedScriptableObject, HasCoffeeGUID
     {
-        [OdinSerialize] public Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
+        [SerializeField] 
+        private string outfitGUID;
+        
+        [OdinSerialize] 
+        public Dictionary<CharacterLayer, List<Texture2D>> outfitDictionary =
             new Dictionary<CharacterLayer, List<Texture2D>>();
-
-        [SerializeField] private string outfitGUID;
 
         public CharacterPose outfitPose = null;
 
-        [OdinSerialize] public Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
+        [OdinSerialize] 
+        public Dictionary<CharacterPose, HashSet<CharacterLayer>> poseToUtilized =
             new Dictionary<CharacterPose, HashSet<CharacterLayer>>();
 
         public string GetCoffeeGUID()

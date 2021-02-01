@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
+using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
@@ -42,6 +44,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             EditorUtility.SetDirty(objectBeingOverwritten);
         }
 
+        /// <summary>
+        /// Adds the item to the graph object.
+        /// </summary>
         private static T SaveAssetToGraph<T>(T item, string GUID, SerializedGraph graph) where T : ScriptableObject, HasCoffeeGUID
         {
             T savedToDiskAsset = CoffeeAssetDatabase.FindAssetWithCoffeeGUID<T>(GUID);
@@ -68,12 +73,12 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 serializedNode.nodeEditorData.name.ToLower() == "root node") 
                 graph.rootNode = serializedNode.runtimeNode;
 
-            serializedNode.name = "S_" + serializedNode.nodeEditorData.name;
-            serializedNode.runtimeNode.name = "R_" + serializedNode.nodeEditorData.name;
+            serializedNode.name = "sNodeData_" + serializedNode.nodeEditorData.name;
+            serializedNode.runtimeNode.name = "rtNodeData_" + serializedNode.nodeEditorData.name;
 
             var nodeGUID = serializedNode.GetCoffeeGUID();
 
-            savedObjects.Add(SaveAssetToGraph(serializedNode, nodeGUID, graph));
+            savedObjects.Add(SaveAssetToGraph(serializedNode,nodeGUID, graph));
             savedObjects.Add(SaveAssetToGraph(serializedNode.nodeEditorData, nodeGUID, graph));
             savedObjects.Add(SaveAssetToGraph(serializedNode.runtimeNode, nodeGUID, graph));
         }
@@ -108,10 +113,14 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         {
             var graphData = ScriptableObject.CreateInstance<SerializedGraph>();
             graphData.name = "testGraphData";
-            AssetDatabase.CreateAsset(graphData, _DEBUG_SAVE_PATH);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(graphData));
-            AssetDatabase.Refresh();
+            
+            Debug.Log(graphData.GetCoffeeGUID());
+            if (graphData.GetCoffeeGUID() == null)
+            {
+                graphData.SetCoffeeGUID(Guid.NewGuid().ToString());
+                Debug.Log(graphData.GetCoffeeGUID());
+            }
+            CoffeeAssetDatabase.SaveAsOrOverwriteExisting(graphData);
 
             return graphData;
         }

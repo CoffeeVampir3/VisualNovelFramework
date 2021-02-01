@@ -9,7 +9,7 @@ using VisualNovelFramework.DialogueSystem.VNScene;
 public class CharacterPositionerWindow : EditorWindow
 {
     [SerializeField]
-    private RuntimeCharacterNode rtCharNode;
+    public RuntimeCharacterNode rtCharNode;
     [SerializeField] 
     private VisualTreeAsset positionerWindowXML;
 

@@ -8,7 +8,8 @@ using VisualNovelFramework.VNCharacter;
 namespace VisualNovelFramework.Editor.Serialization
 {
     /// <summary>
-    ///     Full serialization suite for the VN Character
+    ///     Full serialization suite for the VN Character, we're doing this weird shit so we can
+    ///     save as without unity exploding.
     /// </summary>
     public static class CharacterSerializer
     {

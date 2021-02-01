@@ -48,15 +48,26 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void LoadNodeData(NodeSerializationData serializationData)
         {
-            runtimeData = ScriptableObject.Instantiate(serializationData.runtimeNode);
-            runtimeData.name = serializationData.runtimeNode.name;
+            ReflectAndLoadRuntimeData(serializationData);
 
             editorData = ScriptableObject.Instantiate(serializationData.nodeEditorData);
             editorData.name = serializationData.nodeEditorData.name;
             title = editorData.name;
         }
 
-        private Type GetTypeOfChildRuntimeData()
+        private void ReflectAndLoadRuntimeData(NodeSerializationData serializationData)
+        {
+            var runtimeField = GetOverridenRuntimeDataField();
+            runtimeData = ScriptableObject.Instantiate(serializationData.runtimeNode);
+            runtimeData.name = serializationData.runtimeNode.name;
+
+            if (runtimeField == null) 
+                return;
+            
+            runtimeField.SetValue(this, runtimeData);
+        }
+        
+        private FieldInfo GetOverridenRuntimeDataField()
         {
             var k = GetType().
                 GetFields( BindingFlags.CreateInstance |
@@ -68,7 +79,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             {
                 if (typeof(RuntimeNode).IsAssignableFrom(field.FieldType))
                 {
-                    return field.FieldType;
+                    return field;
                 }
             }
 
@@ -78,15 +89,16 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         private void GenerateNewNodeData(string initialName)
         {
             editorData = ScriptableObject.CreateInstance<NodeEditorData>();
-            var runtimeType = GetTypeOfChildRuntimeData();
+            var runtimeField = GetOverridenRuntimeDataField();
             
-            if (runtimeType == null)
+            if (runtimeField == null)
             {
                 runtimeData = ScriptableObject.CreateInstance<RuntimeNode>();
             }
             else
             {
-                runtimeData = ScriptableObject.CreateInstance(runtimeType) as RuntimeNode;
+                runtimeData = ScriptableObject.CreateInstance(runtimeField.FieldType) as RuntimeNode;
+                runtimeField.SetValue(this, runtimeData);
             }
 
             editorData.GUID = Guid.NewGuid().ToString();

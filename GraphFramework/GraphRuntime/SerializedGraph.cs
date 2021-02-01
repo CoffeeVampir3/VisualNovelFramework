@@ -9,7 +9,7 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
         public string GUID;
         [SerializeField]
         public RuntimeNode rootNode;
-        
+
         public string GetCoffeeGUID()
         {
             return GUID;

@@ -59,7 +59,7 @@ namespace VisualNovelFramework.Editor.CharacterBuilder
         {
             if (currentCharacter != null)
             {
-                var c = CharacterSerializer.Serialize(currentCharacter);
+                var c = CharacterSerializer.Serialize(currentCharacter, true);
                 if (c != null)
                     LoadCharacter(c);
             }
