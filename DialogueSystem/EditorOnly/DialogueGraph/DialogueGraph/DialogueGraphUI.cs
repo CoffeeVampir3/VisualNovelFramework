@@ -1,4 +1,5 @@
 ﻿using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Serialization;
 
@@ -7,6 +8,7 @@ namespace VisualNovelFramework.DialogueGraph
     public partial class DialogueGraph
     {
         private string debugFileName = "default";
+        
         private void GenerateToolbar()
         {
             var toolbar = new Toolbar();

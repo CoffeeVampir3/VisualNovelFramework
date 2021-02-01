@@ -1,15 +1,12 @@
-﻿using System;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.GraphFramework.Editor;
 
 namespace VisualNovelFramework.DialogueGraph
 {
-    public partial class DialogueGraph : EditorWindow
+    public partial class DialogueGraph : CoffeeGraph
     {
-        private DialogueGraphView graphView;
-        private string currentGraphGUID = "";
-
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
         {
@@ -19,28 +16,21 @@ namespace VisualNovelFramework.DialogueGraph
             window.Focus();
         }
 
+        [SerializeField]
+        private StyleSheet defautGraphStyle = null;
         private void OnEnable()
         {
-            graphView = new DialogueGraphView
+            graphView = new DialogueGraphView(defautGraphStyle)
             {
                 name = "Coffee Dialogue Graph"
             };
-            graphView.StretchToParentSize();
-            rootVisualElement.Add(graphView);
-
-            if (currentGraphGUID == "")
-            {
-                currentGraphGUID = Guid.NewGuid().ToString();
-            }
-
-            graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            InitializeGraph();
         }
 
-        private void OnGeometryChanged(GeometryChangedEvent e)
+        protected override void OnGraphGUI()
         {
             GenerateToolbar();
-            graphView.OnGeometryResizeInitialization();
-            graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            (graphView as DialogueGraphView).OnGeometryResizeInitialization();
         }
     }
     
