@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEditor.Callbacks;
+using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
@@ -17,6 +18,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.AssetHandl
                 if (graph.GetInstanceID() == instanceID)
                 {
                     var window = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
+                    window.LoadGraph(graph);
+                    window.Show();
                     return true;
                 }
             }

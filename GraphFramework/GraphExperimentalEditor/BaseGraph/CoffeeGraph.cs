@@ -47,15 +47,19 @@ namespace VisualNovelFramework.GraphFramework.Editor
             GraphSaver.SerializeGraph(graphView, currentGraphGUID);
         }
 
-        private void LoadGraphEvent(ChangeEvent<Object> evt)
+        public void LoadGraph(SerializedGraph graph)
         {
-            var graph = evt.newValue as SerializedGraph;
-            Debug.Log(graph.name);
-
             if (GraphLoader.LoadGraph(graphView, graph))
             {
                 currentGraphGUID = graph.GetCoffeeGUID();
             }
+        }
+
+        private void LoadGraphEvent(ChangeEvent<Object> evt)
+        {
+            var graph = evt.newValue as SerializedGraph;
+
+            LoadGraph(graph);
         }
 
         protected void RevertGraphToVersionOnDisk()

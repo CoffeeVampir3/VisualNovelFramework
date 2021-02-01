@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
-using Sirenix.Utilities;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.Editor.Serialization;
@@ -90,11 +88,11 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         {
             var thisType = GetType();
 
-            //This magic deserve some explination:
+            //This magic deserve some explanation:
             //In a declaration like DialogueNode : BaseNode<RuntimeDialogueNode>
             //This code looks at BaseNode<RuntimeDialogueNode>
             //And extracts the type RuntimeDialogueNode
-            var k = thisType.GetArgumentsOfInheritedOpenGenericClass(typeof(BaseNode<>));
+            var k = thisType.GetGenericClassConstructorArguments(typeof(BaseNode<>));
             return k.FirstOrDefault(w => typeof(RuntimeNode).IsAssignableFrom(w));
         }
 
