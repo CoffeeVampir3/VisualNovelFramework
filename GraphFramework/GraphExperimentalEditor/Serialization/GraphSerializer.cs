@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
@@ -10,9 +9,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 {
     public static class GraphSerializer
     {
-                //TODO:: Rework temporary debug path.
-        private const string _DEBUG_assetPath = @"Assets/!TestTrashbin/";
-        
         private static List<Object> savedObjects = new List<Object>();
 
         private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, T objectToCopyFrom) where T : ScriptableObject
@@ -62,8 +58,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
             return savedToDiskAsset;
         }
-
-        public static string _DEBUG_SAVE_PATH => _DEBUG_assetPath + "debug" + ".asset";
+        
         /// <summary>
         /// Serializes the nodes
         /// </summary>
@@ -89,11 +84,11 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         }
 
         /// <summary>
-        /// Removes all previously added assets do we don't get write errors.
+        /// Cleans any deleted items from our graph asset so there's no garbage files piling up.
         /// </summary>
-        public static void FlushRemovedAssets(SerializedGraph graph)
+        public static void CleanDeletedItemsFromGraphAsset(SerializedGraph graph)
         {
-            var assets = AssetDatabase.LoadAllAssetsAtPath(_DEBUG_SAVE_PATH);
+            var assets = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(graph));
             savedObjects.Add(graph);
             foreach (var o in assets)
             {
@@ -104,25 +99,38 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             }
         }
 
+        /// <summary>
+        /// Cleans the saved object cache, call this before writing starts or the cleanup code
+        /// might not clean correctly.
+        /// </summary>
         public static void ClearSavedAssets()
         {
             savedObjects.Clear();
         }
 
-        public static SerializedGraph CreateGraphDataAsset()
+        /// <summary>
+        /// Finds a graph based on the provided GUID or creates one if none exist.
+        /// </summary>
+        public static SerializedGraph FindOrCreateGraphAsset(string currentGraphGUID)
         {
-            var graphData = ScriptableObject.CreateInstance<SerializedGraph>();
-            graphData.name = "testGraphData";
-            
-            Debug.Log(graphData.GetCoffeeGUID());
-            if (graphData.GetCoffeeGUID() == null)
+            var existingGraph =
+                CoffeeAssetDatabase.FindAssetWithCoffeeGUID<SerializedGraph>(currentGraphGUID);
+            if (existingGraph != null)
             {
-                graphData.SetCoffeeGUID(Guid.NewGuid().ToString());
-                Debug.Log(graphData.GetCoffeeGUID());
+                return existingGraph;
             }
-            CoffeeAssetDatabase.SaveAsOrOverwriteExisting(graphData);
 
-            return graphData;
+            var newGraph = ScriptableObject.CreateInstance<SerializedGraph>();
+            newGraph.SetCoffeeGUID(currentGraphGUID);
+            newGraph.name = "testingGraph";
+            var savedGraph = CoffeeAssetDatabase.SaveAs(newGraph);
+            if (savedGraph == null)
+            {
+                Debug.Log("Unable to save graph!");
+                return null;
+            }
+            
+            return savedGraph;
         }
     }
 }

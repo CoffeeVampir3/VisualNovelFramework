@@ -5,7 +5,10 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
@@ -15,12 +18,23 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         private static readonly Dictionary<string, BaseNode> guidToNodeDict = new Dictionary<string, BaseNode>();
         private static readonly List<Edge> edges = new List<Edge>();
         
-        public static void LoadGraph(GraphView graphView)
+        public static bool LoadGraph(GraphView graphView, SerializedGraph graphToLoad)
         {
             guidToNodeDict.Clear();
             edges.Clear();
-            
-            var items = AssetDatabase.LoadAllAssetsAtPath(GraphSerializer._DEBUG_SAVE_PATH);
+
+            UnityEngine.Object[] items;
+            try
+            {
+                items =
+                    AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(graphToLoad));
+            }
+            catch
+            {
+                Debug.LogError("Critical error loading graph asset! Possibly malformed GUID or the asset DB is corrupt.");
+                return false;
+            }
+
             var serializedNodes = new List<NodeSerializationData>((items.Length/2)+1);
             
             ClearGraph(graphView);
@@ -44,6 +58,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             LoadEdges(serializedNodes);
             
             edges.ForEach(graphView.AddElement);
+            return true;
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         
         private VisualElement CreateEditorFromNodeData()
         {
-            serializedNode = new SerializedObject(runtimeData);
+            serializedNode = new SerializedObject(RuntimeData);
             var container = new VisualElement();
             
             var it = serializedNode.GetIterator();

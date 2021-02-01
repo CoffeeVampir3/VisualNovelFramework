@@ -29,7 +29,6 @@ namespace VisualNovelFramework.DialogueGraph
 
         protected override void OnGraphGUI()
         {
-            GenerateToolbar();
             (graphView as DialogueGraphView).OnGeometryResizeInitialization();
         }
     }

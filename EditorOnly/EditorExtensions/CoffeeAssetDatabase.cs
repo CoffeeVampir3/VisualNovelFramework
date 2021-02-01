@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -122,24 +121,6 @@ namespace VisualNovelFramework.EditorExtensions
         /// </summary>
         public static T SaveAs<T>(T original) where T : ScriptableObject, HasCoffeeGUID
         {
-            var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
-            var path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
-            if (path == "")
-                return null;
-            
-            AssetDatabase.CreateAsset(original, path);
-            AssetDatabase.SaveAssets();
-            return original;
-        }
-
-        public static T SaveAsOrOverwriteExisting<T>(T original) where T : ScriptableObject, HasCoffeeGUID
-        {
-            Debug.Log(original.GetCoffeeGUID());
-            if (GetSerializedAsset(original) != null)
-            {
-                return original;
-            }
-
             var prettyTypeName = ObjectNames.NicifyVariableName(typeof(T).Name);
             var path = GetSavePath("Save " + prettyTypeName, original.name, "Saved!");
             if (path == "")

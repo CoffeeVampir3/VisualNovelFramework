@@ -5,11 +5,8 @@ using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    public class DialogueNode : BaseNode
+    public class DialogueNode : BaseNode<RuntimeDialogueNode>
     {
-        //BaseNode uses reflection so we can override the runtimeData type with our own.
-        public new RuntimeDialogueNode runtimeData;
-
         private void DynamicPortTest()
         {
             var port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));

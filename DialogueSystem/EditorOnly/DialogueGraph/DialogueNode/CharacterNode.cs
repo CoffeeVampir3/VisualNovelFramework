@@ -7,10 +7,8 @@ using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    public class CharacterNode : BaseNode
+    public class CharacterNode : BaseNode<RuntimeCharacterNode>
     {
-        public new RuntimeCharacterNode runtimeData;
-        
         protected override void OnNodeCreation()
         {
             var addButton = new Button(LaunchCharacterPositionerWindowTab) {text = "Position Character"};
@@ -21,11 +19,11 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         {
             var wnd = EditorWindow.GetWindow<CharacterPositionerWindow>();
             
-            if(runtimeData == null)
+            if(nodeRuntimeData == null)
                 Debug.Log("Null!");
             
-            Debug.Log(runtimeData.outfit.name);
-            wnd.rtCharNode = runtimeData;
+            Debug.Log(nodeRuntimeData.outfit.name);
+            wnd.rtCharNode = nodeRuntimeData;
             wnd.ShowTab();
         }
         

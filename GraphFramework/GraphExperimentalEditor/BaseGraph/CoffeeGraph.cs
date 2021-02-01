@@ -1,15 +1,20 @@
 ﻿using System;
 using Sirenix.Utilities;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
+using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraph : EditorWindow
     {
         protected CoffeeGraphView graphView;
-        protected string currentGraphGUID;
+        public string currentGraphGUID;
 
         protected void InitializeGraph()
         {
@@ -27,6 +32,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void OnGeometryChanged(GeometryChangedEvent e)
         {
+            GenerateToolbar();
             OnGraphGUI();
             graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
@@ -36,14 +42,76 @@ namespace VisualNovelFramework.GraphFramework.Editor
             rootVisualElement.Clear();
         }
         
-        private void SaveGraph()
+        protected void SaveGraph()
         {
-            GraphSaver.SerializeGraph(graphView);
+            GraphSaver.SerializeGraph(graphView, currentGraphGUID);
         }
 
-        private void LoadGraph()
+        private void LoadGraphEvent(ChangeEvent<Object> evt)
         {
-            GraphLoader.LoadGraph(graphView);
+            var graph = evt.newValue as SerializedGraph;
+            Debug.Log(graph.name);
+
+            if (GraphLoader.LoadGraph(graphView, graph))
+            {
+                currentGraphGUID = graph.GetCoffeeGUID();
+            }
+        }
+
+        protected void RevertGraphToVersionOnDisk()
+        {
+            if (serializedGraphSelector == null)
+                return;
+
+            var currentGraph = serializedGraphSelector.value as SerializedGraph;
+            if (currentGraph == null) 
+                return;
+            
+            if (GraphLoader.LoadGraph(graphView, currentGraph))
+            {
+                currentGraphGUID = currentGraph.GetCoffeeGUID();
+            }
+        }
+
+        protected void DuplicateGraph()
+        {
+            var currentGraph = serializedGraphSelector.value as SerializedGraph;
+            if (currentGraph == null) 
+                return;
+
+            var p = AssetDatabase.GetAssetPath(currentGraph);
+            var nP = p.Replace(".asset", "");
+            nP += "2.asset";
+            AssetDatabase.CopyAsset(p, nP);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(nP);
+
+            var q= AssetDatabase.LoadAllAssetsAtPath(nP);
+
+            foreach (var k in q)
+            {
+                if (k is HasCoffeeGUID cguid)
+                {
+                    cguid.SetCoffeeGUID(Guid.NewGuid().ToString());
+                }
+            }
+        }
+
+        private ObjectField serializedGraphSelector = null;
+        private void GenerateToolbar()
+        {
+            var toolbar = new Toolbar();
+            
+            serializedGraphSelector = new ObjectField {objectType = typeof(SerializedGraph)};
+            serializedGraphSelector.SetValueWithoutNotify(null);
+            serializedGraphSelector.RegisterValueChangedCallback(LoadGraphEvent);
+
+            toolbar.Add(new Button( SaveGraph ) {text = "Save"});
+            toolbar.Add(new Button( DuplicateGraph ) {text = "Duplicate Test"});
+            toolbar.Add(new Button( RevertGraphToVersionOnDisk ) {text = "Revert To Saved Version"});
+
+            toolbar.Add(serializedGraphSelector);
+            rootVisualElement.Add(toolbar);
         }
     }
     

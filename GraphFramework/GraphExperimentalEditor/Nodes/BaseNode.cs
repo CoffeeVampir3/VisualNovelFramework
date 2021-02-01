@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
+using Sirenix.Utilities;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.Editor.Serialization;
@@ -9,14 +11,29 @@ using VisualNovelFramework.GraphFramework.Serialization;
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {
     /// <summary>
-    /// Classes inheriting from BaseNode MUST implement a new runtimeData
-    /// public new NodeRuntimeData runtimeData;
-    /// where NodeRuntimeData can be a class inheriting from it
+    /// This class allows us to easily define the runtime data type but still activate it internally
+    /// using reflection.
+    /// </summary>
+    public abstract class BaseNode<RuntimeNodeType> : BaseNode where RuntimeNodeType : RuntimeNode
+    {
+        public override RuntimeNode RuntimeData
+        {
+            get => nodeRuntimeData;
+            set => nodeRuntimeData = value as RuntimeNodeType;
+        }
+
+        protected RuntimeNodeType nodeRuntimeData;
+    }
+    
+    /// <summary>
+    /// BaseNode is responsible for the very most basic setup and initialization of any deriving nodes.
+    /// This allows us to have a common class we can generate using reflection and an activator,
+    /// allowing us to avoid boilerplate code.
     /// </summary>
     public abstract partial class BaseNode : Node
     {
         public NodeEditorData editorData;
-        public RuntimeNode runtimeData;
+        public abstract RuntimeNode RuntimeData { get; set; }
 
         #region Node Data Handling
         
@@ -42,8 +59,16 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             InstantiatePorts();
         }
 
+        /// <summary>
+        /// This initialization is performed when the node is spawned, before any UI elements
+        /// are generated.
+        /// </summary>
         protected abstract void OnNodeCreation();
 
+        /// <summary>
+        /// This initialization is called after all UI is generated, allowing you to generate ports
+        /// on top of the UI.
+        /// </summary>
         protected abstract void InstantiatePorts();
 
         private void LoadNodeData(NodeSerializationData serializationData)
@@ -57,55 +82,34 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void ReflectAndLoadRuntimeData(NodeSerializationData serializationData)
         {
-            var runtimeField = GetOverridenRuntimeDataField();
-            runtimeData = ScriptableObject.Instantiate(serializationData.runtimeNode);
-            runtimeData.name = serializationData.runtimeNode.name;
-
-            if (runtimeField == null) 
-                return;
-            
-            runtimeField.SetValue(this, runtimeData);
+            RuntimeData = ScriptableObject.Instantiate(serializationData.runtimeNode);
+            RuntimeData.name = serializationData.runtimeNode.name;
         }
-        
-        private FieldInfo GetOverridenRuntimeDataField()
+
+        private System.Type GetGenericRuntimeNodeType()
         {
-            var k = GetType().
-                GetFields( BindingFlags.CreateInstance |
-                           BindingFlags.DeclaredOnly | BindingFlags.IgnoreCase | 
-                           BindingFlags.InvokeMethod | BindingFlags.NonPublic | 
-                           BindingFlags.Instance | BindingFlags.Public);
-            
-            foreach (var field in k)
-            {
-                if (typeof(RuntimeNode).IsAssignableFrom(field.FieldType))
-                {
-                    return field;
-                }
-            }
+            var thisType = GetType();
 
-            return null;
+            //This magic deserve some explination:
+            //In a declaration like DialogueNode : BaseNode<RuntimeDialogueNode>
+            //This code looks at BaseNode<RuntimeDialogueNode>
+            //And extracts the type RuntimeDialogueNode
+            var k = thisType.GetArgumentsOfInheritedOpenGenericClass(typeof(BaseNode<>));
+            return k.FirstOrDefault(w => typeof(RuntimeNode).IsAssignableFrom(w));
         }
-        
+
         private void GenerateNewNodeData(string initialName)
         {
             editorData = ScriptableObject.CreateInstance<NodeEditorData>();
-            var runtimeField = GetOverridenRuntimeDataField();
-            
-            if (runtimeField == null)
-            {
-                runtimeData = ScriptableObject.CreateInstance<RuntimeNode>();
-            }
-            else
-            {
-                runtimeData = ScriptableObject.CreateInstance(runtimeField.FieldType) as RuntimeNode;
-                runtimeField.SetValue(this, runtimeData);
-            }
+
+            var q = GetGenericRuntimeNodeType();
+            RuntimeData = ScriptableObject.CreateInstance(q) as RuntimeNode;
 
             editorData.GUID = Guid.NewGuid().ToString();
             editorData.name = initialName;
             
-            Debug.Assert(runtimeData != null, nameof(runtimeData) + " != null");
-            runtimeData.SetCoffeeGUID(editorData.GUID);
+            Debug.Assert(RuntimeData != null, nameof(RuntimeData) + " != null");
+            RuntimeData.SetCoffeeGUID(editorData.GUID);
             editorData.nodeType = new SerializableType(GetType());
             title = editorData.name;
         }

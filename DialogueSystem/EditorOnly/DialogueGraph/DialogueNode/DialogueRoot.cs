@@ -1,9 +1,10 @@
 ﻿using UnityEditor.Experimental.GraphView;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    public class DialogueRoot : BaseNode
+    public class DialogueRoot : BaseNode<RuntimeNode>
     {
         protected override void OnNodeCreation()
         {

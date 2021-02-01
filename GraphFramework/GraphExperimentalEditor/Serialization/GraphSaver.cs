@@ -16,12 +16,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         
         private static SerializedGraph serializedGraph;
 
-        public static void SerializeGraph(GraphView graphView)
+        public static void SerializeGraph(GraphView graphView, string currentGraphGUID)
         {
             serializedNodeData.Clear();
             WalkNodes(graphView);
             
-            serializedGraph = FindGraphAsset();
+            serializedGraph = GraphSerializer.FindOrCreateGraphAsset(currentGraphGUID);
+
+            if (serializedGraph == null)
+                return;
+            
+            Debug.Log(AssetDatabase.GetAssetPath(serializedGraph));
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(serializedGraph));
 
             GraphSerializer.ClearSavedAssets();
             try
@@ -37,15 +43,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 AssetDatabase.StopAssetEditing();
             }
             
-            GraphSerializer.FlushRemovedAssets(serializedGraph);
+            GraphSerializer.CleanDeletedItemsFromGraphAsset(serializedGraph);
             AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(serializedGraph));
             EditorUtility.SetDirty(serializedGraph);
-        }
-
-        private static SerializedGraph FindGraphAsset()
-        {
-            return GraphSerializer.CreateGraphDataAsset();
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             foreach (var edge in port.connections)
             {
                 if(edge.input.node is BaseNode bn)
-                    AddOutputRuntimeLink(runtimeData, bn.runtimeData);
+                    AddOutputRuntimeLink(runtimeData, bn.RuntimeData);
                 serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
             }
 
@@ -70,7 +70,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             foreach (var edge in port.connections)
             {
                 if(edge.output.node is BaseNode bn)
-                    AddInputRuntimeLink(runtimeData, bn.runtimeData);
+                    AddInputRuntimeLink(runtimeData, bn.RuntimeData);
             }
             
             return serializedPort;
@@ -99,7 +99,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.nodeEditorData = node.editorData;
             serializationData.SetCoffeeGUID(node.editorData.GUID);
             
-            serializationData.runtimeNode = node.runtimeData;
+            serializationData.runtimeNode = node.RuntimeData;
             serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
             
             serializedNodeData.Add(serializationData);
