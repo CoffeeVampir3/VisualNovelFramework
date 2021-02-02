@@ -1,6 +1,5 @@
 ﻿using UnityEditor;
 using UnityEditor.Callbacks;
-using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
