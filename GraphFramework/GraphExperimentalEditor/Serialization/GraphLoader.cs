@@ -54,10 +54,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                     Debug.LogError("Attempted to load an invalid/incorrectly serialized graph node.");
                 }
                 
-                //TODO:: This is not a good solution. Make a more robust way to find root.
-                if(serialData.nodeEditorData.name.ToLower() == "root node")
+                if(node is IRootNode root)
                 {
-                    graphView.rootNode = node;
+                    graphView.rootNode = root as BaseNode;
                 }
             }
 

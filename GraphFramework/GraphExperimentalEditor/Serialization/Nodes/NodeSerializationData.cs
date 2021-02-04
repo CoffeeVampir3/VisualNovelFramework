@@ -7,6 +7,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 {
     public class NodeSerializationData : ScriptableObject, HasCoffeeGUID
     {
+        [SerializeField] 
+        public bool isRoot = false;
         [SerializeField]
         public string GUID;
         [SerializeField] 

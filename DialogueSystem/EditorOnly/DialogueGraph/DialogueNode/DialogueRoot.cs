@@ -4,7 +4,7 @@ using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    public class DialogueRoot : BaseNode<RuntimeNode>
+    public class DialogueRoot : BaseNode<RuntimeNode>, IRootNode
     {
         protected override void OnNodeCreation()
         {

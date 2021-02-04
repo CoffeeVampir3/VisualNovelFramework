@@ -1,7 +1,11 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
@@ -19,15 +23,45 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             return CreateEditorFromNodeData();
         }
         
+        #region Readonly Attribute Handler
+        
+        private readonly Dictionary<string, FieldInfo> nameToReadonlyField
+            = new Dictionary<string,FieldInfo>();
+        private void DisableReadonlyField(SerializedProperty it, PropertyField propertyField)
+        {
+            if (nameToReadonlyField.TryGetValue(it.propertyPath, out _))
+            {
+                propertyField.SetEnabled(false);
+            }
+        }
+
+        private void CacheReadonlyProperties()
+        {
+            nameToReadonlyField.Clear();
+            var fields = RuntimeData.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public
+                                                                               | BindingFlags.NonPublic);
+            
+            foreach (var field in fields)
+            {
+                if (field.GetCustomAttributes<ReadonlyField>().Any())
+                {
+                    nameToReadonlyField.Add(field.Name, field);
+                }
+            }
+        }
+        
+        #endregion
+        
         private VisualElement CreateEditorFromNodeData()
         {
             serializedNode = new SerializedObject(RuntimeData);
             var container = new VisualElement();
-            
+
             var it = serializedNode.GetIterator();
             if (!it.NextVisible(true)) 
                 return container;
-            
+
+            CacheReadonlyProperties();
             //Descends through serialized property children & allows us to edit them.
             do
             {
@@ -43,6 +77,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                     propertyField.SetEnabled(false);
                     propertyField.visible = false;
                 }
+
+                DisableReadonlyField(it, propertyField);
                     
                 container.Add(propertyField);
             }

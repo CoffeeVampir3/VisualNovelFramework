@@ -90,8 +90,8 @@ public class CharacterPositionerWindow : EditorWindow
         var pos = currentlyManipulatedCharacterDisplayer.transform.position;
         
         SerializedObject so = new SerializedObject(rtCharNode);
-        so.FindProperty("spawnPosition").vector2Value = new Vector2(pos.x / width, pos.y / height);
-        so.FindProperty("spawnScale").vector3Value = currentlyManipulatedCharacterDisplayer.transform.scale;
+        so.FindProperty(nameof(rtCharNode.spawnPosition)).vector2Value = new Vector2(pos.x / width, pos.y / height);
+        so.FindProperty(nameof(rtCharNode.spawnScale)).vector3Value = currentlyManipulatedCharacterDisplayer.transform.scale;
         so.ApplyModifiedProperties();
     }
 

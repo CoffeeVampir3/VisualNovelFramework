@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using Object = UnityEngine.Object;
 
@@ -64,9 +65,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// </summary>
         private static void CreateSerializedNodeAsset(SerializedGraph graph, NodeSerializationData serializedNode)
         {
-            //TODO:: This is not a good solution. Make a more robust way to find root.
             if (graph.rootNode == null && 
-                serializedNode.nodeEditorData.name.ToLower() == "root node") 
+                serializedNode.isRoot) 
                 graph.rootNode = serializedNode.runtimeNode;
 
             serializedNode.name = "sNodeData_" + serializedNode.nodeEditorData.name;

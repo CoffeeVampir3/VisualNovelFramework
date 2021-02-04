@@ -103,6 +103,11 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
             
             serializedNodeData.Add(serializationData);
+
+            if (node is IRootNode)
+            {
+                serializationData.isRoot = true;
+            }
             
             serializationData.runtimeNode.outputConnections.Clear();
             serializationData.runtimeNode.inputConnections.Clear();

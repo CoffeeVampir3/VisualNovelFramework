@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.DialogueSystem.VNScene;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.VNCharacter;
@@ -10,15 +11,15 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
     {
         [SerializeField]
         public Character swag;
-        [SerializeField]
+        [SerializeField, ReadonlyField]
         public CharacterOutfit outfit;
-        [SerializeField]
+        [SerializeField, HideInInspector]
         public Vector2 spawnPosition;
-        [SerializeField]
+        [SerializeField, HideInInspector]
         public Vector3 spawnScale = Vector3.one;
 
         private VisualElement spawnTarget;
-        public void CreateCharacter(VisualElement spawnAsChildOf)
+        private void CreateCharacter(VisualElement spawnAsChildOf)
         {
             spawnTarget = spawnAsChildOf;
             CharacterDisplayer cd = new CharacterDisplayer(); 
@@ -31,6 +32,9 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         private void Reposition(GeometryChangedEvent geoChange)
         {
             var cd = geoChange.currentTarget as CharacterDisplayer;
+            if (cd == null)
+                return;
+            
             var sceneCont = spawnTarget;
             var width = sceneCont.layout.width;
             var height = sceneCont.layout.height;
@@ -45,7 +49,7 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         
         public override void OnEvaluate()
         {
-            var doc = GameObject.FindObjectOfType<UIDocument>();
+            var doc = FindObjectOfType<UIDocument>();
             var templateContainer = doc.rootVisualElement;
             var sceneCont = templateContainer.Q<VisualElement>("sceneView");
 

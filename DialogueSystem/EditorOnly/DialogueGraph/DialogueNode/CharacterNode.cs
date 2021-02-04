@@ -22,11 +22,11 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         private OutfitDropdownWindow outfitDropdown = null;
         private void SetupOutfitDropdown()
         {
-            var charDropdownThing = new Button {text = "Position Character"};
+            var charDropdownThing = new Button {text = "Change Outfits"};
             extensionContainer.Add(charDropdownThing);
             charDropdownThing.RegisterCallback<ClickEvent>(e =>
             {
-                if (nodeRuntimeData != null && nodeRuntimeData.outfit == null)
+                if (nodeRuntimeData == null)
                     return;
 
                 var m = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
@@ -34,7 +34,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
                     m.position.yMin + charDropdownThing.worldBound.position.y, 200, 400);
                 outfitDropdown = EditorWindow.CreateInstance<OutfitDropdownWindow>();
                 outfitDropdown.ShowAsDropDown(newPos, new Vector2(200, 400));
-
+                
                 outfitDropdown.browser.BindToList(nodeRuntimeData.swag.outfits, OnOutfitItemClicked);
             });
         }
@@ -44,6 +44,9 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
             if (target == null || !(target is CharacterOutfit co))
                 return;
             
+            SerializedObject so = new SerializedObject(nodeRuntimeData);
+            so.FindProperty(nameof(nodeRuntimeData.outfit)).objectReferenceValue = co;
+            so.ApplyModifiedProperties();
             if (outfitDropdown != null)
                 outfitDropdown.Close();
         }

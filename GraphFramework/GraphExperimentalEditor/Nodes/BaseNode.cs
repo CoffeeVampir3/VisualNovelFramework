@@ -10,7 +10,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {
     /// <summary>
     /// This class allows us to easily define the runtime data type but still activate it internally
-    /// using reflection.
+    /// using reflection. I love this so much thanks @MentallyStable on GDL for this one!
     /// </summary>
     public abstract class BaseNode<RuntimeNodeType> : BaseNode where RuntimeNodeType : RuntimeNode
     {
