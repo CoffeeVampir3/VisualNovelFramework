@@ -64,6 +64,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// </summary>
         private static void CreateSerializedNodeAsset(SerializedGraph graph, NodeSerializationData serializedNode)
         {
+            //TODO:: This is not a good solution. Make a more robust way to find root.
             if (graph.rootNode == null && 
                 serializedNode.nodeEditorData.name.ToLower() == "root node") 
                 graph.rootNode = serializedNode.runtimeNode;

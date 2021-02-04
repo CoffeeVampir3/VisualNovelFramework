@@ -17,7 +17,12 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
         {
             return null;
         }
-        
+
+        public virtual void OnEvaluate()
+        {
+            Debug.Log(this.name);
+        }
+
         public string GetCoffeeGUID()
         {
             return GUID;

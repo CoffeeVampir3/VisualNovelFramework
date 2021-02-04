@@ -18,7 +18,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         private static readonly Dictionary<string, BaseNode> guidToNodeDict = new Dictionary<string, BaseNode>();
         private static readonly List<Edge> edges = new List<Edge>();
         
-        public static bool LoadGraph(GraphView graphView, SerializedGraph graphToLoad)
+        public static bool LoadGraph(CoffeeGraphView graphView, SerializedGraph graphToLoad)
         {
             guidToNodeDict.Clear();
             edges.Clear();
@@ -52,6 +52,12 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 else
                 {
                     Debug.LogError("Attempted to load an invalid/incorrectly serialized graph node.");
+                }
+                
+                //TODO:: This is not a good solution. Make a more robust way to find root.
+                if(serialData.nodeEditorData.name.ToLower() == "root node")
+                {
+                    graphView.rootNode = node;
                 }
             }
 

@@ -4,14 +4,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorOnly.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor;
-using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.DialogueGraph
 {
     public class DialogueGraphView : CoffeeGraphView
     {
-        private DialogueRoot rootNode;
-
         public DialogueGraphView(StyleSheet defaultStyleSheet)
         {
             styleSheets.Add(defaultStyleSheet);
@@ -36,6 +33,10 @@ namespace VisualNovelFramework.DialogueGraph
         
         private void SpawnRootNode()
         {
+            if (rootNode != null) 
+                return;
+            
+            Debug.Log("New root.");
             rootNode = new DialogueRoot();
             var width = worldBound.width;
             var height = worldBound.height;
@@ -45,7 +46,7 @@ namespace VisualNovelFramework.DialogueGraph
             
             rootNode.Initialize("Root Node");
             rootNode.SetPosition(new Rect(spawnWidth, spawnHeight, 150, 150));
-            AddElement(rootNode); 
+            AddElement(rootNode);
         }
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)

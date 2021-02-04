@@ -1,11 +1,14 @@
 ﻿using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
+        public BaseNode rootNode;
+
         public CoffeeGraphView()
         {
             SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);

@@ -3,7 +3,9 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.DialogueSystem.Nodes;
+using VisualNovelFramework.Editor.Outfitter;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.VNCharacter;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
@@ -13,18 +15,49 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         {
             var addButton = new Button(LaunchCharacterPositionerWindowTab) {text = "Position Character"};
             titleButtonContainer.Add(addButton);
+
+            SetupOutfitDropdown();
+        }
+
+        private OutfitDropdownWindow outfitDropdown = null;
+        private void SetupOutfitDropdown()
+        {
+            var charDropdownThing = new Button {text = "Position Character"};
+            extensionContainer.Add(charDropdownThing);
+            charDropdownThing.RegisterCallback<ClickEvent>(e =>
+            {
+                if (nodeRuntimeData != null && nodeRuntimeData.outfit == null)
+                    return;
+
+                var m = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
+                var newPos = new Rect(m.position.xMin + charDropdownThing.worldBound.position.x,
+                    m.position.yMin + charDropdownThing.worldBound.position.y, 200, 400);
+                outfitDropdown = EditorWindow.CreateInstance<OutfitDropdownWindow>();
+                outfitDropdown.ShowAsDropDown(newPos, new Vector2(200, 400));
+
+                outfitDropdown.browser.BindToList(nodeRuntimeData.swag.outfits, OnOutfitItemClicked);
+            });
+        }
+        
+        private void OnOutfitItemClicked(Object target)
+        {
+            if (target == null || !(target is CharacterOutfit co))
+                return;
+            
+            if (outfitDropdown != null)
+                outfitDropdown.Close();
         }
 
         private void LaunchCharacterPositionerWindowTab()
         {
             var wnd = EditorWindow.GetWindow<CharacterPositionerWindow>();
+            CharacterPositionerWindow.SetupWindow(wnd);
             
             if(nodeRuntimeData == null)
                 Debug.Log("Null!");
             
-            Debug.Log(nodeRuntimeData.outfit.name);
             wnd.rtCharNode = nodeRuntimeData;
-            wnd.ShowTab();
+            wnd.ShowTab(); 
         }
         
         protected override void InstantiatePorts()

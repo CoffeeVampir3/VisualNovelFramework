@@ -8,9 +8,7 @@ namespace VisualNovelFramework.DialogueSystem.VNScene
     {
         public CharacterDisplayer()
         {
-            style.alignContent = new StyleEnum<Align>(Align.Center);
-            style.justifyContent = new StyleEnum<Justify>(Justify.Center);
-            style.position = new StyleEnum<Position>(Position.Absolute);
+            AddToClassList("characterDisplay");
         }
         
         private void DisplayOutfitLayer(CharacterOutfit outfit, CharacterLayer layer, bool resize, float targetSize)
@@ -25,16 +23,14 @@ namespace VisualNovelFramework.DialogueSystem.VNScene
                 
                 var resizeRatio = 1f;
                 if (resize) resizeRatio = targetSize / item.height;
-
-                style.minHeight = item.height;
-                style.minWidth = item.width;
+                
                 transform.scale = new Vector3(resizeRatio, resizeRatio, 1f);
                 //from CharacterImageStyle.css
                 img.AddToClassList("charImgStyle");
                 Add(img);
             }
         }
-        
+
         public void DisplayOutfit(CharacterOutfit outfit, bool resize = false, float targetSize = 0f)
         {
             Clear();

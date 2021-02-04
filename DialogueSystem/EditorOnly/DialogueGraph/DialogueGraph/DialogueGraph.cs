@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor;
-using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.DialogueGraph
 {

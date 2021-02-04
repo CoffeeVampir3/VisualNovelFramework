@@ -18,7 +18,6 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.AssetHandl
                 {
                     var window = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
                     window.LoadGraph(graph);
-                    window.Show();
                     return true;
                 }
             }
