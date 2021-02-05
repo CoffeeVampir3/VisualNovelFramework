@@ -47,10 +47,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
             GraphSaver.SerializeGraph(graphView, currentGraphGUID);
         }
 
+        private SerializedGraph delayedLoadedGraph = null;
         public void LoadGraph(SerializedGraph graph)
         {
             if (GraphLoader.LoadGraph(graphView, graph))
             {
+                delayedLoadedGraph = graph;
                 currentGraphGUID = graph.GetCoffeeGUID();
             }
         }
@@ -59,6 +61,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
         {
             var graph = evt.newValue as SerializedGraph;
 
+            if (graph == null)
+            {
+                return;
+            }
             LoadGraph(graph);
         }
 
@@ -107,7 +113,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
             var toolbar = new Toolbar();
             
             serializedGraphSelector = new ObjectField {objectType = typeof(SerializedGraph)};
-            serializedGraphSelector.SetValueWithoutNotify(null);
+            
+            if(delayedLoadedGraph != null)
+                serializedGraphSelector.SetValueWithoutNotify(delayedLoadedGraph);
+            
             serializedGraphSelector.RegisterValueChangedCallback(LoadGraphEvent);
 
             toolbar.Add(new Button( SaveGraph ) {text = "Save"});

@@ -10,9 +10,9 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.AssetHandl
         public static bool OnSerializedGraphOpened(int instanceID, int line)
         {
             var window = IsOpenedAssetTargetType(instanceID, out var graph);
-            if (window != null && window is DialogueGraph.DialogueGraph dg)
+            if (window != null)
             {
-                dg.LoadGraph(graph);
+                window.LoadGraph(graph);
                 return true;
             }
             return false;
