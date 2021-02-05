@@ -1,25 +1,19 @@
-﻿using UnityEditor;
-using UnityEditor.Callbacks;
+﻿using UnityEditor.Callbacks;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.AssetHandlers
 {
-    public class SerializedGraphAssetHandler
+    public class SerializedGraphAssetHandler : OpenWindowOnAssetClickedHandler<SerializedGraph, DialogueGraph.DialogueGraph>
     {
-        [OnOpenAsset(1)]
-        public static bool OnAnyGraphAssetOpened(int instanceID, int line)
+        [OnOpenAsset]
+        public static bool OnSerializedGraphOpened(int instanceID, int line)
         {
-            var graphs = CoffeeAssetDatabase.FindAssetsOfType<SerializedGraph>();
-
-            foreach (var graph in graphs)
+            var window = IsOpenedAssetTargetType(instanceID, out var graph);
+            if (window != null && window is DialogueGraph.DialogueGraph dg)
             {
-                if (graph.GetInstanceID() == instanceID)
-                {
-                    var window = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
-                    window.LoadGraph(graph);
-                    return true;
-                }
+                dg.LoadGraph(graph);
+                return true;
             }
             return false;
         }

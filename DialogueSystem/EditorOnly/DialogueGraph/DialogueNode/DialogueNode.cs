@@ -32,7 +32,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         protected override void InstantiatePorts()
         {
             var port = InstantiatePort(Orientation.Horizontal, 
-                Direction.Input, Port.Capacity.Single, typeof(string));
+                Direction.Input, Port.Capacity.Multi, typeof(string));
             inputPortsContainer.Add(port);
         }
     }

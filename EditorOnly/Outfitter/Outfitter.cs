@@ -191,10 +191,8 @@ namespace VisualNovelFramework.Editor.Outfitter
             outfitPreviewer.DisplayOutfit(workingOutfit);
         }
 
-        private void LoadCharacter(ChangeEvent<Object> evt)
+        private void LoadCharacter(Character character)
         {
-            var character = evt.newValue as Character;
-
             if (character == null)
             {
                 currentCharacter = null;
@@ -212,6 +210,13 @@ namespace VisualNovelFramework.Editor.Outfitter
             }
 
             LoadCompositor(compositor);
+        }
+
+        private void LoadCharacter(ChangeEvent<Object> evt)
+        {
+            var character = evt.newValue as Character;
+
+            LoadCharacter(character);
         }
 
         private void LoadCompositor(CharacterCompositor compositor)

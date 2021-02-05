@@ -13,9 +13,9 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         public Character swag;
         [SerializeField, ReadonlyField]
         public CharacterOutfit outfit;
-        [SerializeField, HideInInspector]
+        [SerializeField]
         public Vector2 spawnPosition;
-        [SerializeField, HideInInspector]
+        [SerializeField]
         public Vector3 spawnScale = Vector3.one;
 
         private VisualElement spawnTarget;

@@ -38,8 +38,9 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         private void CacheReadonlyProperties()
         {
             nameToReadonlyField.Clear();
-            var fields = RuntimeData.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public
-                                                                               | BindingFlags.NonPublic);
+            var fields = RuntimeData.GetType().
+                GetFields(BindingFlags.Instance | BindingFlags.Public
+                | BindingFlags.NonPublic);
             
             foreach (var field in fields)
             {

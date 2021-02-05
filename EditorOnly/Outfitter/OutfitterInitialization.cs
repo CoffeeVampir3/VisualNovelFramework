@@ -23,6 +23,17 @@ namespace VisualNovelFramework.Editor.Outfitter
             var wnd = GetWindow<Outfitter>();
             wnd.titleContent = new GUIContent("Outfitter");
         }
+        
+        public void LoadFromExternal(Character character)
+        {
+            if (character == null)
+                return;
+            
+            titleContent = new GUIContent("Outfitter");
+            charSelector = rootVisualElement.Q<ObjectField>("characterSelector");
+            charSelector.SetValueWithoutNotify(character);
+            LoadCharacter(character);
+        }
 
         private void SetupCharacterSelector()
         {

@@ -22,6 +22,17 @@ namespace VisualNovelFramework.Editor.CharacterBuilder
             var wnd = GetWindow<CharacterBuilder>();
             wnd.titleContent = new GUIContent("CharacterBuilder");
         }
+        
+        public void LoadFromExternal(Character character)
+        {
+            if (character == null)
+                return;
+            
+            titleContent = new GUIContent("CharacterBuilder");
+            charSelector = rootVisualElement.Q<ObjectField>("characterSelector");
+            charSelector.SetValueWithoutNotify(character);
+            LoadCharacter(character);
+        }
 
         private void SetupCompositorFrame()
         {
