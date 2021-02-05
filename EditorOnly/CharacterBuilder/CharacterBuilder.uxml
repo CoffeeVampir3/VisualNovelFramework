@@ -9,7 +9,6 @@
                 <ui:VisualElement name="previewImageContainer" style="flex-grow: 1; flex-direction: column; justify-content: center; align-items: center; display: flex; visibility: visible; overflow: visible;" />
             </ui:VisualElement>
             <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-left: 0; padding-right: 0; border-right-width: 0; border-top-width: 5px; border-left-width: 0; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); background-color: rgba(49, 49, 49, 0.5);">
-                <uie:FloatField label="Character Aspect Ratio:" value="1.01" name="aspectRatio" />
                 <VisualNovelFramework.Editor.Elements.ModularList name="poseList" FoldoutText="Pose" />
                 <VisualNovelFramework.Editor.Elements.ModularList name="layerList" FoldoutText="Layer" />
             </ui:VisualElement>

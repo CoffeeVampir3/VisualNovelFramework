@@ -150,7 +150,6 @@ namespace VisualNovelFramework.Editor.CharacterBuilder
 
             var nChar = CreateInstance<Character>();
             CharacterSerializer.InitializeChar(nChar, charName);
-            nChar.compositor.layerAspectRatio = 1.0f;
             var so = new SerializedObject(nChar);
             charSelector.Bind(so);
             charSelector.value = nChar;
@@ -200,8 +199,6 @@ namespace VisualNovelFramework.Editor.CharacterBuilder
 
         private void LoadCompositor(CharacterCompositor compositor)
         {
-            aspectRatioField.value = compositor.layerAspectRatio;
-
             currentLayer = null;
             currentPose = null;
 

@@ -9,8 +9,6 @@ namespace VisualNovelFramework.VNCharacter
         [SerializeField]
         public string GUID;
         [SerializeField]
-        public float layerAspectRatio;
-        [SerializeField]
         public List<LayeredPose> layeredPoses = new List<LayeredPose>();
         [SerializeField]
         public List<CharacterLayer> layers = new List<CharacterLayer>();

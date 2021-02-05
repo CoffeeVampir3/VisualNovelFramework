@@ -114,12 +114,6 @@ namespace VisualNovelFramework.Editor.CharacterBuilder
 
             previewer = root.Q<VisualElement>("previewImageContainer");
 
-            aspectRatioField = root.Q<FloatField>("aspectRatio");
-            aspectRatioField.RegisterCallback<ChangeEvent<float>>(e =>
-            {
-                if (currentCompositor != null) currentCompositor.layerAspectRatio = e.newValue;
-            });
-
             //Setup order does not matter.
             SetupFileMenu();
             SetupLayerSelector();
