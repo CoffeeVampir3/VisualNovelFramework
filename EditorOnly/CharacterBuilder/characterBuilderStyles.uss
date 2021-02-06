@@ -1,0 +1,4 @@
+previewImageContainer {
+    -unity-background-scale-mode: stretch-to-fill;
+    flex-grow: 1;
+}

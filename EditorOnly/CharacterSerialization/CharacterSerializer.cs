@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.AddressableAssets;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.VNCharacter;
@@ -46,9 +47,15 @@ namespace VisualNovelFramework.Editor.Serialization
         {
             var charAsset = CoffeeAssetDatabase.FindAssetWithCoffeeGUID<Character>(character.GetCoffeeGUID());
             if (saveAs || charAsset == null)
-                return CreateAsAsset(character);
+            {
+                charAsset = CreateAsAsset(character);
+            }
+            else
+            {
+                charAsset = SaveExisting(character, charAsset);
+            }
 
-            return SaveExisting(character, charAsset);
+            return charAsset;
         }
 
         private static Character SaveExisting(Character original, Character characterAsset)

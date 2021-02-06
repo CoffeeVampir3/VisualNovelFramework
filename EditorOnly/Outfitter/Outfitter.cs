@@ -247,9 +247,17 @@ namespace VisualNovelFramework.Editor.Outfitter
 
             images.Clear();
             currentPosedLayer = posedLayer;
-            for (var i = 0; i < posedLayer.textures.Count; i++) images.Add(posedLayer.GetTextureAt(i));
+            //Their is a bug with list view that makes this null and reset neccesary.
+            layerImageLister.itemsSource = null;
+            for (var i = 0; i < posedLayer.textures.Count; i++)
+            {
+                images.Add(posedLayer.GetTextureAt(i));
+            }
 
             layerImageLister.ClearSelection();
+            
+            //As above, this is a stopgap fix for a list view bug.
+            layerImageLister.itemsSource = images;
             layerImageLister.Refresh();
             layerImageLister.ScrollToItem(0);
             layerImageLister.SetSelection(0);

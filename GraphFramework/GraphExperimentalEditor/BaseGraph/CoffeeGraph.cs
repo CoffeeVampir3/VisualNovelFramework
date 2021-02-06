@@ -26,6 +26,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
             graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            OnGeometryChanged(null);
         }
 
         protected abstract void OnGraphGUI();

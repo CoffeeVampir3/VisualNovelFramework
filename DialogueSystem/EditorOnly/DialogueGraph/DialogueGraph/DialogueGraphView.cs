@@ -71,6 +71,7 @@ namespace VisualNovelFramework.DialogueGraph
             var node = new DialogueNode();
             node.Initialize("Dialogue Node");
             node.SetPosition(spawnPos);
+            
             AddElement(node);
         }
         

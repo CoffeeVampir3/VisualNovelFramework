@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="true">
+    <Style src="characterBuilderStyles.uss" />
     <ui:VisualElement style="flex-grow: 1;">
         <uie:Toolbar>
             <uie:ToolbarMenu display-tooltip-when-elided="true" text="File" name="fileMenu" style="padding-right: 12px; justify-content: flex-end; align-items: center; -unity-text-align: upper-center; padding-left: 12px; border-left-color: rgb(49, 49, 49); border-right-color: rgb(49, 49, 49); border-top-color: rgb(49, 49, 49); border-bottom-color: rgb(49, 49, 49); border-top-width: 1px; border-bottom-width: 0; border-left-width: 1px; border-right-width: 1px;" />
@@ -6,7 +7,7 @@
         </uie:Toolbar>
         <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
             <ui:VisualElement style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-right: 0; border-left-width: 5px; border-top-width: 5px; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); border-right-width: 1px;">
-                <ui:VisualElement name="previewImageContainer" style="flex-grow: 1; flex-direction: column; justify-content: center; align-items: center; display: flex; visibility: visible; overflow: visible;" />
+                <ui:VisualElement name="previewImageContainer" style="visibility: visible; overflow: visible; flex-grow: 1;" />
             </ui:VisualElement>
             <ui:VisualElement name="CompositorBrowser" style="flex-grow: 1; flex-direction: column; width: 33%; height: 100%; padding-left: 0; padding-right: 0; border-right-width: 0; border-top-width: 5px; border-left-width: 0; border-bottom-width: 5px; border-left-color: rgba(0, 0, 0, 0.29); border-right-color: rgba(0, 0, 0, 0.29); border-top-color: rgba(0, 0, 0, 0.29); border-bottom-color: rgba(0, 0, 0, 0.29); background-color: rgba(49, 49, 49, 0.5);">
                 <VisualNovelFramework.Editor.Elements.ModularList name="poseList" FoldoutText="Pose" />

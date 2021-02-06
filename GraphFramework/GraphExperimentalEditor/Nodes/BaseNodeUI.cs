@@ -72,9 +72,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
                 //Bind the property so we can edit the values.
                 propertyField.Bind(serializedNode);
-                    
+
                 //This ignores the label name field, it's ugly.
-                if (it.propertyPath == "m_Script" && serializedNode.targetObject != null)
+                if (it.propertyPath == "m_Script" && 
+                    serializedNode.targetObject != null) 
                 {
                     propertyField.SetEnabled(false);
                     propertyField.visible = false;

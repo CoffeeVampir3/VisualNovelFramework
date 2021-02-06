@@ -13,11 +13,13 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         public Character swag;
         [SerializeField, ReadonlyField]
         public CharacterOutfit outfit;
-        [SerializeField]
+        
+        //HideInInspector appears to be bugged, but this is a fine workaround.
+        [SerializeField, ReadonlyField]
         public Vector2 spawnPosition;
-        [SerializeField]
+        [SerializeField, ReadonlyField]
         public Vector3 spawnScale = Vector3.one;
-
+        
         private VisualElement spawnTarget;
         private void CreateCharacter(VisualElement spawnAsChildOf)
         {

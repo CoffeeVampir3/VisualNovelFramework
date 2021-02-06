@@ -68,6 +68,8 @@ namespace VisualNovelFramework.Editor.Outfitter
             layerImageLister.bindItem = (e, i) =>
             {
                 var img = e as Image;
+                
+                Debug.Assert(img != null, nameof(img) + " != null");
                 img.image = images[i];
 
                 imageToIndex.Add(img, i);
