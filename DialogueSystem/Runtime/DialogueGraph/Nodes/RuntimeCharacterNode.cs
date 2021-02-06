@@ -15,9 +15,9 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         public CharacterOutfit outfit;
         
         //HideInInspector appears to be bugged, but this is a fine workaround.
-        [SerializeField, ReadonlyField]
+        [SerializeField, HideInInspector]
         public Vector2 spawnPosition;
-        [SerializeField, ReadonlyField]
+        [SerializeField, HideInInspector]
         public Vector3 spawnScale = Vector3.one;
         
         private VisualElement spawnTarget;

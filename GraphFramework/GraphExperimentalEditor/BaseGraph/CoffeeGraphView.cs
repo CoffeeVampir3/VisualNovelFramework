@@ -7,6 +7,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
+        [SerializeField]
         public BaseNode rootNode;
 
         public CoffeeGraphView()

@@ -13,7 +13,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraph : EditorWindow
     {
+        [SerializeReference]
         protected CoffeeGraphView graphView;
+        [SerializeField]
         public string currentGraphGUID;
 
         protected void InitializeGraph()
@@ -47,13 +49,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
         {
             GraphSaver.SerializeGraph(graphView, currentGraphGUID);
         }
-
-        private SerializedGraph delayedLoadedGraph = null;
+        
         public void LoadGraph(SerializedGraph graph)
         {
             if (GraphLoader.LoadGraph(graphView, graph))
             {
-                delayedLoadedGraph = graph;
+                serializedGraphSelector.SetValueWithoutNotify(graph);
                 currentGraphGUID = graph.GetCoffeeGUID();
             }
         }
@@ -84,6 +85,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
         }
 
+        /// <summary>
+        /// TODO:: Test Code:
+        /// </summary>
         protected void DuplicateGraph()
         {
             var currentGraph = serializedGraphSelector.value as SerializedGraph;
@@ -114,10 +118,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             var toolbar = new Toolbar();
             
             serializedGraphSelector = new ObjectField {objectType = typeof(SerializedGraph)};
-            
-            if(delayedLoadedGraph != null)
-                serializedGraphSelector.SetValueWithoutNotify(delayedLoadedGraph);
-            
             serializedGraphSelector.RegisterValueChangedCallback(LoadGraphEvent);
 
             toolbar.Add(new Button( SaveGraph ) {text = "Save"});

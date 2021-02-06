@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using Object = UnityEngine.Object;
 
@@ -11,8 +11,10 @@ namespace VisualNovelFramework.GraphFramework.Serialization
     public static class GraphSerializer
     {
         private static List<Object> savedObjects = new List<Object>();
-
-        private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, T objectToCopyFrom) where T : ScriptableObject
+        
+        private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, 
+            T objectToCopyFrom) 
+            where T : ScriptableObject
         {
             SerializedObject copyingAsset = new SerializedObject(objectToCopyFrom);
             SerializedObject savedAsset = new SerializedObject(objectBeingOverwritten);
@@ -35,7 +37,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
                 savedAsset.CopyFromSerializedProperty(it);
             }
-            while (it.NextVisible(false));
+            while (it.Next(false));
 
             savedAsset.ApplyModifiedProperties();
             EditorUtility.SetDirty(objectBeingOverwritten);

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Sirenix.Utilities;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -27,8 +26,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 return;
             
             Debug.Log(AssetDatabase.GetAssetPath(serializedGraph));
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(serializedGraph));
-
             GraphSerializer.ClearSavedAssets();
             try
             {
@@ -93,9 +90,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             NodeSerializationData serializationData =
                 ScriptableObject.CreateInstance<NodeSerializationData>();
 
-            //Write any serialized changes.
-            node.serializedNode.ApplyModifiedPropertiesWithoutUndo();
-            
             serializationData.nodeEditorData = node.editorData;
             serializationData.SetCoffeeGUID(node.editorData.GUID);
             

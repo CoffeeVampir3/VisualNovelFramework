@@ -8,9 +8,9 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
     {
         [SerializeField, HideInInspector]
         public string GUID;
-        [SerializeField, HideInInspector]
+        [SerializeField]
         public List<RuntimeNode> outputConnections = new List<RuntimeNode>();
-        [SerializeField, HideInInspector]
+        [SerializeField]
         public List<RuntimeNode> inputConnections = new List<RuntimeNode>();
 
         public virtual RuntimeNode GetNextNode()

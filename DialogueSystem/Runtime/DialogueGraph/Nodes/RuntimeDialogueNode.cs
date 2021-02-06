@@ -8,5 +8,10 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         [SerializeField]
         [TextArea(10,500)]
         public string dialogue;
+        
+        public override void OnEvaluate()
+        {
+            Debug.Log(dialogue);
+        }
     }
 }

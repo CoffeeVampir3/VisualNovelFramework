@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -37,7 +36,6 @@ namespace VisualNovelFramework.DialogueGraph
             if (rootNode != null) 
                 return;
             
-            Debug.Log("New root.");
             rootNode = new DialogueRoot();
             var width = worldBound.width;
             var height = worldBound.height;

@@ -28,10 +28,6 @@ namespace VisualNovelFramework.DialogueSystem.Runtime.DialogueGraph.GraphWalker
         public void OnEnable()
         {
             currentNode = testGraph.rootNode;
-            while (currentNode != null)
-            {
-                currentNode = WalkGraphNextNode();
-            }
         }
     }
 }
