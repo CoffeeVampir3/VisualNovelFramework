@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.GraphView;
+﻿using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
@@ -7,7 +8,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
-        [SerializeField]
+        [SerializeReference]
         public BaseNode rootNode;
 
         public CoffeeGraphView()
@@ -18,7 +19,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
         }
-        
+
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
         {
             //What the fuck unity. NEGATIVE POSITION???

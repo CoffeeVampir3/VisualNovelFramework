@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework.Internal.Commands;
 using Sirenix.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 using Object = UnityEngine.Object;
@@ -15,6 +18,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
     {
         [SerializeReference]
         protected CoffeeGraphView graphView;
+
         [SerializeField]
         public string currentGraphGUID;
 
@@ -44,9 +48,17 @@ namespace VisualNovelFramework.GraphFramework.Editor
         {
             rootVisualElement.Clear();
         }
-        
+
         protected void SaveGraph()
         {
+            /*
+            if (Application.isPlaying)
+            {
+                Debug.LogError("Currently saving during playmode is not supported. End playmode to save.");
+                return;
+            }
+            */
+            
             GraphSaver.SerializeGraph(graphView, currentGraphGUID);
         }
         

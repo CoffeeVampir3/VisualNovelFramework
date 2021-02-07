@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.Editor.Serialization;
+using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 
@@ -20,6 +22,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             set => nodeRuntimeData = value as RuntimeNodeType;
         }
 
+        [SerializeReference]
         protected RuntimeNodeType nodeRuntimeData;
     }
     
@@ -30,6 +33,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     /// </summary>
     public abstract partial class BaseNode : Node
     {
+        [SerializeReference]
         public NodeEditorData editorData;
         public abstract RuntimeNode RuntimeData { get; set; }
 
@@ -71,17 +75,12 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void LoadNodeData(NodeSerializationData serializationData)
         {
-            ReflectAndLoadRuntimeData(serializationData);
+            RuntimeData = serializationData.runtimeNode;
+            RuntimeData.name = serializationData.runtimeNode.name;
 
-            editorData = ScriptableObject.Instantiate(serializationData.nodeEditorData);
+            editorData = serializationData.nodeEditorData;
             editorData.name = serializationData.nodeEditorData.name;
             title = editorData.name;
-        }
-
-        private void ReflectAndLoadRuntimeData(NodeSerializationData serializationData)
-        {
-            RuntimeData = ScriptableObject.Instantiate(serializationData.runtimeNode);
-            RuntimeData.name = serializationData.runtimeNode.name;
         }
 
         private System.Type GetGenericRuntimeNodeType()

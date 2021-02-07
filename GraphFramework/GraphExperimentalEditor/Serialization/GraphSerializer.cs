@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
@@ -10,36 +9,14 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 {
     public static class GraphSerializer
     {
-        private static List<Object> savedObjects = new List<Object>();
-        
+        private static readonly List<Object> savedObjects = new List<Object>();
+
         private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, 
             T objectToCopyFrom) 
             where T : ScriptableObject
         {
-            SerializedObject copyingAsset = new SerializedObject(objectToCopyFrom);
-            SerializedObject savedAsset = new SerializedObject(objectBeingOverwritten);
-            
-            var it = copyingAsset.GetIterator();
-            if (!it.NextVisible(true)) 
-                return;
-            //Descends through serialized property children & allows us to edit them.
-            do
-            {
-                if (it.propertyPath == "m_Script" && savedAsset.targetObject != null)
-                {
-                    continue;
-                }
-
-                if (it.propertyPath == "nodeEditorData" || it.propertyPath == "runtimeNode")
-                {
-                    continue;
-                }
-
-                savedAsset.CopyFromSerializedProperty(it);
-            }
-            while (it.Next(false));
-
-            savedAsset.ApplyModifiedProperties();
+            var l = JsonUtility.ToJson(objectToCopyFrom);
+            JsonUtility.FromJsonOverwrite(l, objectBeingOverwritten);
             EditorUtility.SetDirty(objectBeingOverwritten);
         }
 

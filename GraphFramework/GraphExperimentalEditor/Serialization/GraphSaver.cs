@@ -90,6 +90,11 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             NodeSerializationData serializationData =
                 ScriptableObject.CreateInstance<NodeSerializationData>();
 
+            if (node.editorData == null || node.RuntimeData == null)
+            {
+                Debug.Log("Problem.");
+            }
+
             serializationData.nodeEditorData = node.editorData;
             serializationData.SetCoffeeGUID(node.editorData.GUID);
             

@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
@@ -41,7 +42,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                 //Update our position after a short delay, it will recur automagically.
                 var k = schedule.Execute(UpdateNodePosition);
                 k.StartingIn(400);
-            } 
+            }
             //This is called when a node is deleted, or "removed" from the panel.
             else if (evt is DetachFromPanelEvent)
             {

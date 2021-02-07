@@ -5,6 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.Serialization;
@@ -13,15 +14,15 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {
     public abstract partial class BaseNode
     {
+        [SerializeReference]
         protected readonly VisualElement outputPortsContainer = new VisualElement();
+        [SerializeReference]
         protected readonly VisualElement inputPortsContainer = new VisualElement();
-        public SerializedObject serializedNode = null; //Allows us to write the runtime data correctly in the graph serializer.
-
         #region Node UI Construction
 
-        protected virtual VisualElement CreateNodeGUI()
+        protected virtual void CreateNodeGUI()
         {
-            return CreateEditorFromNodeData();
+            CreateEditorFromNodeData();
         }
         
         #region Readonly Attribute Handler
@@ -53,26 +54,28 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
         
         #endregion
-        
-        private VisualElement CreateEditorFromNodeData()
+
+        public void CreateEditorFromNodeData()
         {
-            serializedNode = new SerializedObject(RuntimeData);
-            var container = new VisualElement();
+            var serializedNode = new SerializedObject(RuntimeData);
+            VisualElement container = new VisualElement();
 
             var it = serializedNode.GetIterator();
-            if (!it.NextVisible(true)) 
-                return container;
-
+            if (!it.NextVisible(true))
+                return;
+            
             CacheReadonlyProperties();
             //Descends through serialized property children & allows us to edit them.
             do
             {
                 var propertyField = new PropertyField(it.Copy()) 
-                    { name = "PropertyField:" + it.propertyPath };
+                    { name = it.propertyPath };
 
                 //Bind the property so we can edit the values.
                 propertyField.Bind(serializedNode);
 
+                container.Add(propertyField);
+                
                 //This ignores the label name field, it's ugly.
                 if (it.propertyPath == "m_Script" && 
                     serializedNode.targetObject != null) 
@@ -87,7 +90,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             }
             while (it.NextVisible(false));
 
-            return container;
+            outputContainer.Add(container);
         }
 
         private void SetupBaseNodeUI()
@@ -95,10 +98,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             //Add port containers
             inputContainer.Add(inputPortsContainer);
             outputContainer.Add(outputPortsContainer);
+            CreateNodeGUI();
             
-            //Add inline data editor
-            outputContainer.Add(CreateNodeGUI());
-
             SetPosition(editorData.position);
             Repaint();
         }
