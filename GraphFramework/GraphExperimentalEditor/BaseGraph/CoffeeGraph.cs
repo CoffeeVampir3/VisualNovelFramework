@@ -21,6 +21,15 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         [SerializeField]
         public string currentGraphGUID;
+        
+        #region EditorLinked
+        
+        public void RuntimeNodeVisited(RuntimeNode node)
+        {
+            graphView?.RuntimeNodeVisited(node);
+        }
+        
+        #endregion
 
         protected void InitializeGraph()
         {
@@ -59,7 +68,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
             */
             
-            GraphSaver.SerializeGraph(graphView, currentGraphGUID);
+            GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
         }
         
         public void LoadGraph(SerializedGraph graph)

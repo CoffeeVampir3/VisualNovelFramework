@@ -1,33 +1,18 @@
-﻿using System.Linq;
-using Sirenix.OdinInspector;
+﻿using Sirenix.OdinInspector;
 using UnityEngine;
-using VisualNovelFramework.GraphFramework.GraphRuntime;
+using VisualNovelFramework.GraphFramework.GraphExecutor;
 
 namespace VisualNovelFramework.DialogueSystem.Runtime.DialogueGraph.GraphWalker
 {
     public class DialogueGraphWalker : MonoBehaviour
     {
-        [SerializeField]
-        private RuntimeNode currentNode = null;
-        [SerializeField]
-        private SerializedGraph testGraph = null;
-        
+        [SerializeField] 
+        private GraphExecutor executor;
+
         [Button]
-        public RuntimeNode WalkGraphNextNode()
+        public void WalkGraphNextNode()
         {
-            if (currentNode == null)
-            {
-                currentNode = testGraph.rootNode;
-            }
-
-            currentNode.OnEvaluate();
-            currentNode = currentNode.outputConnections.FirstOrDefault();
-            return currentNode;
-        }
-
-        public void OnEnable()
-        {
-            currentNode = testGraph.rootNode;
+            executor.WalkNode();
         }
     }
 }

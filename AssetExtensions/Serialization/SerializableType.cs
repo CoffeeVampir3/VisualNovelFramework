@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace VisualNovelFramework.Editor.Serialization
+namespace VisualNovelFramework.Serialization
 {
     [Serializable]
     public class SerializableType : ISerializationCallbackReceiver

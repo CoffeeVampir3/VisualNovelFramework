@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using VisualNovelFramework.Editor.Serialization;
-using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
+using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {

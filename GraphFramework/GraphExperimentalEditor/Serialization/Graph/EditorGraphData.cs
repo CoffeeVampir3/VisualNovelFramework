@@ -1,20 +1,19 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Graphs;
+using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
-    //TODO:: This information isin't needed at runtime?
-    //Strong seperation of runtime/editor time.
-    //[Serializable]
-    public class NodeEditorData : ScriptableObject, HasCoffeeGUID
+    public class EditorGraphData : ScriptableObject, HasCoffeeGUID
     {
         [SerializeField]
+        public SerializableType editorWindowType;
+        [SerializeField]
+        public SerializedGraph targetGraph;
+        [SerializeField]
         public string GUID;
-        [SerializeField] 
-        public Rect position;
-        [SerializeField] 
-        public SerializableType nodeType;
 
         public string GetCoffeeGUID()
         {

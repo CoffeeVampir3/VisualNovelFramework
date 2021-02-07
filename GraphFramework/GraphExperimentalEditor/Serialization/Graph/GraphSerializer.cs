@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
+using VisualNovelFramework.Serialization;
 using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
@@ -72,7 +74,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             savedObjects.Add(graph);
             foreach (var o in assets)
             {
-                if (!savedObjects.Contains(o))
+                if (!savedObjects.Contains(o) && !(o is EditorGraphData))
                 {
                     AssetDatabase.RemoveObjectFromAsset(o);
                 }
@@ -91,7 +93,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// <summary>
         /// Finds a graph based on the provided GUID or creates one if none exist.
         /// </summary>
-        public static SerializedGraph FindOrCreateGraphAsset(string currentGraphGUID)
+        public static SerializedGraph FindOrCreateGraphAsset(string currentGraphGUID, System.Type windowType)
         {
             var existingGraph =
                 CoffeeAssetDatabase.FindAssetWithCoffeeGUID<SerializedGraph>(currentGraphGUID);
@@ -110,6 +112,16 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 return null;
             }
             
+            var editorGraphAsset = ScriptableObject.CreateInstance<EditorGraphData>();
+            editorGraphAsset.name = "GraphEditorData";
+            editorGraphAsset.targetGraph = savedGraph;
+            editorGraphAsset.editorWindowType = new SerializableType(windowType);
+            editorGraphAsset.SetCoffeeGUID(currentGraphGUID);
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(savedGraph));
+            AssetDatabase.AddObjectToAsset(editorGraphAsset, savedGraph);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(editorGraphAsset));
+
             return savedGraph;
         }
     }

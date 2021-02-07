@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using VisualNovelFramework.Editor.Serialization;
+using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {

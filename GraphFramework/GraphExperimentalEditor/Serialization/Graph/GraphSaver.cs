@@ -15,13 +15,12 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         
         private static SerializedGraph serializedGraph;
 
-        public static void SerializeGraph(GraphView graphView, string currentGraphGUID)
+        public static void SerializeGraph(GraphView graphView, string currentGraphGUID, System.Type windowType)
         {
             serializedNodeData.Clear();
             WalkNodes(graphView);
             
-            serializedGraph = GraphSerializer.FindOrCreateGraphAsset(currentGraphGUID);
-
+            serializedGraph = GraphSerializer.FindOrCreateGraphAsset(currentGraphGUID, windowType);
             if (serializedGraph == null)
                 return;
             

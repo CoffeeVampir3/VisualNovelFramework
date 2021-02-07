@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
@@ -31,6 +32,29 @@ namespace VisualNovelFramework.GraphFramework.Editor
             //This way we "undo" the division by scale for only the offset value, scaling everything else.
             relPos -= (offset*scale);
             return relPos/scale;
+        }
+
+        /// <summary>
+        /// TODO:: Temporary code, should have a faster means of accessing nodes.
+        /// </summary>
+        /// <param name="node"></param>
+        public void RuntimeNodeVisited(RuntimeNode node)
+        {
+            var dataNode = nodes.ToList().FirstOrDefault(e =>
+            {
+                if (e is BaseNode bn)
+                {
+                    return bn.RuntimeData == node;
+                }
+
+                return false;
+            });
+            
+            if (dataNode == null)
+                return;
+
+            dataNode.titleContainer.style.backgroundColor = new StyleColor(Color.black);
+            Debug.Log("Wooooo.ooooo.!!!");
         }
     }
 }
