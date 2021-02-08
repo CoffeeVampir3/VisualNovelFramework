@@ -47,7 +47,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 BaseNode node = LoadNode(serialData);
                 if (node != null)
                 {
-                    graphView.AddElement(node);
+                    graphView.AddNode(node);
                 }
                 else
                 {

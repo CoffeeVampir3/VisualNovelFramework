@@ -108,38 +108,41 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             outputContainer.Add(container);
         }
 
+        private VisualElement newOutputContainer;
+        /// <summary>
+        /// NOTE:: We use this to extend the node UI, effectively making the old
+        /// "output" container the new middle, and then creating a new output container.
+        /// </summary>
+        private void ExtendNodeUI()
+        {
+            newOutputContainer = new VisualElement {name = "actualOutput"};
+            var newOutputDivider = new VisualElement();
+            
+            newOutputDivider.AddToClassList("vertical");
+            newOutputDivider.name = "divider";
+            topContainer.Add(newOutputDivider);
+            topContainer.Add(newOutputContainer);
+        }
+
         private void SetupBaseNodeUI()
         {
-            StyleSheet ss = AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BaseNodeDefaultStyle.uss");
-            styleSheets.Add(ss);
-            
+            ExtendNodeUI();
             //Add port containers
             inputContainer.Add(inputPortsContainer);
-            outputContainer.Add(outputPortsContainer);
+            newOutputContainer.Add(outputPortsContainer);
             CreateNodeGUI();
             
             SetPosition(editorData.position);
             Repaint();
         }
-
-        //TODO:: Bad
-        private const string portStylePath =
-            "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BasePortDefaultStyle.uss";
-
-        private StyleSheet cachedStyleSheet = null;
+        
         protected Port CreatePort(Orientation orientation, 
             Direction direction,
             Port.Capacity capacity,
             System.Type type)
         {
-            if (cachedStyleSheet == null)
-            {
-                cachedStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(portStylePath);
-            }
-
             var port = InstantiatePort(orientation, direction, capacity, type);
-            port.styleSheets.Add(cachedStyleSheet);
+            port.styleSheets.Add(portStyle);
             return port;
         }
 

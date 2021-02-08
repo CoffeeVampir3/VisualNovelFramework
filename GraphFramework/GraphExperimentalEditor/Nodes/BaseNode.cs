@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 using VisualNovelFramework.Serialization;
@@ -39,6 +40,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// a more-specific type for RuntimeData instead of the less-specific RuntimeNode.
         /// </summary>
         public abstract RuntimeNode RuntimeData { get; set; }
+        public StyleSheet portStyle = null;
 
         /// <summary>
         /// Called when this node is visited by the graph while it is
@@ -60,16 +62,15 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
 
         #region Initialization
-        
+
+        private NodeSerializationData deserializationData = null;
         /// <summary>
         /// Deserialization initialization
         /// </summary>
         public void Initialize(NodeSerializationData data)
         {
             LoadNodeData(data);
-            OnNodeCreation();
-            SetupBaseNodeUI();
-            RebuildPortsFromSerialization(data);
+            deserializationData = data;
         }
         
         /// <summary>
@@ -78,9 +79,21 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public void Initialize(string initialName)
         {
             GenerateNewNodeData(initialName);
+        }
+        
+        public void CreateNodeUI()
+        {
             OnNodeCreation();
             SetupBaseNodeUI();
-            InstantiatePorts();
+            if (deserializationData != null)
+            {
+                RebuildPortsFromSerialization(deserializationData);
+                deserializationData = null;
+            }
+            else
+            {
+                InstantiatePorts();
+            }
         }
 
         private void LoadNodeData(NodeSerializationData serializationData)

@@ -10,10 +10,10 @@ GridBackground {
 }
 
 .unity-button {
-    background-color: rgba(10, 140, 170, .25);
+    background-color: rgba(0, 173, 181, .5);
 }
 
 .unity-button:hover {
-    background-color: rgba(10, 140, 170, .6);
+    background-color: rgba(0, 173, 181, .88);
 }
 

@@ -1,12 +1,25 @@
 #title {
-    background-color: rgba(43, 55, 111, .4);
+    background-color: rgba(34, 40, 49, .8);
 }
 
 #contents > #top > #input,
 #contents > #top > #output,
+#contents > #top > #actualOutput,
 #extension,
 .unity-object-field-display {
-    background-color: rgba(1, 1, 17, .8);
+    background-color: rgba(57, 62, 70, .8);
+}
+
+#extension .unity-button {
+    align-self: center;
+}
+
+.unity-button {
+    background-color: rgba(0, 173, 181, .3);
+}
+
+.unity-button:hover {
+    background-color: rgba(0, 173, 181, .7);
 }
 
 .unity-property-field,
@@ -16,5 +29,5 @@
 }
 
 .currentNode #title {
-    background-color: rgba(255, 0, 251, .3);
+    background-color: rgba(128, 1, 17, .6);
 }

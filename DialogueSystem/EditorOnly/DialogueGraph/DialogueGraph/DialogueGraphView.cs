@@ -10,13 +10,6 @@ namespace VisualNovelFramework.DialogueGraph
 {
     public class DialogueGraphView : CoffeeGraphView
     {
-        public DialogueGraphView()
-        {
-            StyleSheet ss = AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BaseGraphViewStyle.uss");
-            styleSheets.Add(ss);
-        }
-        
         private void CreateGrid()
         {
             var grid = new GridBackground();
@@ -42,8 +35,7 @@ namespace VisualNovelFramework.DialogueGraph
             var spawnHeight = (height - 75) / 2;
             
             rootNode.Initialize("Root Node");
-            rootNode.SetPosition(new Rect(spawnWidth, spawnHeight, 150, 150));
-            AddElement(rootNode);
+            AddNodeAt(rootNode, new Rect(spawnWidth, spawnHeight, 150, 150));
         }
         
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -66,9 +58,7 @@ namespace VisualNovelFramework.DialogueGraph
             var spawnPos = new Rect(pos.x, pos.y, 100, 150);
             var node = new DialogueNode();
             node.Initialize("Dialogue Node");
-            node.SetPosition(spawnPos);
-            
-            AddElement(node);
+            AddNodeAt(node, spawnPos);
         }
 
         private void MenuAddCharacterNode(DropdownMenuAction act)
@@ -79,8 +69,7 @@ namespace VisualNovelFramework.DialogueGraph
             var spawnPos = new Rect(pos.x, pos.y, 100, 150);
             var node = new CharacterNode();
             node.Initialize("Character Node");
-            node.SetPosition(spawnPos);
-            AddElement(node);
+            AddNodeAt(node, spawnPos);
         }
 
         #region Events

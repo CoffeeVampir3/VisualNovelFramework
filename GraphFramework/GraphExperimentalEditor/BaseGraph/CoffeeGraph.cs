@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using NUnit.Framework.Internal.Commands;
 using Sirenix.Utilities;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 using Object = UnityEngine.Object;
@@ -19,7 +16,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
     {
         [SerializeReference]
         protected CoffeeGraphView graphView;
-        [SerializeField]
+        [SerializeReference]
         public string currentGraphGUID;
 
         #region EditorLinked
@@ -49,6 +46,16 @@ namespace VisualNovelFramework.GraphFramework.Editor
             GenerateToolbar();
             OnGraphGUI();
             graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+        }
+
+        private void Reset()
+        {
+            rootVisualElement.Clear();
+        }
+
+        private void OnDestroy()
+        {
+            rootVisualElement.Clear();
         }
 
         private void OnDisable()

@@ -1,9 +1,9 @@
 ﻿using System.Linq;
-using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Editor
@@ -12,35 +12,30 @@ namespace VisualNovelFramework.GraphFramework.Editor
     {
         [SerializeReference]
         public BaseNode rootNode;
+        [SerializeReference] 
+        public readonly GraphSettings settings;
 
-        public CoffeeGraphView()
+        protected CoffeeGraphView()
         {
-            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
+            settings = GraphSettings.CreateOrGetSettings(this);
+            styleSheets.Add(settings.graphViewStyle);
 
+            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
             graphViewChanged = OnGraphViewChanged;
         }
 
-        //TODO:: Bad temporary code
-        private const string edgeStylePath =
-            "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BasePortDefaultStyle.uss";
-
-        private StyleSheet edgeStyleSheet = null;
-        GraphViewChange OnGraphViewChanged(GraphViewChange changes)
+        private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
         {
-            if (changes.edgesToCreate != null)
+            if (changes.edgesToCreate == null) 
+                return default;
+            
+            foreach (var edge in changes.edgesToCreate)
             {
-                foreach (var edge in changes.edgesToCreate)
-                {
-                    edge.styleSheets.Clear();
-                    if (edgeStyleSheet == null)
-                    {
-                        edgeStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(edgeStylePath);
-                    }
-                    edge.styleSheets.Add(edgeStyleSheet);
-                }
+                edge.styleSheets.Clear();
+                edge.styleSheets.Add(settings.edgeStyle);
             }
 
             return default;
@@ -57,6 +52,20 @@ namespace VisualNovelFramework.GraphFramework.Editor
             //This way we "undo" the division by scale for only the offset value, scaling everything else.
             relPos -= (offset*scale);
             return relPos/scale;
+        }
+
+        public void AddNode(BaseNode node)
+        {
+            node.styleSheets.Add(settings.nodeStyle);
+            node.portStyle = settings.portStyle;
+            node.CreateNodeUI();
+            AddElement(node);
+        }
+        
+        public void AddNodeAt(BaseNode node, Rect position)
+        {
+            AddNode(node);
+            node.SetPosition(position);
         }
 
         [SerializeReference]
