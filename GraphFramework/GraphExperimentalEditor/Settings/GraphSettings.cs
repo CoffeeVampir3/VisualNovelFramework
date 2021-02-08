@@ -17,9 +17,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings
         [SerializeField, HideInInspector] 
         private bool isDefault = false;
         public StyleSheet graphViewStyle;
-        public StyleSheet portStyle;
         public StyleSheet nodeStyle;
-        public StyleSheet edgeStyle;
 
         private static GraphSettings CreateGraphSettings(System.Type graphViewType, List<GraphSettings> allSettings)
         {

@@ -40,7 +40,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// a more-specific type for RuntimeData instead of the less-specific RuntimeNode.
         /// </summary>
         public abstract RuntimeNode RuntimeData { get; set; }
-        public StyleSheet portStyle = null;
 
         /// <summary>
         /// Called when this node is visited by the graph while it is
@@ -62,15 +61,16 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
 
         #region Initialization
-
-        private NodeSerializationData deserializationData = null;
+        
         /// <summary>
         /// Deserialization initialization
         /// </summary>
         public void Initialize(NodeSerializationData data)
         {
             LoadNodeData(data);
-            deserializationData = data;
+            OnNodeCreation();
+            SetupBaseNodeUI();
+            RebuildPortsFromSerialization(data);
         }
         
         /// <summary>
@@ -79,21 +79,9 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public void Initialize(string initialName)
         {
             GenerateNewNodeData(initialName);
-        }
-        
-        public void CreateNodeUI()
-        {
             OnNodeCreation();
             SetupBaseNodeUI();
-            if (deserializationData != null)
-            {
-                RebuildPortsFromSerialization(deserializationData);
-                deserializationData = null;
-            }
-            else
-            {
-                InstantiatePorts();
-            }
+            InstantiatePorts();
         }
 
         private void LoadNodeData(NodeSerializationData serializationData)

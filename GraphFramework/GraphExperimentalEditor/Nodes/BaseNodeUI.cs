@@ -142,7 +142,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             System.Type type)
         {
             var port = InstantiatePort(orientation, direction, capacity, type);
-            port.styleSheets.Add(portStyle);
             return port;
         }
 

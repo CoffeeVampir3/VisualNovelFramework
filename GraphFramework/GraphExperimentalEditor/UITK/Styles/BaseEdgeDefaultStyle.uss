@@ -1,7 +1,0 @@
-.edge {
-    --selected-edge-color: #44C0FF;
-    --ghost-edge-color: #555555;
-    --edge-color: #929292;
-    --edge-width: 2;
-    --layer:1;
-}

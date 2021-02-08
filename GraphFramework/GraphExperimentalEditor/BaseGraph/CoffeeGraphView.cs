@@ -13,7 +13,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         [SerializeReference]
         public BaseNode rootNode;
         [SerializeReference] 
-        public readonly GraphSettings settings;
+        protected readonly GraphSettings settings;
 
         protected CoffeeGraphView()
         {
@@ -24,21 +24,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
-            graphViewChanged = OnGraphViewChanged;
-        }
-
-        private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
-        {
-            if (changes.edgesToCreate == null) 
-                return default;
-            
-            foreach (var edge in changes.edgesToCreate)
-            {
-                edge.styleSheets.Clear();
-                edge.styleSheets.Add(settings.edgeStyle);
-            }
-
-            return default;
         }
 
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
@@ -54,15 +39,20 @@ namespace VisualNovelFramework.GraphFramework.Editor
             return relPos/scale;
         }
 
+        /// <summary>
+        /// Nodes should be created using AddNoteAt with a rect targeting where on the graph
+        /// they should be spawned.
+        /// </summary>
         public void AddNode(BaseNode node)
         {
             node.styleSheets.Add(settings.nodeStyle);
-            node.portStyle = settings.portStyle;
-            node.CreateNodeUI();
             AddElement(node);
         }
         
-        public void AddNodeAt(BaseNode node, Rect position)
+        /// <summary>
+        /// Node is created with on the graph with the given coordinates.
+        /// </summary>
+        protected void AddNodeAt(BaseNode node, Rect position)
         {
             AddNode(node);
             node.SetPosition(position);
