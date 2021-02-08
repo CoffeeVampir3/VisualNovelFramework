@@ -1,0 +1,19 @@
+GridBackground {
+    --grid-background-color: rgba(20, 20, 20, .8);
+    --line-color: rgba(192, 192, 192, 0.1);
+    --thick-line-color: rgba(192, 192, 192, .1);
+    --spacing: 25;
+}
+
+.unity-toolbar {
+    background-color: rgba(30, 30, 30, 0);
+}
+
+.unity-button {
+    background-color: rgba(10, 140, 170, .25);
+}
+
+.unity-button:hover {
+    background-color: rgba(10, 140, 170, .6);
+}
+

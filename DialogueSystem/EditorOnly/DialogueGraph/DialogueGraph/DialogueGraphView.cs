@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -9,14 +10,11 @@ namespace VisualNovelFramework.DialogueGraph
 {
     public class DialogueGraphView : CoffeeGraphView
     {
-        public DialogueGraphView(StyleSheet defaultStyleSheet)
+        public DialogueGraphView()
         {
-            styleSheets.Add(defaultStyleSheet);
-            SetupZoom(ContentZoomer.DefaultMinScale, ContentZoomer.DefaultMaxScale);
-
-            this.AddManipulator(new ContentDragger());
-            this.AddManipulator(new SelectionDragger());
-            this.AddManipulator(new RectangleSelector());
+            StyleSheet ss = AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BaseGraphViewStyle.uss");
+            styleSheets.Add(ss);
         }
         
         private void CreateGrid()
@@ -72,7 +70,7 @@ namespace VisualNovelFramework.DialogueGraph
             
             AddElement(node);
         }
-        
+
         private void MenuAddCharacterNode(DropdownMenuAction act)
         {
             var pos = GetViewRelativePosition(act.eventInfo.mousePosition,

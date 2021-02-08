@@ -1,0 +1,3 @@
+.port.typeString {
+    --port-color: rgba(120, 33, 80, 1);
+}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using NUnit.Framework.Internal.Commands;
 using Sirenix.Utilities;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -18,17 +19,14 @@ namespace VisualNovelFramework.GraphFramework.Editor
     {
         [SerializeReference]
         protected CoffeeGraphView graphView;
-
         [SerializeField]
         public string currentGraphGUID;
-        
+
         #region EditorLinked
-        
-        public void RuntimeNodeVisited(RuntimeNode node)
-        {
+
+        public void RuntimeNodeVisited(RuntimeNode node) => 
             graphView?.RuntimeNodeVisited(node);
-        }
-        
+
         #endregion
 
         protected void InitializeGraph()
@@ -146,7 +144,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             toolbar.Add(new Button( RevertGraphToVersionOnDisk ) {text = "Revert To Saved Version"});
 
             toolbar.Add(serializedGraphSelector);
-            rootVisualElement.Add(toolbar);
+            graphView.Add(toolbar);
         }
     }
     

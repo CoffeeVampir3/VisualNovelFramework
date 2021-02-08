@@ -15,12 +15,10 @@ namespace VisualNovelFramework.DialogueGraph
             
             window.Focus();
         }
-
-        [SerializeField]
-        private StyleSheet defautGraphStyle = null;
+        
         private void OnEnable()
         {
-            graphView = new DialogueGraphView(defautGraphStyle)
+            graphView = new DialogueGraphView()
             {
                 name = "Coffee Dialogue Graph"
             };

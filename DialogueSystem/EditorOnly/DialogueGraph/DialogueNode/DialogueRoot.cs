@@ -1,4 +1,6 @@
 ﻿using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
@@ -12,7 +14,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 
         protected override void InstantiatePorts()
         {
-            var port = InstantiatePort(Orientation.Horizontal, 
+            var port = CreatePort(Orientation.Horizontal, 
                 Direction.Output, Port.Capacity.Single, typeof(string));
             outputPortsContainer.Add(port);
         }

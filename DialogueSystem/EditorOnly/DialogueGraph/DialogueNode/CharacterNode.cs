@@ -65,11 +65,12 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         
         protected override void InstantiatePorts()
         {
-            var iPort = InstantiatePort(Orientation.Horizontal, 
+            var iPort = CreatePort(Orientation.Horizontal, 
                 Direction.Input, Port.Capacity.Multi, typeof(string));
             inputPortsContainer.Add(iPort);
-            var oPort = InstantiatePort(Orientation.Horizontal, 
+            var oPort = CreatePort(Orientation.Horizontal, 
                 Direction.Output, Port.Capacity.Single, typeof(string));
+            
             outputPortsContainer.Add(oPort);
         }
     }

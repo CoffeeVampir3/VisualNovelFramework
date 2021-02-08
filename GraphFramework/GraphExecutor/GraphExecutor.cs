@@ -29,16 +29,17 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
 
         public void WalkNode()
         {
+            if (currentNode == null)
+            {
+                currentNode = targetGraph.rootNode;
+            }
+            
             if (isEditorLinkedStub != null && isEditorLinkedStub.Invoke())
             {
                 runtimeNodeVisitedEditor.Invoke(currentNode);
             }
             
             currentNode = currentNode.outputConnections.FirstOrDefault();
-            if (currentNode == null)
-            {
-                currentNode = targetGraph.rootNode;
-            }
         }
     }
 }

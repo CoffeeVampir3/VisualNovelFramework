@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,6 +20,30 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
+            graphViewChanged = OnGraphViewChanged;
+        }
+
+        //TODO:: Bad temporary code
+        private const string edgeStylePath =
+            "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BasePortDefaultStyle.uss";
+
+        private StyleSheet edgeStyleSheet = null;
+        GraphViewChange OnGraphViewChanged(GraphViewChange changes)
+        {
+            if (changes.edgesToCreate != null)
+            {
+                foreach (var edge in changes.edgesToCreate)
+                {
+                    edge.styleSheets.Clear();
+                    if (edgeStyleSheet == null)
+                    {
+                        edgeStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(edgeStylePath);
+                    }
+                    edge.styleSheets.Add(edgeStyleSheet);
+                }
+            }
+
+            return default;
         }
 
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
@@ -34,13 +59,14 @@ namespace VisualNovelFramework.GraphFramework.Editor
             return relPos/scale;
         }
 
+        [SerializeReference]
+        private BaseNode lastEvaluatedNode = null;
         /// <summary>
         /// TODO:: Temporary code, should have a faster means of accessing nodes.
         /// </summary>
-        /// <param name="node"></param>
         public void RuntimeNodeVisited(RuntimeNode node)
         {
-            var dataNode = nodes.ToList().FirstOrDefault(e =>
+            if (!(nodes.ToList().FirstOrDefault(e =>
             {
                 if (e is BaseNode bn)
                 {
@@ -48,13 +74,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 }
 
                 return false;
-            });
-            
-            if (dataNode == null)
+            }) is BaseNode dataNode))
                 return;
 
-            dataNode.titleContainer.style.backgroundColor = new StyleColor(Color.black);
-            Debug.Log("Wooooo.ooooo.!!!");
+            lastEvaluatedNode?.OnNodeExited();
+            dataNode.OnNodeEntered();
+            lastEvaluatedNode = dataNode;
         }
     }
 }

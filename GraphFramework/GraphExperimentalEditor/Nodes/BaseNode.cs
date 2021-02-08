@@ -25,6 +25,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     }
     
     /// <summary>
+    /// Inherit from BaseNode<RuntimeNodeType>, not this class.
     /// BaseNode is responsible for the very most basic setup and initialization of any deriving nodes.
     /// This allows us to have a common class we can generate using reflection and an activator,
     /// allowing us to avoid boilerplate code.
@@ -33,9 +34,32 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     {
         [SerializeReference]
         public NodeEditorData editorData;
+        /// <summary>
+        /// This is an auto property which is overriden in BaseNode<T> allowing us to use
+        /// a more-specific type for RuntimeData instead of the less-specific RuntimeNode.
+        /// </summary>
         public abstract RuntimeNode RuntimeData { get; set; }
 
-        #region Node Data Handling
+        /// <summary>
+        /// Called when this node is visited by the graph while it is
+        /// open in the editor window.
+        /// </summary>
+        public virtual void OnNodeEntered()
+        {
+            Debug.Log("Current: " + title);
+            AddToClassList("currentNode");
+        }
+        
+        /// <summary>
+        /// Called when this node is visited by the graph while it is
+        /// open in the editor window.
+        /// </summary>
+        public virtual void OnNodeExited()
+        {
+            RemoveFromClassList("currentNode");
+        }
+
+        #region Initialization
         
         /// <summary>
         /// Deserialization initialization
@@ -58,18 +82,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             SetupBaseNodeUI();
             InstantiatePorts();
         }
-
-        /// <summary>
-        /// This initialization is performed when the node is spawned, before any UI elements
-        /// are generated.
-        /// </summary>
-        protected abstract void OnNodeCreation();
-
-        /// <summary>
-        /// This initialization is called after all UI is generated, allowing you to generate ports
-        /// on top of the UI.
-        /// </summary>
-        protected abstract void InstantiatePorts();
 
         private void LoadNodeData(NodeSerializationData serializationData)
         {

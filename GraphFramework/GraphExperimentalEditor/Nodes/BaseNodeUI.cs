@@ -20,10 +20,25 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         protected readonly VisualElement inputPortsContainer = new VisualElement();
         #region Node UI Construction
 
+        /// <summary>
+        /// Override this if you want more fine-grain control over your nodes GUI.
+        /// </summary>
         protected virtual void CreateNodeGUI()
         {
             CreateEditorFromNodeData();
         }
+        
+        /// <summary>
+        /// This initialization is performed when the node is spawned, before any UI elements
+        /// are generated.
+        /// </summary>
+        protected abstract void OnNodeCreation();
+
+        /// <summary>
+        /// This initialization is called after all UI is generated, allowing you to generate ports
+        /// on top of the UI.
+        /// </summary>
+        protected abstract void InstantiatePorts();
         
         #region Readonly Attribute Handler
         
@@ -55,7 +70,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         
         #endregion
 
-        public void CreateEditorFromNodeData()
+        protected void CreateEditorFromNodeData()
         {
             var serializedNode = new SerializedObject(RuntimeData);
             VisualElement container = new VisualElement();
@@ -95,6 +110,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void SetupBaseNodeUI()
         {
+            StyleSheet ss = AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BaseNodeDefaultStyle.uss");
+            styleSheets.Add(ss);
+            
             //Add port containers
             inputContainer.Add(inputPortsContainer);
             outputContainer.Add(outputPortsContainer);
@@ -102,6 +121,26 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             
             SetPosition(editorData.position);
             Repaint();
+        }
+
+        //TODO:: Bad
+        private const string portStylePath =
+            "Assets/VisualNovelFramework/GraphFramework/GraphExperimentalEditor/UITK/Styles/BasePortDefaultStyle.uss";
+
+        private StyleSheet cachedStyleSheet = null;
+        protected Port CreatePort(Orientation orientation, 
+            Direction direction,
+            Port.Capacity capacity,
+            System.Type type)
+        {
+            if (cachedStyleSheet == null)
+            {
+                cachedStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(portStylePath);
+            }
+
+            var port = InstantiatePort(orientation, direction, capacity, type);
+            port.styleSheets.Add(cachedStyleSheet);
+            return port;
         }
 
         private void Repaint()
@@ -112,7 +151,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void RebuildPortFromSerialization(SerializedPortData serializedPort)
         {
-            Port p = InstantiatePort(serializedPort.orientation, 
+            Port p = CreatePort(serializedPort.orientation, 
                 serializedPort.direction, serializedPort.capacity, 
                 serializedPort.portValueType.type);
 

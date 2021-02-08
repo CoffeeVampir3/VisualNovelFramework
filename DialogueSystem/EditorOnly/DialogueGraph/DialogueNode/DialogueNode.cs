@@ -1,4 +1,5 @@
 ﻿using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
@@ -9,7 +10,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
     {
         private void DynamicPortTest()
         {
-            var port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));
+            var port = CreatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));
 
             outputPortsContainer.Add(port);
         }
@@ -31,7 +32,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         
         protected override void InstantiatePorts()
         {
-            var port = InstantiatePort(Orientation.Horizontal, 
+            var port = CreatePort(Orientation.Horizontal, 
                 Direction.Input, Port.Capacity.Multi, typeof(string));
             inputPortsContainer.Add(port);
         }
