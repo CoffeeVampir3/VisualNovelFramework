@@ -37,7 +37,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 Debug.Log("Forced to unload graph view. Probably should temp save and reload it here.");
                 graphView = null;
             };
-            
+
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
             graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
@@ -50,16 +50,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             GenerateToolbar();
             OnGraphGUI();
             graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
-        }
-
-        private void Reset()
-        {
-            rootVisualElement.Clear();
-        }
-
-        private void OnDestroy()
-        {
-            rootVisualElement.Clear();
         }
 
         private void OnDisable()

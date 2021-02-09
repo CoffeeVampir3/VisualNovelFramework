@@ -2,7 +2,6 @@
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 using VisualNovelFramework.Serialization;

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorOnly.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.DialogueGraph
 {
@@ -44,6 +45,7 @@ namespace VisualNovelFramework.DialogueGraph
             {
                 evt.menu.AppendAction("Nodes/Character", MenuAddCharacterNode);
                 evt.menu.AppendAction("Nodes/Dialogue", MenuAddDialogueNode);
+                evt.menu.AppendAction("Nodes/Debug", MenuAddDebugNode);
             }
             
             base.BuildContextualMenu(evt);
@@ -58,6 +60,17 @@ namespace VisualNovelFramework.DialogueGraph
             var node = new DialogueNode();
             node.Initialize("Dialogue Node");
             AddNodeAt(node, spawnPos);
+        }
+
+        private void MenuAddDebugNode(DropdownMenuAction act)
+        {
+            var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
+                new Vector2(50, 75));
+            
+            var spawnPos = new Rect(pos.x, pos.y, 100, 150);
+            var node = new BaseStackNode();
+            node.SetPosition(spawnPos);
+            AddElement(node);
         }
 
         private void MenuAddCharacterNode(DropdownMenuAction act)
