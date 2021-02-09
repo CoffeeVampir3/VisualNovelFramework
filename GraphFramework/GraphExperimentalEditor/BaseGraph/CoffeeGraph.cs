@@ -5,7 +5,6 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 using Object = UnityEngine.Object;
@@ -19,7 +18,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         [SerializeReference]
         public string currentGraphGUID;
 
-        #region EditorLinked
+        #region EditorLinker
 
         public void RuntimeNodeVisited(RuntimeNode node) => 
             graphView?.RuntimeNodeVisited(node);
@@ -32,20 +31,25 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 currentGraphGUID = Guid.NewGuid().ToString();
             }
+
+            AssemblyReloadEvents.beforeAssemblyReload += () =>
+            {
+                Debug.Log("Forced to unload graph view. Probably should temp save and reload it here.");
+                graphView = null;
+            };
             
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
-            graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-            OnGeometryChanged(null);
+            graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
         }
 
         protected abstract void OnGraphGUI();
 
-        private void OnGeometryChanged(GeometryChangedEvent e)
+        private void OnGeometryChangedInitialization(GeometryChangedEvent e)
         {
             GenerateToolbar();
             OnGraphGUI();
-            graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
         }
 
         private void Reset()
@@ -65,14 +69,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         protected void SaveGraph()
         {
-            /*
-            if (Application.isPlaying)
-            {
-                Debug.LogError("Currently saving during playmode is not supported. End playmode to save.");
-                return;
-            }
-            */
-            
             GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
         }
         

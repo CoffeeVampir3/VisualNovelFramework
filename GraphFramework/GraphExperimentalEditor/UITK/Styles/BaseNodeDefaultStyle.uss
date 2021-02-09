@@ -35,5 +35,5 @@
 #actualOutput .port,
 #input .port
 {
-    --port-color: rgba(200, 200, 200, 0.5);
+    --port-color: rgba(200, 200, 200, 0.5) !important;
 }
