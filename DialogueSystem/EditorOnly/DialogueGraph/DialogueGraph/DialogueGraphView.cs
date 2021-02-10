@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -69,8 +70,9 @@ namespace VisualNovelFramework.DialogueGraph
             
             var spawnPos = new Rect(pos.x, pos.y, 100, 150);
             var node = new BaseStackNode();
+            node.SetCoffeeGUID(Guid.NewGuid().ToString());
             node.SetPosition(spawnPos);
-            AddElement(node);
+            AddStackNode(node);
         }
 
         private void MenuAddCharacterNode(DropdownMenuAction act)

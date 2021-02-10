@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
@@ -10,16 +11,29 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 {
     public static class GraphSaver
     {
-        private static readonly List<NodeSerializationData> serializedNodeData = 
+        private static readonly List<NodeSerializationData> serializedUnstackedNodeData = 
             new List<NodeSerializationData>();
+        
+        private static readonly List<StackNodeSerializationData> serializedStackedNodeData = 
+            new List<StackNodeSerializationData>();
+
+        private static readonly List<BaseNode> stackedNodes = new List<BaseNode>();
         
         private static SerializedGraph serializedGraph;
 
-        public static void SerializeGraph(GraphView graphView, string currentGraphGUID, System.Type windowType)
+        /// <summary>
+        /// Serializes the target CoffeeGraphView to disk as ScriptableObjects.
+        /// </summary>
+        /// <param name="graphView">The target graph view.</param>
+        /// <param name="currentGraphGUID">The GUID you want to serialize the graph as.</param>
+        /// <param name="windowType">Editor window type.</param>
+        public static void SerializeGraph(CoffeeGraphView graphView, string currentGraphGUID, System.Type windowType)
         {
-            serializedNodeData.Clear();
+            serializedUnstackedNodeData.Clear();
+            serializedStackedNodeData.Clear();
+            stackedNodes.Clear();
             WalkNodes(graphView);
-            
+
             serializedGraph = GraphSerializer.FindOrCreateGraphAsset(currentGraphGUID, windowType);
             if (serializedGraph == null)
                 return;
@@ -29,8 +43,14 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             try
             {
                 AssetDatabase.StartAssetEditing();
-                foreach (var nodeData in serializedNodeData)
-                { 
+                
+                foreach (var stackedNodeData in serializedStackedNodeData)
+                {
+                    GraphSerializer.WriteSerializedStack(serializedGraph, stackedNodeData);
+                }
+                
+                foreach (var nodeData in serializedUnstackedNodeData)
+                {
                     GraphSerializer.WriteSerializedNode(serializedGraph, nodeData);
                 }
             }
@@ -53,7 +73,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             foreach (var edge in port.connections)
             {
                 if(edge.input.node is BaseNode bn)
-                    AddOutputRuntimeLink(runtimeData, bn.RuntimeData);
+                    AddOutputLink(runtimeData, bn.RuntimeData);
                 serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
             }
 
@@ -66,46 +86,39 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             foreach (var edge in port.connections)
             {
                 if(edge.output.node is BaseNode bn)
-                    AddInputRuntimeLink(runtimeData, bn.RuntimeData);
+                    AddInputLink(runtimeData, bn.RuntimeData);
             }
             
             return serializedPort;
         }
 
-        private static void AddOutputRuntimeLink(RuntimeNode addingTo, RuntimeNode connection)
+        /// <summary>
+        /// This is the actual connection information that we're serializing, not just
+        /// the edge data. So the node actually connects to another runtime node.
+        /// </summary>
+        private static void AddOutputLink(RuntimeNode addingTo, RuntimeNode connection)
         {
             addingTo.outputConnections.Add(connection);
         }
         
-        private static void AddInputRuntimeLink(RuntimeNode addingTo, RuntimeNode connection)
+        /// <summary>
+        /// This is the actual connection information that we're serializing, not just
+        /// the edge data. So the node actually connects to another runtime node.
+        /// </summary>
+        private static void AddInputLink(RuntimeNode addingTo, RuntimeNode connection)
         {
             addingTo.inputConnections.Add(connection);
         }
 
-        private static void SerializeNode(BaseNode node)
+        private static NodeSerializationData SerializeNode(BaseNode node)
         {
+            if (stackedNodes.Contains(node))
+                return null;
+            
             var ports = node.Query<Port>().ToList();
 
             NodeSerializationData serializationData =
-                ScriptableObject.CreateInstance<NodeSerializationData>();
-
-            if (node.editorData == null || node.RuntimeData == null)
-            {
-                Debug.Log("Problem.");
-            }
-
-            serializationData.nodeEditorData = node.editorData;
-            serializationData.SetCoffeeGUID(node.editorData.GUID);
-            
-            serializationData.runtimeNode = node.RuntimeData;
-            serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
-            
-            serializedNodeData.Add(serializationData);
-
-            if (node is IRootNode)
-            {
-                serializationData.isRoot = true;
-            }
+                NodeSerializationData.SerializeFrom(node);
             
             serializationData.runtimeNode.outputConnections.Clear();
             serializationData.runtimeNode.inputConnections.Clear();
@@ -124,16 +137,66 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                         continue;
                 }
             }
-        }
 
-        private static List<Node> enumerationOfNodes;
+            return serializationData;
+        }
+        
+        /// <summary>
+        /// Serializes an entire stack, stack nodes are serialized together with
+        /// anything stacked in them. This makes for easy deserialization later.
+        /// </summary>
+        private static StackNodeSerializationData SerializeStack(BaseStackNode stack)
+        {
+            var nodeList = stack.Query<BaseNode>().ToList();
+
+            var stackSerialData = StackNodeSerializationData.SerializeFrom(stack);
+
+            //Serializes each stacked node.
+            foreach (var stackedNode in nodeList)
+            {
+                var serialData = SerializeNode(stackedNode);
+                stackSerialData.stackedNodes.Add(serialData);
+                stackedNodes.Add(stackedNode);
+            }
+            
+            return stackSerialData;
+        }
+        
+        /// <summary>
+        /// Walks all nodes in the graph, including stack nodes.
+        /// </summary>
         private static void WalkNodes(GraphView graphView)
         {
-            enumerationOfNodes = graphView.nodes.ToList();
+            var enumerationOfNodes = graphView.nodes.ToList();
+            
+            //Iterate backwards through the nodes for all stack nodes.
+            //This will serialize them and any nodes stacked under them.
+            //This step happens first because the stack node is "responsible"
+            //for serializing its children, but the node will be serialized twice
+            //if we aren't careful.
+            for (int i = enumerationOfNodes.Count-1; i >= 0; i--)
+            {
+                var node = enumerationOfNodes[i];
+                if (!(node is BaseStackNode sn)) 
+                    continue;
+                
+                serializedStackedNodeData.Add(SerializeStack(sn));
+                enumerationOfNodes.RemoveAt(i);
+            }
+
+            //Serialize all free-hanging nodes left.
             foreach (var node in enumerationOfNodes)
             {
-                SerializeNode(node as BaseNode);
+                //This guard clause is "technically" not possible but /shrug.
+                if (!(node is BaseNode bn)) 
+                    continue;
+                
+                var serializationData = SerializeNode(bn);
+                if (serializationData == null)
+                    continue;
+                serializedUnstackedNodeData.Add(serializationData);
             }
+
         }
         
     }

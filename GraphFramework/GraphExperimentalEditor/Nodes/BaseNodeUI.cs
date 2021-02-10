@@ -105,31 +105,14 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             }
             while (it.NextVisible(false));
 
-            outputContainer.Add(container);
-        }
-
-        private VisualElement newOutputContainer;
-        /// <summary>
-        /// NOTE:: We use this to extend the node UI, effectively making the old
-        /// "output" container the new middle, and then creating a new output container.
-        /// </summary>
-        private void ExtendNodeUI()
-        {
-            newOutputContainer = new VisualElement {name = "actualOutput"};
-            var newOutputDivider = new VisualElement();
-            
-            newOutputDivider.AddToClassList("vertical");
-            newOutputDivider.name = "divider";
-            topContainer.Add(newOutputDivider);
-            topContainer.Add(newOutputContainer);
+            extensionContainer.Add(container);
         }
 
         private void SetupBaseNodeUI()
         {
-            ExtendNodeUI();
             //Add port containers
             inputContainer.Add(inputPortsContainer);
-            newOutputContainer.Add(outputPortsContainer);
+            outputContainer.Add(outputPortsContainer);
             CreateNodeGUI();
             
             SetPosition(editorData.position);

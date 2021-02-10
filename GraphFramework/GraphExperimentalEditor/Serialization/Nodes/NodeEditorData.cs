@@ -4,8 +4,7 @@ using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
-    //TODO:: This information isin't needed at runtime?
-    //Strong seperation of runtime/editor time.
+    //Strong separation of runtime/editor time.
     //[Serializable]
     public class NodeEditorData : ScriptableObject, HasCoffeeGUID
     {

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
+using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
@@ -18,6 +20,24 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField]
         public RuntimeNode runtimeNode;
         
+        public static NodeSerializationData SerializeFrom(BaseNode node)
+        {
+            NodeSerializationData serializationData = CreateInstance<NodeSerializationData>();
+            
+            serializationData.nodeEditorData = node.editorData;
+            serializationData.SetCoffeeGUID(node.editorData.GUID);
+            
+            serializationData.runtimeNode = node.RuntimeData;
+            serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
+            
+            if (node is IRootNode)
+            {
+                serializationData.isRoot = true;
+            }
+            
+            return serializationData;
+        }
+
         public string GetCoffeeGUID()
         {
             return GUID;

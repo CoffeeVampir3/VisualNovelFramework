@@ -60,10 +60,30 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             savedObjects.Add(SaveAssetToGraph(serializedNode.runtimeNode, nodeGUID, graph));
         }
 
+        private static void CreateSerializedStackAsset(SerializedGraph graph, StackNodeSerializationData serializedStack)
+        {
+            var serializedItem = SaveAssetToGraph(serializedStack,
+                serializedStack.GetCoffeeGUID(), graph);
+            
+            serializedItem.name = serializedItem.GetCoffeeGUID();
+            savedObjects.Add(serializedItem);
+        }
+
         public static void WriteSerializedNode(SerializedGraph graph, NodeSerializationData serializedNode)
         {
             CreateSerializedNodeAsset(graph, serializedNode);
         }
+        
+        public static void WriteSerializedStack(SerializedGraph graph, StackNodeSerializationData serializedStack)
+        {
+            CreateSerializedStackAsset(graph, serializedStack);
+
+            foreach (var serialNode in serializedStack.stackedNodes)
+            {
+                CreateSerializedNodeAsset(graph, serialNode);
+            }
+        }
+
 
         /// <summary>
         /// Cleans any deleted items from our graph asset so there's no garbage files piling up.

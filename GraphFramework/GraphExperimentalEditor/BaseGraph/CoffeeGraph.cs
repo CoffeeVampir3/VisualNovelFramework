@@ -61,13 +61,22 @@ namespace VisualNovelFramework.GraphFramework.Editor
         {
             GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
         }
-        
+
+        //TODO:: oof.
+        private SerializedGraph delayedLoadedGraph = null;
         public void LoadGraph(SerializedGraph graph)
         {
             if (GraphLoader.LoadGraph(graphView, graph))
             {
-                serializedGraphSelector.SetValueWithoutNotify(graph);
-                currentGraphGUID = graph.GetCoffeeGUID();
+                if (serializedGraphSelector != null)
+                {
+                    serializedGraphSelector.SetValueWithoutNotify(delayedLoadedGraph);
+                    currentGraphGUID = delayedLoadedGraph.GetCoffeeGUID();
+                }
+                else
+                {
+                    delayedLoadedGraph = graph;
+                }
             }
         }
 
@@ -132,6 +141,13 @@ namespace VisualNovelFramework.GraphFramework.Editor
             serializedGraphSelector = new ObjectField {objectType = typeof(SerializedGraph)};
             serializedGraphSelector.RegisterValueChangedCallback(LoadGraphEvent);
 
+            if (delayedLoadedGraph != null)
+            {
+                serializedGraphSelector.SetValueWithoutNotify(delayedLoadedGraph);
+                currentGraphGUID = delayedLoadedGraph.GetCoffeeGUID();
+                delayedLoadedGraph = null;
+            }
+            
             toolbar.Add(new Button( SaveGraph ) {text = "Save"});
             toolbar.Add(new Button( DuplicateGraph ) {text = "Duplicate Test"});
             toolbar.Add(new Button( RevertGraphToVersionOnDisk ) {text = "Revert To Saved Version"});

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICSharpCode.NRefactory.Ast;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -18,6 +19,12 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         private static readonly Dictionary<string, BaseNode> guidToNodeDict = new Dictionary<string, BaseNode>();
         private static readonly List<Edge> edges = new List<Edge>();
         
+        /// <summary>
+        /// Loads a serialized graph (As a collection of SO) from disk.
+        /// </summary>
+        /// <param name="graphView">Target graph view to load onto</param>
+        /// <param name="graphToLoad">Target serialized graph to load</param>
+        /// <returns>True if successful.</returns>
         public static bool LoadGraph(CoffeeGraphView graphView, SerializedGraph graphToLoad)
         {
             guidToNodeDict.Clear();
@@ -38,25 +45,34 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             var serializedNodes = new List<NodeSerializationData>((items.Length/2)+1);
             
             ClearGraph(graphView);
+            
+            //First iterate the stack nodes, we iterate twice, once for stack nodes
+            //then we iterate the collection again and pick up anything the stack
+            //nodes weren't responsible for. Iterating the collection only once
+            //would require a different design, this seems like a fine compromise.
             foreach(var obj in items)
             {
-                if (!(obj is NodeSerializationData serialData)) 
-                    continue;
-                
-                serializedNodes.Add(serialData);
-                BaseNode node = LoadNode(serialData);
-                if (node != null)
+                //There's no particular reason for this... But it's kinda funny so I'll keep it around,
+                //Z
+                switch (obj)
                 {
-                    graphView.AddNode(node);
+                    case StackNodeSerializationData stackData:
+                        LoadSerializedStack(stackData, ref serializedNodes, graphView);
+                        break;
                 }
-                else
+            }
+            
+            foreach(var obj in items)
+            {
+                switch (obj)
                 {
-                    Debug.LogError("Attempted to load an invalid/incorrectly serialized graph node.");
-                }
-                
-                if(node is IRootNode root)
-                {
-                    graphView.rootNode = root as BaseNode;
+                    case NodeSerializationData serialData:
+                    {
+                        var node = LoadSerializedNode(serialData, ref serializedNodes, graphView);
+                        if(node != null)
+                            graphView.AddNode(node);
+                        break;
+                    }
                 }
             }
 
@@ -64,6 +80,55 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             
             edges.ForEach(graphView.AddElement);
             return true;
+        }
+
+        private static BaseNode LoadSerializedNode(
+            NodeSerializationData serialData, 
+            ref List<NodeSerializationData> serializedNodes,
+            CoffeeGraphView graphView)
+        {
+            if (guidToNodeDict.TryGetValue(serialData?.GetCoffeeGUID() ?? string.Empty, out _))
+                return null;
+            
+            serializedNodes.Add(serialData);
+            BaseNode node = LoadNode(serialData);
+            if (node == null)
+            {
+                Debug.LogError("Attempted to load an invalid/incorrectly serialized graph node.");
+                return null;
+            }
+
+            if(node is IRootNode root)
+            {
+                graphView.rootNode = root as BaseNode;
+            }
+
+            return node;
+        }
+        
+        private static BaseStackNode LoadSerializedStack(
+            StackNodeSerializationData serialData, ref List<NodeSerializationData> serializedNodes,
+            CoffeeGraphView graphView)
+        {
+            BaseStackNode stackNode = LoadStackNode(serialData);
+            if (stackNode != null)
+            {
+                graphView.AddStackNode(stackNode);
+            }
+            else
+            {
+                Debug.LogError("Attempted to load an invalid/incorrectly serialized graph stack-node.");
+                return null;
+            }
+            
+            foreach (var serialNode in serialData.stackedNodes)
+            {
+                var loadedNode = LoadSerializedNode(serialNode, ref serializedNodes, graphView);
+                graphView.AddDefaultSettingsToNode(loadedNode);
+                stackNode.AddElement(loadedNode);
+            }
+            
+            return stackNode;
         }
 
         /// <summary>
@@ -75,29 +140,51 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             graphView.edges.ForEach(graphView.RemoveElement);
         }
 
-        private static BaseNode LoadNode(NodeSerializationData srd)
+        //"Safe" dynamic activator to instantiate our nodes.
+        private static T LoadArbitrary<T>(System.Type arbitraryType)
+            where T : Node
         {
-            Type nodeType = srd.nodeEditorData.nodeType.type;
             object dynamicNodeActivator;
             try
             {
-                dynamicNodeActivator = Activator.CreateInstance(nodeType);
+                dynamicNodeActivator = Activator.CreateInstance(arbitraryType);
             }
             catch
             {
-                Debug.Log("Failed to dynamically instantiated node: " + 
-                          srd?.name + srd?.nodeEditorData?.GUID);
+                Debug.Log("Failed to dynamically instantiated node of type: " + 
+                          arbitraryType);
                 return null;
             }
 
-            if (dynamicNodeActivator == null || !(dynamicNodeActivator is BaseNode node)) 
+            if (!(dynamicNodeActivator is T node)) 
                 return null;
- 
-            node.Initialize(srd);
-            guidToNodeDict.Add(node.editorData.GUID, node);
+
             return node;
         }
 
+        private static BaseNode LoadNode(NodeSerializationData srd)
+        {
+            Type nodeType = srd.nodeEditorData.nodeType.type;
+            var node = LoadArbitrary<BaseNode>(nodeType);
+
+            node.Initialize(srd);
+            
+            guidToNodeDict.Add(node.editorData.GUID, node);
+            return node;
+        }
+        
+        private static BaseStackNode LoadStackNode(StackNodeSerializationData srd)
+        {
+            var node = LoadArbitrary<BaseStackNode>(srd.nodeType.type);
+            
+            srd.SerializeTo(ref node);
+            return node;
+        }
+
+        private static readonly Dictionary<string, UQueryBuilder<Port>> inPortDict =
+            new Dictionary<string, UQueryBuilder<Port>>();
+        private static readonly Dictionary<string, UQueryBuilder<Port>> outPortDict =
+            new Dictionary<string, UQueryBuilder<Port>>();
         private static void LoadEdge(SerializedEdgeData sEdge)
         {
             if (!guidToNodeDict.TryGetValue(sEdge.outputNodeGUID, out var outputNode) ||
@@ -109,8 +196,19 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 return;
             }
             
-            Port inputPort = inputNode.Query<Port>().AtIndex(sEdge.inputPortIndex);
-            Port outputPort = outputNode.Query<Port>().AtIndex(sEdge.outputPortIndex);
+            //Port queries are cached so they aren't run a bunch for no reason.
+            if(!inPortDict.TryGetValue(sEdge.inputNodeGUID, out var inputPortsQ))
+            {
+                inputPortsQ = inputNode.Query<Port>();
+                inPortDict.Add(sEdge.inputNodeGUID, inputPortsQ);
+            }
+            if(!outPortDict.TryGetValue(sEdge.outputNodeGUID, out var outputPortsQ))
+            {
+                outputPortsQ = outputNode.Query<Port>();
+                outPortDict.Add(sEdge.outputNodeGUID, outputPortsQ);
+            }
+            var inputPort = inputPortsQ.AtIndex(sEdge.inputPortIndex);
+            var outputPort = outputPortsQ.AtIndex(sEdge.outputPortIndex);
             
             Edge nEdge = new Edge {output = outputPort, input = inputPort};
             nEdge.input.Connect(nEdge);
@@ -121,6 +219,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         //The essence of code.
         private static void LoadEdges(List<NodeSerializationData> serializedNodeData)
         {
+            inPortDict.Clear();
+            outPortDict.Clear();
             foreach (
                 var sEdge in from node in serializedNodeData 
                 from sPort in node.serializedPorts 

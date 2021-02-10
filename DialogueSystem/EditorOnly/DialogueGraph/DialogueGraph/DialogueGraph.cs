@@ -7,7 +7,7 @@ namespace VisualNovelFramework.DialogueGraph
 {
     public partial class DialogueGraph : CoffeeGraph
     {
-        [MenuItem("VNFramework/Dialogue Grapha")]
+        [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
         {
             var window = GetWindow<DialogueGraph>();
