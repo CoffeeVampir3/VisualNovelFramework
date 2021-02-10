@@ -9,8 +9,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         [SerializeField]
         public string GUID;
         protected CoffeeGraphView owner;
-        
-        /// <inheritdoc />
+
         protected override bool AcceptsElement(GraphElement element, ref int proposedIndex, int maxIndex)
         {
             bool accept = base.AcceptsElement(element, ref proposedIndex, maxIndex);

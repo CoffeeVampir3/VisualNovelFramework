@@ -9,11 +9,11 @@ namespace VisualNovelFramework.GraphFramework.Serialization
     public class StackNodeSerializationData : ScriptableObject, HasCoffeeGUID
     {
         [SerializeField]
-        public string GUID;
+        private string GUID;
         [SerializeField] 
         public List<NodeSerializationData> stackedNodes = new List<NodeSerializationData>();
         [SerializeField] 
-        public Rect position;
+        private Rect position;
         [SerializeField] 
         public SerializableType nodeType;
 
@@ -27,6 +27,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             return serializationData;
         }
 
+        /// <summary>
+        /// We use ref here so we do not need to cast the returned serialized node.
+        /// </summary>
         public void SerializeTo(ref BaseStackNode stackNode)
         {
             stackNode.GUID = GUID;

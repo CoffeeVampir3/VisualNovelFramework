@@ -49,13 +49,22 @@ namespace VisualNovelFramework.GraphFramework.Editor
             AddElement(node);
         }
 
-        public void AddDefaultSettingsToNode(BaseNode node)
+        public void AddDefaultSettingsToNode(Node node)
         {
-            node.styleSheets.Add(settings.nodeStyle);
+            switch (node)
+            {
+                case BaseNode bn:
+                    bn.styleSheets.Add(settings.nodeStyle);
+                    break;
+                case BaseStackNode sn:
+                    sn.styleSheets.Add(settings.stackNodeStyle);
+                    break;
+            }
         }
         
         public void AddStackNode(BaseStackNode node)
         {
+            AddDefaultSettingsToNode(node);
             AddElement(node);
         }
         

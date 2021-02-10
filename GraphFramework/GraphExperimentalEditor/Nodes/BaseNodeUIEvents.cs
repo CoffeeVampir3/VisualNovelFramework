@@ -27,31 +27,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             }
         }
 
-        //Not using geometry change event because it's called too often and causes lag.
-        private void UpdateNodePosition()
-        {
-            editorData.position = GetPosition();
-            schedule.Execute(UpdateNodePosition).StartingIn(125);
-        }
-        
-        public override void HandleEvent(EventBase evt)
-        {
-            //This is called when a node is added to the panel (Instantiation event, basically.)
-            if (evt is AttachToPanelEvent)
-            {
-                //Update our position after a short delay, it will recur automagically.
-                var k = schedule.Execute(UpdateNodePosition);
-                k.StartingIn(400);
-            }
-            //This is called when a node is deleted, or "removed" from the panel.
-            else if (evt is DetachFromPanelEvent)
-            {
-                OnNodeDeleted();
-            }
-
-            base.HandleEvent(evt);
-        }
-        
         #endregion
     }
 }

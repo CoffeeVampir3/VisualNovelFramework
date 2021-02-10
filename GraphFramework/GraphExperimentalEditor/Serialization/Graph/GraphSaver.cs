@@ -119,9 +119,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
             NodeSerializationData serializationData =
                 NodeSerializationData.SerializeFrom(node);
-            
-            serializationData.runtimeNode.outputConnections.Clear();
-            serializationData.runtimeNode.inputConnections.Clear();
 
             foreach(var port in ports)
             {

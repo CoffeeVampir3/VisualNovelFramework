@@ -26,9 +26,9 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             var outputPort = edge.output;
             if (inputNode != null && outputNode != null)
             {
-                outputNodeGUID = outputNode.editorData.GUID;
+                outputNodeGUID = outputNode.GetCoffeeGUID();
                 outputPortIndex = outputNode.Query<Port>().ToList().IndexOf(outputPort);
-                inputNodeGUID = inputNode.editorData.GUID;
+                inputNodeGUID = inputNode.GetCoffeeGUID();
                 inputPortIndex = inputNode.Query<Port>().ToList().IndexOf(inputPort);
             }
             else

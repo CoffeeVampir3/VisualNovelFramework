@@ -62,7 +62,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
             GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
         }
 
-        //TODO:: oof.
+        //TODO:: oof. Maybe his is neccesary? The order of initialization
+        //does not appear to be fixed, so we need to account for both cases?
+        //Loading the toolbar from XML from file would be a solution here.
         private SerializedGraph delayedLoadedGraph = null;
         public void LoadGraph(SerializedGraph graph)
         {

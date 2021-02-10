@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
@@ -49,14 +48,10 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             if (graph.rootNode == null && 
                 serializedNode.isRoot) 
                 graph.rootNode = serializedNode.runtimeNode;
-
-            serializedNode.name = "sNodeData_" + serializedNode.nodeEditorData.name;
-            serializedNode.runtimeNode.name = "rtNodeData_" + serializedNode.nodeEditorData.name;
-
+            
             var nodeGUID = serializedNode.GetCoffeeGUID();
 
             savedObjects.Add(SaveAssetToGraph(serializedNode,nodeGUID, graph));
-            savedObjects.Add(SaveAssetToGraph(serializedNode.nodeEditorData, nodeGUID, graph));
             savedObjects.Add(SaveAssetToGraph(serializedNode.runtimeNode, nodeGUID, graph));
         }
 

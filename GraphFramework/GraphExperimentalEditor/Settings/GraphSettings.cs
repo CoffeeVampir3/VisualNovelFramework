@@ -18,6 +18,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings
         private bool isDefault = false;
         public StyleSheet graphViewStyle;
         public StyleSheet nodeStyle;
+        public StyleSheet stackNodeStyle;
 
         private static GraphSettings CreateGraphSettings(System.Type graphViewType, List<GraphSettings> allSettings)
         {

@@ -12,11 +12,15 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         public bool isRoot = false;
         [SerializeField]
-        public string GUID;
+        private string GUID;
+        [SerializeField] 
+        private string nodeTitle;
+        [SerializeField] 
+        private Rect position;
+        [SerializeField] 
+        public SerializableType nodeType = null;
         [SerializeField] 
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
-        [SerializeField] 
-        public NodeEditorData nodeEditorData;
         [SerializeField]
         public RuntimeNode runtimeNode;
         
@@ -24,11 +28,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         {
             NodeSerializationData serializationData = CreateInstance<NodeSerializationData>();
             
-            serializationData.nodeEditorData = node.editorData;
-            serializationData.SetCoffeeGUID(node.editorData.GUID);
-            
+            serializationData.SetCoffeeGUID(node.GetCoffeeGUID());
+            serializationData.nodeTitle = node.title;
+            serializationData.position = node.GetPosition();
+            serializationData.nodeType = new SerializableType(node.GetType());
             serializationData.runtimeNode = node.RuntimeData;
-            serializationData.runtimeNode.SetCoffeeGUID(node.editorData.GUID);
+            serializationData.runtimeNode.SetCoffeeGUID(node.GetCoffeeGUID());
+            
+            serializationData.name = "sNodeData_" + serializationData.nodeTitle;
+            serializationData.runtimeNode.name = serializationData.nodeTitle;
+            
+            serializationData.runtimeNode.outputConnections.Clear();
+            serializationData.runtimeNode.inputConnections.Clear();
             
             if (node is IRootNode)
             {
@@ -36,6 +47,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             }
             
             return serializationData;
+        }
+
+        /// <summary>
+        /// We use ref here so we do not need to cast the returned serialized node.
+        /// </summary>
+        public void SerializeTo(ref BaseNode node)
+        {
+            node.SetCoffeeGUID(GetCoffeeGUID());
+            node.title = nodeTitle;
+            node.SetPosition(position);
+            node.RuntimeData = runtimeNode;
+            node.RuntimeData.name = nodeTitle;
         }
 
         public string GetCoffeeGUID()

@@ -115,7 +115,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             outputContainer.Add(outputPortsContainer);
             CreateNodeGUI();
             
-            SetPosition(editorData.position);
             Repaint();
         }
         

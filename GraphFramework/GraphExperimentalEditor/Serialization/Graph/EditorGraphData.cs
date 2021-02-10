@@ -1,5 +1,4 @@
-﻿using UnityEditor.Graphs;
-using UnityEngine;
+﻿using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.Serialization;

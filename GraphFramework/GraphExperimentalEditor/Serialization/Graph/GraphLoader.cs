@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICSharpCode.NRefactory.Ast;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
-using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
@@ -87,7 +85,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             ref List<NodeSerializationData> serializedNodes,
             CoffeeGraphView graphView)
         {
-            if (guidToNodeDict.TryGetValue(serialData?.GetCoffeeGUID() ?? string.Empty, out _))
+            if (guidToNodeDict.TryGetValue(serialData.GetCoffeeGUID() ?? string.Empty, out _))
                 return null;
             
             serializedNodes.Add(serialData);
@@ -106,7 +104,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             return node;
         }
         
-        private static BaseStackNode LoadSerializedStack(
+        private static void LoadSerializedStack(
             StackNodeSerializationData serialData, ref List<NodeSerializationData> serializedNodes,
             CoffeeGraphView graphView)
         {
@@ -118,7 +116,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             else
             {
                 Debug.LogError("Attempted to load an invalid/incorrectly serialized graph stack-node.");
-                return null;
+                return;
             }
             
             foreach (var serialNode in serialData.stackedNodes)
@@ -127,8 +125,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 graphView.AddDefaultSettingsToNode(loadedNode);
                 stackNode.AddElement(loadedNode);
             }
-            
-            return stackNode;
         }
 
         /// <summary>
@@ -164,12 +160,12 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
         private static BaseNode LoadNode(NodeSerializationData srd)
         {
-            Type nodeType = srd.nodeEditorData.nodeType.type;
+            Type nodeType = srd.nodeType.type;
             var node = LoadArbitrary<BaseNode>(nodeType);
 
+            srd.SerializeTo(ref node);
             node.Initialize(srd);
-            
-            guidToNodeDict.Add(node.editorData.GUID, node);
+            guidToNodeDict.Add(node.GetCoffeeGUID(), node);
             return node;
         }
         
