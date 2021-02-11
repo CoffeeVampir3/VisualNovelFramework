@@ -12,13 +12,15 @@ namespace VisualNovelFramework.GraphFramework.Serialization
     {
         private static readonly List<Object> savedObjects = new List<Object>();
 
+        private static readonly Dictionary<NodeSerializationData, NodeSerializationData> 
+            stackNodeRefTracker = new Dictionary<NodeSerializationData, NodeSerializationData>();
+
         private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, 
             T objectToCopyFrom) 
             where T : ScriptableObject
         {
             var l = JsonUtility.ToJson(objectToCopyFrom);
             JsonUtility.FromJsonOverwrite(l, objectBeingOverwritten);
-            EditorUtility.SetDirty(objectBeingOverwritten);
         }
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 OverwriteScriptableObject(savedToDiskAsset, item);
             }
 
+            EditorUtility.SetDirty(savedToDiskAsset);
             return savedToDiskAsset;
         }
         
@@ -51,8 +54,10 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             
             var nodeGUID = serializedNode.GetCoffeeGUID();
 
-            savedObjects.Add(SaveAssetToGraph(serializedNode,nodeGUID, graph));
+            var savedSn = SaveAssetToGraph(serializedNode, nodeGUID, graph);
+            savedObjects.Add(savedSn);
             savedObjects.Add(SaveAssetToGraph(serializedNode.runtimeNode, nodeGUID, graph));
+            stackNodeRefTracker.Add(serializedNode, savedSn);
         }
 
         private static void CreateSerializedStackAsset(SerializedGraph graph, StackNodeSerializationData serializedStack)
@@ -68,15 +73,30 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         {
             CreateSerializedNodeAsset(graph, serializedNode);
         }
+
+        //Matches the references for the serialized stack to the nodes on disk,
+        //which are potentially different objects.
+        private static void UpdateStackRefs(StackNodeSerializationData serializedStack)
+        {
+            for (int i = 0; i < serializedStack.stackedNodes.Count; i++)
+            {
+                var node = serializedStack.stackedNodes[i];
+                if (stackNodeRefTracker.TryGetValue(node, out var savedNode))
+                {
+                    serializedStack.stackedNodes[i] = savedNode;
+                }
+            }
+        }
         
         public static void WriteSerializedStack(SerializedGraph graph, StackNodeSerializationData serializedStack)
         {
-            CreateSerializedStackAsset(graph, serializedStack);
-
             foreach (var serialNode in serializedStack.stackedNodes)
             {
                 CreateSerializedNodeAsset(graph, serialNode);
             }
+
+            UpdateStackRefs(serializedStack);
+            CreateSerializedStackAsset(graph, serializedStack);
         }
 
 
@@ -103,6 +123,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public static void ClearSavedAssets()
         {
             savedObjects.Clear();
+            stackNodeRefTracker.Clear();
         }
 
         /// <summary>
@@ -126,7 +147,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 Debug.Log("Unable to save graph!");
                 return null;
             }
-            
+
             var editorGraphAsset = ScriptableObject.CreateInstance<EditorGraphData>();
             editorGraphAsset.name = "GraphEditorData";
             editorGraphAsset.targetGraph = savedGraph;

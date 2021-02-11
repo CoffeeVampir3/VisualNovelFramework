@@ -135,6 +135,26 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
         }
 
+        private void Debug__FoldoutAllItems()
+        {
+            foreach (var node in graphView.nodes)
+            {
+                node.expanded = false;
+                node.RefreshPorts();
+                node.RefreshExpandedState();
+            }
+        }
+
+        private void Debug__ExpandAllItems()
+        {
+            foreach (var node in graphView.nodes)
+            {
+                node.expanded = true;
+                node.RefreshPorts();
+                node.RefreshExpandedState();
+            }
+        }
+        
         private ObjectField serializedGraphSelector = null;
         private void GenerateToolbar()
         {
@@ -150,9 +170,16 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 delayedLoadedGraph = null;
             }
             
-            toolbar.Add(new Button( SaveGraph ) {text = "Save"});
-            toolbar.Add(new Button( DuplicateGraph ) {text = "Duplicate Test"});
-            toolbar.Add(new Button( RevertGraphToVersionOnDisk ) {text = "Revert To Saved Version"});
+            toolbar.Add(new Button( SaveGraph ) 
+                {text = "Save"});
+            toolbar.Add(new Button( DuplicateGraph ) 
+                {text = "Duplicate Test"});
+            toolbar.Add(new Button( RevertGraphToVersionOnDisk ) 
+                {text = "Revert To Saved Version"});
+            toolbar.Add(new Button( Debug__FoldoutAllItems ) 
+                {text = "Foldout all Items"});
+            toolbar.Add(new Button( Debug__ExpandAllItems ) 
+                {text = "Expand all Items"});
 
             toolbar.Add(serializedGraphSelector);
             graphView.Add(toolbar);

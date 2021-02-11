@@ -18,6 +18,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         private Rect position;
         [SerializeField] 
+        private bool isExpanded;
+        [SerializeField] 
         public SerializableType nodeType = null;
         [SerializeField] 
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
@@ -31,6 +33,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.SetCoffeeGUID(node.GetCoffeeGUID());
             serializationData.nodeTitle = node.title;
             serializationData.position = node.GetPosition();
+            serializationData.isExpanded = node.expanded;
             serializationData.nodeType = new SerializableType(node.GetType());
             serializationData.runtimeNode = node.RuntimeData;
             serializationData.runtimeNode.SetCoffeeGUID(node.GetCoffeeGUID());
@@ -59,6 +62,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             node.SetPosition(position);
             node.RuntimeData = runtimeNode;
             node.RuntimeData.name = nodeTitle;
+            node.expanded = isExpanded;
         }
 
         public string GetCoffeeGUID()

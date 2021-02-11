@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,10 +12,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
-        [SerializeReference]
-        public BaseNode rootNode;
-        [SerializeReference] 
-        protected readonly GraphSettings settings;
+        [SerializeReference] public BaseNode rootNode;
+        [SerializeReference] protected readonly GraphSettings settings;
 
         protected CoffeeGraphView()
         {
@@ -24,6 +24,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new ContentDragger());
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
+
+            //TODO::
+            //Callback when you copy.
+            serializeGraphElements = null;
+            //Backback when you paste.
+            unserializeAndPaste = null;
         }
 
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
@@ -35,8 +41,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
             //Hold the offset as a static value by scaling it in the reverse direction of our scale
             //This way we "undo" the division by scale for only the offset value, scaling everything else.
-            relPos -= (offset*scale);
-            return relPos/scale;
+            relPos -= (offset * scale);
+            return relPos / scale;
         }
 
         /// <summary>
@@ -61,13 +67,13 @@ namespace VisualNovelFramework.GraphFramework.Editor
                     break;
             }
         }
-        
+
         public void AddStackNode(BaseStackNode node)
         {
             AddDefaultSettingsToNode(node);
             AddElement(node);
         }
-        
+
         /// <summary>
         /// Node is created with on the graph with the given coordinates.
         /// </summary>
