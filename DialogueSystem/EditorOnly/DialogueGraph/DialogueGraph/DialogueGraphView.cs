@@ -69,7 +69,7 @@ namespace VisualNovelFramework.DialogueGraph
                 new Vector2(50, 75));
             
             var spawnPos = new Rect(pos.x, pos.y, 100, 150);
-            var node = new BaseStackNode();
+            var node = new SequenceStackNode();
             node.SetCoffeeGUID(Guid.NewGuid().ToString());
             node.SetPosition(spawnPos);
             AddStackNode(node);

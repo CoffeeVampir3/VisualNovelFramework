@@ -48,7 +48,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             Debug.Log("Current: " + title);
             AddToClassList("currentNode");
         }
-        
+
         /// <summary>
         /// Called when this node is visited by the graph while it is
         /// open in the editor window.

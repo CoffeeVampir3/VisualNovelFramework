@@ -123,7 +123,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             {
                 var loadedNode = LoadSerializedNode(serialNode, ref serializedNodes, graphView);
                 graphView.AddDefaultSettingsToNode(loadedNode);
-                stackNode.AddElement(loadedNode);
+                stackNode.AddNode(loadedNode);
             }
         }
 

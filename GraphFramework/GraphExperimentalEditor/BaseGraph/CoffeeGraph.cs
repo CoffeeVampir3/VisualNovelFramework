@@ -72,8 +72,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 if (serializedGraphSelector != null)
                 {
-                    serializedGraphSelector.SetValueWithoutNotify(delayedLoadedGraph);
-                    currentGraphGUID = delayedLoadedGraph.GetCoffeeGUID();
+                    serializedGraphSelector.SetValueWithoutNotify(graph);
+                    currentGraphGUID = graph.GetCoffeeGUID();
                 }
                 else
                 {

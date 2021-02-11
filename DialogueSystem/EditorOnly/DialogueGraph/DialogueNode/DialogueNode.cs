@@ -1,5 +1,4 @@
 ﻿using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;

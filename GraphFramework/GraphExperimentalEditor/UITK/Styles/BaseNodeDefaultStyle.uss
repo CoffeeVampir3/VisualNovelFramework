@@ -32,8 +32,24 @@
     background-color: rgba(128, 1, 17, .6);
 }
 
-#actualOutput .port,
+#output .port,
 #input .port
 {
     --port-color: rgba(200, 200, 200, 0.5) !important;
+}
+
+.stack-child-element #input {
+    display: none;
+}
+
+.firstInStack #input {
+    display: flex;
+}
+
+.stack-child-element #output {
+    display: none;
+}
+
+.lastInStack #output {
+    display: flex;
 }
