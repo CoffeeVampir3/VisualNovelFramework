@@ -33,8 +33,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
             unserializeAndPaste = DeserializeElementsOnPaste;
         }
 
+        /// <summary>
+        /// This makes cut & paste so much easier to implement.
+        /// </summary>
         [Serializable]
-        public class SerializedBox
+        protected class CopyAndPasteBox
         {
             public List<NodeSerializationData> serializedNodes = new List<NodeSerializationData>();
             public List<StackNodeSerializationData> serializedStacks = new List<StackNodeSerializationData>();
@@ -42,7 +45,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         protected virtual string OnSerializeGraphElements(IEnumerable<GraphElement> selectedItemsToSerialize)
         {
-            SerializedBox box = new SerializedBox();
+            CopyAndPasteBox box = new CopyAndPasteBox();
             foreach (var elem in selectedItemsToSerialize)
             {
                 switch (elem)
@@ -72,7 +75,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         protected virtual void DeserializeElementsOnPaste(string op, string serializationData)
         {
-            SerializedBox box = JsonUtility.FromJson<SerializedBox>(serializationData);
+            CopyAndPasteBox box = JsonUtility.FromJson<CopyAndPasteBox>(serializationData);
             if (box == null)
                 return;
             
@@ -87,7 +90,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 AddNode(node);
             }
             
-            //Deserialize all stacks and their childrens
+            //Deserialize all stacks and their children
             foreach (var serializedStack in box.serializedStacks)
             {
                 var stackNode = serializedStack.CreateFromSerialization();
@@ -153,7 +156,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         }
 
         /// <summary>
-        /// Node is created with on the graph with the given coordinates.
+        /// Node is created on the graph with the given coordinates.
         /// </summary>
         protected void AddNodeAt(BaseNode node, Rect position)
         {

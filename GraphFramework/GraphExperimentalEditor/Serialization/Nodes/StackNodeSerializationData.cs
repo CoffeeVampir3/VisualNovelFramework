@@ -42,7 +42,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// </summary>
         public BaseStackNode CreateFromSerialization()
         {
-            var stackNode = SerialziationHelpers.LoadArbitrary<BaseStackNode>(nodeType.type);
+            var stackNode = SafeActivatorHelper.LoadArbitrary<BaseStackNode>(nodeType.type);
             stackNode.GUID = GUID;
             stackNode.SetPosition(position);
             return stackNode;

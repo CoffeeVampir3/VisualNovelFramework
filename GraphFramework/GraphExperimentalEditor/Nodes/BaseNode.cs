@@ -41,8 +41,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public abstract RuntimeNode RuntimeData { get; set; }
 
         /// <summary>
-        /// Called when this node is visited by the graph while it is
-        /// open in the editor window.
+        /// Editor Only Callback:
+        /// Called when this node is visited by the graph while it is open in an editor window.
         /// </summary>
         public virtual void OnNodeEntered()
         {
@@ -51,8 +51,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
 
         /// <summary>
-        /// Called when this node is visited by the graph while it is
-        /// open in the editor window.
+        /// Editor Only Callback:
+        /// Called when this node is visited by the graph while it is open in an editor window.
         /// </summary>
         public virtual void OnNodeExited()
         {
@@ -72,7 +72,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         #region Initialization
         
         /// <summary>
-        /// Deserialization initialization
+        /// Initializes 
         /// </summary>
         public void Initialize(NodeSerializationData data)
         {
@@ -82,7 +82,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
         
         /// <summary>
-        /// Initial (new node) creation
+        /// Initializes a new node and it's UI from scratch with the given name.
         /// </summary>
         public void Initialize(string initialName)
         {

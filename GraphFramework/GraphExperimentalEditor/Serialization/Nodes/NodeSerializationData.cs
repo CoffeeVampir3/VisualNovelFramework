@@ -85,7 +85,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// </summary>
         public BaseNode CreateFromSerialization()
         {
-            var node = SerialziationHelpers.LoadArbitrary<BaseNode>(nodeType.type);
+            var node = SafeActivatorHelper.LoadArbitrary<BaseNode>(nodeType.type);
             node.SetCoffeeGUID(GetCoffeeGUID());
             node.title = nodeTitle;
             

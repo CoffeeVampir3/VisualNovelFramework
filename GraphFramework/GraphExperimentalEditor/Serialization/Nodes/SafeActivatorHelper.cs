@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
-    public static class SerialziationHelpers
+    public static class SafeActivatorHelper
     {
         /// <summary>
         /// A wrapper around dynamic activator so it's "safer"
