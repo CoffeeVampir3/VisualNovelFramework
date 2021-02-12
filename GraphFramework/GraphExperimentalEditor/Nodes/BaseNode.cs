@@ -30,6 +30,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     /// This allows us to have a common class we can generate using reflection and an activator,
     /// allowing us to avoid boilerplate code.
     /// </summary>
+    [Serializable]
     public abstract partial class BaseNode : Node, HasCoffeeGUID
     {
         public string GUID;

@@ -17,25 +17,37 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         public SerializableType nodeType;
 
-        public static StackNodeSerializationData SerializeFrom(BaseStackNode stackNode)
+        public static StackNodeSerializationData SerializeFrom(BaseStackNode stackNode, bool createRuntimeDataCopy = false)
         {
             StackNodeSerializationData serializationData = CreateInstance<StackNodeSerializationData>();
             
             serializationData.position = stackNode.GetPosition();
             serializationData.nodeType = new SerializableType(stackNode.GetType());
             serializationData.SetCoffeeGUID(stackNode.GetCoffeeGUID());
+            
+            var nodeList = stackNode.nodeList;
+            //Serializes all stacked children.
+            foreach (var stackedNode in nodeList)
+            {
+                var serializedStackNode =
+                    NodeSerializationData.SerializeFrom(stackedNode, true, createRuntimeDataCopy);
+                serializationData.stackedNodes.Add(serializedStackNode);
+            }
+            
             return serializationData;
         }
 
         /// <summary>
         /// We use ref here so we do not need to cast the returned serialized node.
         /// </summary>
-        public void SerializeTo(ref BaseStackNode stackNode)
+        public BaseStackNode CreateFromSerialization()
         {
+            var stackNode = SerialziationHelpers.LoadArbitrary<BaseStackNode>(nodeType.type);
             stackNode.GUID = GUID;
             stackNode.SetPosition(position);
+            return stackNode;
         }
-            
+
         public string GetCoffeeGUID()
         {
             return GUID;

@@ -7,6 +7,7 @@ using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
+using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
@@ -25,11 +26,88 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
 
-            //TODO::
+
             //Callback when you copy.
-            serializeGraphElements = null;
+            serializeGraphElements = OnSerializeGraphElements;
             //Backback when you paste.
-            unserializeAndPaste = null;
+            unserializeAndPaste = DeserializeElementsOnPaste;
+        }
+
+        [Serializable]
+        public class SerializedBox
+        {
+            public List<NodeSerializationData> serializedNodes = new List<NodeSerializationData>();
+            public List<StackNodeSerializationData> serializedStacks = new List<StackNodeSerializationData>();
+        }
+
+        protected virtual string OnSerializeGraphElements(IEnumerable<GraphElement> selectedItemsToSerialize)
+        {
+            SerializedBox box = new SerializedBox();
+            foreach (var elem in selectedItemsToSerialize)
+            {
+                switch (elem)
+                {
+                    case BaseNode bn:
+                    {
+                        //If the node is stacked, skip it, the stack will serialize it.
+                        if (bn.ClassListContains("stack-child-element"))
+                            continue;
+                        NodeSerializationData serialNode = 
+                            NodeSerializationData.SerializeFrom(bn, false, true);
+                        
+                        box.serializedNodes.Add(serialNode);
+                        break;
+                    }
+                    case BaseStackNode sn:
+                        StackNodeSerializationData stackSerialData = 
+                            StackNodeSerializationData.SerializeFrom(sn, true);
+                        
+                        box.serializedStacks.Add(stackSerialData);
+                        break;
+                }
+            }
+
+            return JsonUtility.ToJson(box);
+        }
+
+        protected virtual void DeserializeElementsOnPaste(string op, string serializationData)
+        {
+            SerializedBox box = JsonUtility.FromJson<SerializedBox>(serializationData);
+            if (box == null)
+                return;
+            
+            List<ISelectable> newSelection = new List<ISelectable>();
+            
+            //Deserialize each node.
+            foreach (var serialNode in box.serializedNodes)
+            {
+                var node = serialNode.CreateFromSerialization();
+                node.SetCoffeeGUID(Guid.NewGuid().ToString());
+                newSelection.Add(node);
+                AddNode(node);
+            }
+            
+            //Deserialize all stacks and their childrens
+            foreach (var serializedStack in box.serializedStacks)
+            {
+                var stackNode = serializedStack.CreateFromSerialization();
+                stackNode.SetCoffeeGUID(Guid.NewGuid().ToString());
+                newSelection.Add(stackNode);
+                AddStackNode(stackNode);
+                foreach (var serialNode in serializedStack.stackedNodes)
+                {
+                    var node = serialNode.CreateFromSerialization();
+                    node.SetCoffeeGUID(Guid.NewGuid().ToString());
+                    AddDefaultSettingsToNode(node);
+                    stackNode.AddNode(node);
+                }
+            }
+
+            ClearSelection();
+            foreach (var selectedItem in newSelection)
+            {
+                AddToSelection(selectedItem);
+            }
         }
 
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)

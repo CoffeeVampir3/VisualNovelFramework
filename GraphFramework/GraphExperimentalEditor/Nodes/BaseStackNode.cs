@@ -11,6 +11,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     {
         public string GUID;
         protected CoffeeGraphView owner;
+        
+        public List<BaseNode> nodeList => this.Query<BaseNode>().ToList();
 
         private readonly Dictionary<System.Type, bool> acceptedElementDictionary
             = new Dictionary<System.Type, bool>();
@@ -26,7 +28,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// </summary>
         private void OnStackOrderChanged(GeometryChangedEvent geoChange)
         {
-            var nodesInStack = this.Query<BaseNode>().Build();
+            var nodesInStack = nodeList;
 
             if (!nodesInStack.Any())
                 return;

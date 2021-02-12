@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -44,28 +43,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             
             ClearGraph(graphView);
             
-            //First iterate the stack nodes, we iterate twice, once for stack nodes
-            //then we iterate the collection again and pick up anything the stack
-            //nodes weren't responsible for. Iterating the collection only once
-            //would require a different design, this seems like a fine compromise.
             foreach(var obj in items)
             {
-                //There's no particular reason for this... But it's kinda funny so I'll keep it around,
-                //Z
                 switch (obj)
                 {
                     case StackNodeSerializationData stackData:
                         LoadSerializedStack(stackData, ref serializedNodes, graphView);
                         break;
-                }
-            }
-            
-            foreach(var obj in items)
-            {
-                switch (obj)
-                {
                     case NodeSerializationData serialData:
                     {
+                        //Skip any stacked nodes, they're handled by the stack node itself.
+                        if (serialData.isStacked)
+                            continue;
                         var node = LoadSerializedNode(serialData, ref serializedNodes, graphView);
                         if(node != null)
                             graphView.AddNode(node);
@@ -136,44 +125,16 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             graphView.edges.ForEach(graphView.RemoveElement);
         }
 
-        //"Safe" dynamic activator to instantiate our nodes.
-        private static T LoadArbitrary<T>(System.Type arbitraryType)
-            where T : Node
-        {
-            object dynamicNodeActivator;
-            try
-            {
-                dynamicNodeActivator = Activator.CreateInstance(arbitraryType);
-            }
-            catch
-            {
-                Debug.Log("Failed to dynamically instantiated node of type: " + 
-                          arbitraryType);
-                return null;
-            }
-
-            if (!(dynamicNodeActivator is T node)) 
-                return null;
-
-            return node;
-        }
-
         private static BaseNode LoadNode(NodeSerializationData srd)
         {
-            Type nodeType = srd.nodeType.type;
-            var node = LoadArbitrary<BaseNode>(nodeType);
-
-            srd.SerializeTo(ref node);
-            node.Initialize(srd);
+            var node = srd.CreateFromSerialization();
             guidToNodeDict.Add(node.GetCoffeeGUID(), node);
             return node;
         }
         
         private static BaseStackNode LoadStackNode(StackNodeSerializationData srd)
         {
-            var node = LoadArbitrary<BaseStackNode>(srd.nodeType.type);
-            
-            srd.SerializeTo(ref node);
+            var node = srd.CreateFromSerialization();
             return node;
         }
 
