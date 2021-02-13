@@ -18,6 +18,8 @@ MonoBehaviour:
   graphViewStyle: {fileID: 7433441132597879392, guid: efbcd2a4693b951488698a8a412eab88, type: 3}
   nodeStyle: {fileID: 7433441132597879392, guid: 11cc63bae6b4cbe498401ac99b0b852d, type: 3}
   stackNodeStyle: {fileID: 7433441132597879392, guid: 7d70e5a98aa682f498bad1559814ee80, type: 3}
+  blackboardStyle: {fileID: 7433441132597879392, guid: f42077cc97d34dd45ae2ec6f5c8d4070, type: 3}
+  blackboardCategoryStyle: {fileID: 7433441132597879392, guid: aaadf079dfcb7bf42a639125f6011108, type: 3}
 --- !u!114 &3583580838035927842
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37,3 +39,5 @@ MonoBehaviour:
   graphViewStyle: {fileID: 7433441132597879392, guid: efbcd2a4693b951488698a8a412eab88, type: 3}
   nodeStyle: {fileID: 7433441132597879392, guid: 11cc63bae6b4cbe498401ac99b0b852d, type: 3}
   stackNodeStyle: {fileID: 7433441132597879392, guid: 7d70e5a98aa682f498bad1559814ee80, type: 3}
+  blackboardStyle: {fileID: 7433441132597879392, guid: f42077cc97d34dd45ae2ec6f5c8d4070, type: 3}
+  blackboardCategoryStyle: {fileID: 7433441132597879392, guid: aaadf079dfcb7bf42a639125f6011108, type: 3}

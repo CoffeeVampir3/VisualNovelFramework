@@ -24,6 +24,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         public SerializableType nodeType = null;
         [SerializeField] 
+        public string nodeName = "";
+        [SerializeField] 
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
         [SerializeField]
         public RuntimeNode runtimeNode;
@@ -88,6 +90,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             var node = SafeActivatorHelper.LoadArbitrary<BaseNode>(nodeType.type);
             node.SetCoffeeGUID(GetCoffeeGUID());
             node.title = nodeTitle;
+            node.name = nodeTitle;
             
             if(!(position == default))
                 node.SetPosition(position);

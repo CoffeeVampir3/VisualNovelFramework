@@ -176,6 +176,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         //The essence of code.
         private static void LoadEdges(List<NodeSerializationData> serializedNodeData)
         {
+            //Port queries are cached, clear the cache before we start iterating ports.
             inPortDict.Clear();
             outPortDict.Clear();
             foreach (

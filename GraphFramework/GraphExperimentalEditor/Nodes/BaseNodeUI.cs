@@ -114,7 +114,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             inputContainer.Add(inputPortsContainer);
             outputContainer.Add(outputPortsContainer);
             CreateNodeGUI();
-            
+
+            titleContainer.pickingMode = PickingMode.Position;
+            titleContainer.RegisterCallback<PointerDownEvent>(OnTitleDoubleClicked);
+
             Repaint();
         }
         

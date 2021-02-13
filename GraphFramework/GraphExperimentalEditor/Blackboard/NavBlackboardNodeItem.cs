@@ -1,24 +1,27 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
-    public class BlackboardCategory : VisualElement
+    public class NavBlackboardNodeItem : VisualElement
     {
-        private readonly Foldout foldout;
-        private readonly VisualElement foldoutIcon;
-        private BlackboardCategory categoryParent = null;
-
-        public BlackboardCategory(string catName)
+        public readonly Foldout foldout;
+        private NavBlackboardNodeItem nodeItemParent = null;
+        public Node targetNode;
+        
+        public NavBlackboardNodeItem()
         {
-            name = catName;
-            foldout = new Foldout {text = catName};
+            foldout = new Foldout();
             foldout.SetValueWithoutNotify(false);
-            foldoutIcon = foldout.Q<VisualElement>("unity-checkmark");
-            foldoutIcon.visible = false;
 
             this.AddManipulator(new ContextualMenuManipulator(HandleContextMenu));
             Add(foldout);
+        }
+
+        public NavBlackboardNodeItem(string catName) : this()
+        {
+            name = catName;
+            foldout.text = catName;
         }
         
         private void HandleContextMenu(ContextualMenuPopulateEvent evt)
@@ -33,31 +36,27 @@ namespace VisualNovelFramework.GraphFramework.Editor
         private void DeleteCategoryRequest(DropdownMenuAction evt)
         {
             parent.Remove(this);
-            categoryParent?.ChildDeleted();
+            nodeItemParent?.ChildDeleted();
         }
 
         private void ChildDeleted()
         {
-            int catCount = this.contentContainer.Query<BlackboardCategory>().
+            int catCount = contentContainer.Query<NavBlackboardNodeItem>().
                 ToList().Count;
             
             if (catCount <= 1)
             {
-                foldoutIcon.visible = false;
+                RemoveFromClassList("has-children");
             }
         }
         
         private void NewCategoryRequest(DropdownMenuAction evt)
         {
-            Debug.Log("Added");
-            BlackboardCategory newCat = new BlackboardCategory("New Category");
-            foldoutIcon.visible = true;
+            NavBlackboardNodeItem newCat = new NavBlackboardNodeItem("New Category");
+            AddToClassList("has-children");
             foldout.contentContainer.Add(newCat);
             foldout.SetValueWithoutNotify(true);
-            
-            Texture2D icon = Texture2D.whiteTexture;
-            foldout.style.backgroundImage = new StyleBackground(icon);
-            newCat.categoryParent = this;
+            newCat.nodeItemParent = this;
         }
     }
 }

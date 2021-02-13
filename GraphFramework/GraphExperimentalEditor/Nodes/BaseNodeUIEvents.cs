@@ -2,6 +2,7 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.Editor.Elements;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 {
@@ -25,6 +26,29 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                     e.parent.Remove(e);
                 }
             }
+        }
+
+        private void OnTitleDoubleClicked(PointerDownEvent evt)
+        {
+            Debug.Log("Clik");
+            if (evt.clickCount != 2)
+                return;
+            
+            NamerPopup renamerPopup = new NamerPopup(OnTitleRenamed);
+            renamerPopup.Popup();
+        }
+
+        private void OnTitleRenamed(string newName)
+        {
+            if (newName == "") 
+                return;
+            
+            title = newName;
+            name = newName;
+
+            ChangeEvent<string> changeEvent = new ChangeEvent<string>();
+
+            SendEvent(changeEvent);
         }
 
         #endregion

@@ -19,6 +19,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings
         public StyleSheet graphViewStyle;
         public StyleSheet nodeStyle;
         public StyleSheet stackNodeStyle;
+        public StyleSheet blackboardStyle;
+        public StyleSheet blackboardCategoryStyle;
 
         private static GraphSettings CreateGraphSettings(System.Type graphViewType, List<GraphSettings> allSettings)
         {

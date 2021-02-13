@@ -22,6 +22,14 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             return acceptedElementDictionary.TryGetValue(element.GetType(), out _);
         }
 
+        public void Initialize(string initialName)
+        {
+            this.name = initialName;
+            this.title = initialName;
+            var placeholderLabel = this.Q<Label>();
+            placeholderLabel.text = initialName;
+        }
+
         /// <summary>
         /// Keeps track of the first and last node in the stack whenever the
         /// stack order is changed.

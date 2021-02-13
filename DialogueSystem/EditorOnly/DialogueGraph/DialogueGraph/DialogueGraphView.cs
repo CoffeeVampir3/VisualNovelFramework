@@ -72,6 +72,7 @@ namespace VisualNovelFramework.DialogueGraph
             var node = new SequenceStackNode();
             node.SetCoffeeGUID(Guid.NewGuid().ToString());
             node.SetPosition(spawnPos);
+            node.Initialize("Sequence Stack");
             AddStackNode(node);
         }
 
