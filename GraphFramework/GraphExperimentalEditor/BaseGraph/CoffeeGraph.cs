@@ -137,7 +137,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void Debug__FoldoutAllItems()
         {
-            foreach (var node in graphView.nodes)
+            foreach (var node in graphView.nodes.ToList())
             {
                 node.expanded = false;
                 node.RefreshPorts();
@@ -147,7 +147,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void Debug__ExpandAllItems()
         {
-            foreach (var node in graphView.nodes)
+            foreach (var node in graphView.nodes.ToList())
             {
                 node.expanded = true;
                 node.RefreshPorts();

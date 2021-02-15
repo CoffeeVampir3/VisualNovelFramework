@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
@@ -9,13 +8,17 @@ namespace VisualNovelFramework.GraphFramework.Editor
     public class NavigationBlackboard : UnityEditor.Experimental.GraphView.Blackboard
     {
         private readonly StyleSheet categoryStyle;
-        //Necessary for some stupid reason, without this the alignment is fucked.
         private readonly ListView listBase = new ListView();
+        private readonly CoffeeGraphView coffeeGraph;
         public NavigationBlackboard(CoffeeGraphView gv) : base(gv)
         {
-            this.AddManipulator(new ContextualMenuManipulator(HandleContextMenu));
             styleSheets.Add(gv.settings.blackboardStyle);
             categoryStyle = gv.settings.blackboardCategoryStyle;
+            coffeeGraph = gv;
+            
+            var blackboardNameLabel = this.Q<Label>("subTitleLabel");
+            blackboardNameLabel.text = "Node Browser";
+            
             listBase.AddToClassList("list-base");
             Add(listBase);
             SetupListView();
@@ -34,12 +37,22 @@ namespace VisualNovelFramework.GraphFramework.Editor
             if (!(ele is NavBlackboardNodeItem bc)) 
                 return;
             bc.styleSheets.Add(categoryStyle);
-            if (listBase.itemsSource[index] is Node node)
+            if (!(listBase.itemsSource[index] is Node node)) 
+                return;
+            
+            bc.foldout.text = node.name;
+            bc.targetNode = node;
+                
+            if (node is BaseNode bn && coffeeGraph.IsNodeStacked(bn))
             {
-                bc.foldout.text = node.name;
-                bc.targetNode = node;
-                bc.RegisterCallback<ClickEvent>(OnLabelClicked);
+                ele.AddToClassList("stacked");
             }
+            else
+            {
+                ele.RemoveFromClassList("stacked");
+            }
+
+            bc.RegisterCallback<ClickEvent>(OnLabelClicked);
         }
 
         private void OnLabelClicked(ClickEvent evt)
@@ -50,8 +63,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
             
             Node targetNode = bbItem.targetNode;
-            
-            ((CoffeeGraphView) graphView).CenterViewOnAndSelectNode(targetNode);
+
+            coffeeGraph.CenterViewOnAndSelectNode(targetNode);
+            //Screaming internally
+            listBase.SetSelection(listBase.itemsSource.IndexOf(targetNode));
 
             graphView.ClearSelection();
             graphView.AddToSelection(targetNode);
@@ -59,10 +74,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private List<Node> listItemNodes = new List<Node>();
         private void DelayedRefresh()
-        {
+        { 
+            //Warning! List view is highly unstable and alterations with the order of operations
+            //here might cause unexpected errors.
             refreshingImminent = false;
-            listBase.itemsSource = null;
-            listItemNodes = graphView.nodes.ToList();
+            listBase.Clear();
+            listItemNodes = coffeeGraph.GetNodesOrdered();
             listBase.itemsSource = listItemNodes;
             listBase.Refresh();
         }
@@ -78,18 +95,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 schedule.Execute(DelayedRefresh).StartingIn(100);
                 refreshingImminent = true;
             }
-        }
-
-        private void HandleContextMenu(ContextualMenuPopulateEvent evt)
-        {
-            if (evt.target == this)
-            {
-                evt.menu.AppendAction("Add Category", NewCategoryRequest);
-            }
-        }
-
-        private void NewCategoryRequest(DropdownMenuAction evt)
-        {
         }
     }
 }

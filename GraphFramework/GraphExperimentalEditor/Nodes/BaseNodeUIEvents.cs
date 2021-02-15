@@ -13,7 +13,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// <summary>
         /// Handles removing port connection correctly when a node is deleted.
         /// </summary>
-        private void OnNodeDeleted()
+        private void OnNodeDeleted(DetachFromPanelEvent panelEvent)
         {
             var ports = this.Query<Port>().ToList();
             foreach (Port port in ports)
@@ -30,7 +30,6 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void OnTitleDoubleClicked(PointerDownEvent evt)
         {
-            Debug.Log("Clik");
             if (evt.clickCount != 2)
                 return;
             
@@ -45,9 +44,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             
             title = newName;
             name = newName;
-
+            
             ChangeEvent<string> changeEvent = new ChangeEvent<string>();
-
             SendEvent(changeEvent);
         }
 

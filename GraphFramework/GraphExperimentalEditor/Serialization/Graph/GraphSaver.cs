@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
@@ -82,27 +81,28 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// <summary>
         /// Walks all nodes in the graph, including stack nodes.
         /// </summary>
-        private static void WalkNodes(GraphView graphView)
+        private static void WalkNodes(CoffeeGraphView graphView)
         {
-            var enumerationOfNodes = graphView.nodes.ToList();
+            //GetNodes returns only stacks and free nodes, perfect.
+            var enumerationOfNodes = graphView.GetNodes();
             
             //Iterating backwards no longer necessary, but still very cool.
             for (int i = enumerationOfNodes.Count-1; i >= 0; i--)
             {
                 var node = enumerationOfNodes[i];
-                //Stack nodes serialize all their children themselves.
-                if (node is BaseStackNode sn)
+                switch (node)
                 {
-                    serializedStackedNodeData.Add(SerializeStack(sn));
-                }
-
-                //This serializes any free hanging children that aren't stacked.
-                if (node is BaseNode bn && !(bn.ClassListContains("stack-child-element")))
-                {
-                    var serializationData = SerializeNode(bn);
-                    if (serializationData == null)
-                        continue;
-                    serializedUnstackedNodeData.Add(serializationData);
+                    //Stack nodes serialize all their children themselves.
+                    case BaseStackNode sn:
+                        serializedStackedNodeData.Add(SerializeStack(sn));
+                        break;
+                    //Serializes free nodes
+                    case BaseNode bn:
+                    {
+                        var serializationData = SerializeNode(bn);
+                        serializedUnstackedNodeData.Add(serializationData);
+                        break;
+                    }
                 }
             }
         }

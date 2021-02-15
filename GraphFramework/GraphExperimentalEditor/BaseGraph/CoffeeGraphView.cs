@@ -30,10 +30,35 @@ namespace VisualNovelFramework.GraphFramework.Editor
             blackboard = new NavigationBlackboard(this);
             Add(blackboard);
             
+            //These callbacks are derived from graphView.
             //Callback on cut/copy.
             serializeGraphElements = OnSerializeGraphElements;
             //Callback on paste.
             unserializeAndPaste = DeserializeElementsOnPaste;
+            //Callback on "changes" particularly on element delete.
+            graphViewChanged = OnGraphViewChanged;
+        }
+
+        private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
+        {
+            if (changes.elementsToRemove == null)
+                return changes;
+            
+            //Checks for changes related to our nodes.
+            foreach (var elem in changes.elementsToRemove)
+            {
+                switch (elem)
+                {
+                    case BaseNode bn:
+                        OnNodeDelete(bn);
+                        break;
+                    case BaseStackNode sn:
+                        OnStackDelete(sn);
+                        break;
+                }
+            }
+
+            return changes;
         }
 
         #region Copy and Paste
@@ -61,14 +86,14 @@ namespace VisualNovelFramework.GraphFramework.Editor
                         if (bn.ClassListContains("stack-child-element"))
                             continue;
                         NodeSerializationData serialNode = 
-                            NodeSerializationData.SerializeFrom(bn, false, true);
+                            NodeSerializationData.SerializeFrom(bn);
                         
                         box.serializedNodes.Add(serialNode);
                         break;
                     }
                     case BaseStackNode sn:
                         StackNodeSerializationData stackSerialData = 
-                            StackNodeSerializationData.SerializeFrom(sn, true);
+                            StackNodeSerializationData.SerializeFrom(sn);
                         
                         box.serializedStacks.Add(stackSerialData);
                         break;
@@ -85,12 +110,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 return;
             
             List<ISelectable> newSelection = new List<ISelectable>();
-            
+
             //Deserialize each node.
             foreach (var serialNode in box.serializedNodes)
             {
-                var node = serialNode.CreateFromSerialization();
-                node.SetCoffeeGUID(Guid.NewGuid().ToString());
+                var node = serialNode.CreateCopyFromSerialization();
                 newSelection.Add(node);
                 AddNode(node);
             }
@@ -98,14 +122,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
             //Deserialize all stacks and their children
             foreach (var serializedStack in box.serializedStacks)
             {
-                var stackNode = serializedStack.CreateFromSerialization();
-                stackNode.SetCoffeeGUID(Guid.NewGuid().ToString());
+                var stackNode = serializedStack.CreateCopyFromSerialization();
                 newSelection.Add(stackNode);
                 AddStackNode(stackNode);
                 foreach (var serialNode in serializedStack.stackedNodes)
                 {
-                    var node = serialNode.CreateFromSerialization();
-                    node.SetCoffeeGUID(Guid.NewGuid().ToString());
+                    var node = serialNode.CreateCopyFromSerialization();
                     AddDefaultSettingsToNode(node);
                     stackNode.AddNode(node);
                 }
@@ -148,18 +170,184 @@ namespace VisualNovelFramework.GraphFramework.Editor
         #endregion
         
         #region Nodes
+        
+        /// <summary>
+        /// All "free" BaseNodes (not including stack nodes) in the graph which are not stacked.
+        /// </summary>
+        public readonly List<BaseNode> freeNodes = new List<BaseNode>();
+        
+        /// <summary>
+        /// All stack nodes in the graph.
+        /// </summary>
+        public readonly List<BaseStackNode> stackNodes = new List<BaseStackNode>();
+        
+        /// <summary>
+        /// Lookup of StackNode -> Child BaseNodes
+        /// </summary>
+        private readonly Dictionary<BaseStackNode, List<BaseNode>> stackRelations =
+            new Dictionary<BaseStackNode, List<BaseNode>>();
 
-        private void OnNodeNameChanged(ChangeEvent<string> changeEvent)
+        /// <summary>
+        /// Lookup of BaseNode -> Parent BaseStackNode
+        /// </summary>
+        private readonly Dictionary<BaseNode, BaseStackNode> stackedNodeDictionary =
+            new Dictionary<BaseNode, BaseStackNode>();
+
+        public bool TryGetStackNodeChildren(BaseStackNode stack, out List<BaseNode> children)
+        {
+            return stackRelations.TryGetValue(stack, out children);
+        }
+
+        public bool IsNodeStacked(BaseNode bn)
+        {
+            return stackedNodeDictionary.TryGetValue(bn, out _);
+        }
+
+        public List<Node> GetNodes()
+        {
+            List<Node> listOfNodes = new List<Node>();
+            listOfNodes.AddRange(freeNodes);
+            listOfNodes.AddRange(stackNodes);
+            return listOfNodes;
+        }
+
+        public List<Node> GetNodesOrdered()
+        {
+            List<Node> orderedNodes = new List<Node>();
+            orderedNodes.AddRange(freeNodes);
+            foreach (var stack in stackNodes)
+            {
+                orderedNodes.Add(stack);
+                if(stackRelations.TryGetValue(stack, out var stackedNodes))
+                {
+                    orderedNodes.AddRange(stackedNodes);
+                }
+            }
+            return orderedNodes;
+        }
+
+        /// <summary>
+        /// A callback launched whenever a node in the graph is renamed. Currently used to update
+        /// the blackboard so it only repaints when there's a change.
+        /// </summary>
+        protected virtual void OnNodeNameChanged(ChangeEvent<string> changeEvent)
         {
             blackboard.RequestRefresh();
         }
-        
+
+        protected virtual void OnNodeDelete(BaseNode node)
+        {
+            if (freeNodes.Contains(node))
+            {
+                freeNodes.Remove(node);
+            }
+            else
+            {
+                RemoveNodeFromStack(node);
+            }
+            blackboard.RequestRefresh();
+        }
+
+        protected virtual void OnStackDelete(BaseStackNode stack)
+        {
+            if (!stackRelations.TryGetValue(stack, out var relations))
+                return;
+            
+            foreach (var node in relations)
+            {
+                if(stackedNodeDictionary.TryGetValue(node, out _))
+                    stackedNodeDictionary.Remove(node);
+            }
+
+            stackRelations.Remove(stack);
+            if (stackNodes.Contains(stack))
+            {
+                stackNodes.Remove(stack);
+            }
+        }
+
+        public virtual void OnStackChanged(BaseStackNode changedStack, BaseNode changedNode, bool added)
+        {
+            if (!added)
+            {
+                RemoveNodeFromStack(changedNode);
+                freeNodes.Add(changedNode);
+                blackboard.RequestRefresh();
+            }
+            else
+            {
+                AddNodeToStack(changedStack, changedNode);
+                blackboard.RequestRefresh();
+            }
+        }
+
+        private void RemoveNodeFromStack(BaseNode bn)
+        {
+            if (!stackedNodeDictionary.TryGetValue(bn, out var stack))
+            {
+                return;
+            }
+            
+            if(!stackRelations.TryGetValue(stack, out var stackedNodes))
+            {
+                stackedNodes = new List<BaseNode>();
+                stackRelations[stack] = stackedNodes;
+                return;
+            }
+
+            if (stackedNodes.Contains(bn))
+            {
+                stackedNodes.Remove(bn);
+                stackedNodeDictionary.Remove(bn);
+            }
+        }
+
+        private void AddNodeToStack(BaseStackNode stack, BaseNode bn)
+        {
+            if(!stackRelations.TryGetValue(stack, out var stackedNodes))
+            {
+                stackedNodes = new List<BaseNode>();
+                stackRelations[stack] = stackedNodes;
+            }
+            stackedNodes.Add(bn);
+            stackedNodeDictionary.Add(bn, stack);
+
+            if (freeNodes.Contains(bn))
+            {
+                freeNodes.Remove(bn);
+            }
+        }
+
         /// <summary>
         /// Nodes should be created using AddNoteAt with a rect targeting where on the graph
         /// they should be spawned.
         /// </summary>
         public void AddNode(BaseNode node)
         {
+            freeNodes.Add(node);
+
+            AddDefaultSettingsToNode(node);
+            AddElement(node);
+            
+            node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
+            blackboard.RequestRefresh();
+        }
+
+        /// <summary>
+        /// Node is created on the graph with the given coordinates.
+        /// </summary>
+        protected void AddNodeAt(BaseNode node, Rect position)
+        {
+            AddNode(node);
+            node.SetPosition(position);
+        }
+        
+        /// <summary>
+        /// Adds a stack node to the graph.
+        /// </summary>
+        public void AddStackNode(BaseStackNode node)
+        {
+            stackNodes.Add(node);
             AddDefaultSettingsToNode(node);
             AddElement(node);
             node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
@@ -179,23 +367,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
         }
 
-        public void AddStackNode(BaseStackNode node)
-        {
-            AddDefaultSettingsToNode(node);
-            AddElement(node);
-            node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
-            blackboard.RequestRefresh();
-        }
-
-        /// <summary>
-        /// Node is created on the graph with the given coordinates.
-        /// </summary>
-        protected void AddNodeAt(BaseNode node, Rect position)
-        {
-            AddNode(node);
-            node.SetPosition(position);
-        }
-        
         #endregion
         
         #region Helper Functions

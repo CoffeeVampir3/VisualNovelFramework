@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -24,8 +25,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField] 
         public SerializableType nodeType = null;
         [SerializeField] 
-        public string nodeName = "";
-        [SerializeField] 
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
         [SerializeField]
         public RuntimeNode runtimeNode;
@@ -35,7 +34,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// <summary>
         /// Serializes the given nodes data into a new serialization data scriptable object.
         /// </summary>
-        public static NodeSerializationData SerializeFrom(BaseNode node, bool isStacked = false, bool createRuntimeDataCopy = false)
+        public static NodeSerializationData SerializeFrom(BaseNode node, bool isStacked = false)
         {
             NodeSerializationData serializationData = CreateInstance<NodeSerializationData>();
             
@@ -45,12 +44,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.isStacked = isStacked;
             serializationData.isExpanded = node.expanded;
             serializationData.nodeType = new SerializableType(node.GetType());
-
-            //Create a copy of the runtime data if requested.
-            serializationData.runtimeNode = createRuntimeDataCopy ? 
-                Instantiate(node.RuntimeData) : 
-                node.RuntimeData;
-            
+            serializationData.runtimeNode = node.RuntimeData;
             serializationData.runtimeNode.SetCoffeeGUID(node.GetCoffeeGUID());
             serializationData.name = "sNodeData_" + serializationData.nodeTitle;
             serializationData.runtimeNode.name = serializationData.nodeTitle;
@@ -80,6 +74,18 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             }
             
             return serializationData;
+        }
+
+        /// <summary>
+        /// Creates a new unique copy of the serialized node with a different RTD and GUID.
+        /// </summary>
+        public BaseNode CreateCopyFromSerialization()
+        {
+            BaseNode bn = CreateFromSerialization();
+            bn.RuntimeData = Instantiate(bn.RuntimeData);
+            bn.SetCoffeeGUID(Guid.NewGuid().ToString());
+            bn.RuntimeData.SetCoffeeGUID(bn.GetCoffeeGUID());
+            return bn;
         }
 
         /// <summary>

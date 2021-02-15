@@ -117,6 +117,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
             titleContainer.pickingMode = PickingMode.Position;
             titleContainer.RegisterCallback<PointerDownEvent>(OnTitleDoubleClicked);
+            RegisterCallback<DetachFromPanelEvent>(OnNodeDeleted);
 
             Repaint();
         }

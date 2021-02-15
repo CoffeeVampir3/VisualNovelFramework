@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
 
@@ -10,8 +9,9 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
  public class BaseStackNode : StackNode, HasCoffeeGUID
     {
         public string GUID;
-        protected CoffeeGraphView owner;
-        
+        private CoffeeGraphView _graphView;
+        protected CoffeeGraphView graphView => _graphView ??= GetFirstAncestorOfType<CoffeeGraphView>();
+
         public List<BaseNode> nodeList => this.Query<BaseNode>().ToList();
 
         private readonly Dictionary<System.Type, bool> acceptedElementDictionary
@@ -24,8 +24,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         public void Initialize(string initialName)
         {
-            this.name = initialName;
-            this.title = initialName;
+            name = initialName;
+            title = initialName;
             var placeholderLabel = this.Q<Label>();
             placeholderLabel.text = initialName;
         }
@@ -58,6 +58,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public void AddNode(BaseNode node)
         {
             AddElement(node);
+            graphView.OnStackChanged(this, node, true);
             RegisterCallback<GeometryChangedEvent>(OnStackOrderChanged);
         }
 
@@ -69,10 +70,11 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             var selectables = selection as ISelectable[] ?? selection.ToArray();
             foreach (var s in selectables)
             {
-                if (s is BaseNode bn)
-                {
-                    Debug.Log("Added element: " + bn.name);
-                }
+                if (!(s is BaseNode bn)) 
+                    continue;
+
+                //If unity ever writes a stable enough event API this will change to an event.
+                graphView.OnStackChanged(this, bn, true);
             }
 
             RegisterCallback<GeometryChangedEvent>(OnStackOrderChanged);
@@ -87,6 +89,11 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             RegisterCallback<GeometryChangedEvent>(OnStackOrderChanged);
             ge.RemoveFromClassList("firstInStack");
             ge.RemoveFromClassList("lastInStack");
+
+            if (ge is BaseNode bn)
+            {
+                graphView.OnStackChanged(this, bn, false);
+            }
             base.OnStartDragging(ge);
         }
 
