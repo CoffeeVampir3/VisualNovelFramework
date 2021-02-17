@@ -7,7 +7,7 @@ using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    [RegisterNodeToView(typeof(DialogueGraphView), "Building Blocks/Characters/Experimental/Dialogue Node")]
+    [RegisterNodeToView(typeof(DialogueGraphView), "Dialogue Node")]
     public class DialogueNode : BaseNode<RuntimeDialogueNode>
     {
         private void DynamicPortTest()

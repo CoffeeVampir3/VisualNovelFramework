@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.Editor.Elements;
 

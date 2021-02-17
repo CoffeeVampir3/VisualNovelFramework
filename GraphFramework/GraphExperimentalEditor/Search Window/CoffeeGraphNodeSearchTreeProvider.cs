@@ -8,12 +8,12 @@ using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     /// <summary>
-    /// This is a reflection helper class that allows us to link nodes<->graph search using the
-    /// RegisterNodeToView attribute.
+    /// Helper class to provide the node search tree for our graph view using RegisterNodeToView
+    /// attribute.
     /// </summary>
     public static class CoffeeGraphNodeSearchTreeProvider
     {
-        public static List<Type> GetNodesRegisteredToView(Type graphViewType)
+        private static List<Type> GetNodesRegisteredToView(Type graphViewType)
         {
             var nodeList = TypeCache.GetTypesWithAttribute<RegisterNodeToView>();
 
@@ -21,7 +21,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
             foreach (var node in nodeList)
             {
                 var attr = node.
-                    GetCustomAttributes(typeof(RegisterNodeToView), false)[0] as RegisterNodeToView;
+                    GetCustomAttributes(typeof(RegisterNodeToView), false)[0] 
+                    as RegisterNodeToView;
 
                 //Type cache ensures this is never null.
                 // ReSharper disable once PossibleNullReferenceException

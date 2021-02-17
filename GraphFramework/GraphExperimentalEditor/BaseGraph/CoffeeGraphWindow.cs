@@ -1,5 +1,4 @@
 ﻿using System;
-using Sirenix.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -27,7 +26,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         protected void InitializeGraph()
         {
-            if (currentGraphGUID.IsNullOrWhitespace())
+            if (string.IsNullOrWhiteSpace(currentGraphGUID))
             {
                 currentGraphGUID = Guid.NewGuid().ToString();
             }

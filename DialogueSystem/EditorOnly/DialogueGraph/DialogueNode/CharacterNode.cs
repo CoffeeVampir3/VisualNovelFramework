@@ -11,7 +11,7 @@ using VisualNovelFramework.VNCharacter;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
-    [RegisterNodeToView(typeof(DialogueGraphView), "Building Blocks/Characters/Experimental/Deep/Node")]
+    [RegisterNodeToView(typeof(DialogueGraphView), "Character Node")]
     public class CharacterNode : BaseNode<RuntimeCharacterNode>
     {
         protected override void OnNodeCreation()
