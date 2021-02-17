@@ -5,6 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Window;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
@@ -16,6 +17,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
         [SerializeReference] public BaseNode rootNode;
         [SerializeReference] public readonly GraphSettings settings;
         protected readonly NavigationBlackboard blackboard;
+        protected readonly CoffeeSearchWindow searchWindow;
+        public CoffeeGraphWindow parentWindow;
 
         protected CoffeeGraphView()
         {
@@ -29,7 +32,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
             blackboard = new NavigationBlackboard(this);
             Add(blackboard);
-            
+
             //These callbacks are derived from graphView.
             //Callback on cut/copy.
             serializeGraphElements = OnSerializeGraphElements;
@@ -37,7 +40,16 @@ namespace VisualNovelFramework.GraphFramework.Editor
             unserializeAndPaste = DeserializeElementsOnPaste;
             //Callback on "changes" particularly on element delete.
             graphViewChanged = OnGraphViewChanged;
+
+            searchWindow = ScriptableObject.CreateInstance<CoffeeSearchWindow>();
+            InitializeSearchWindow();
         }
+        
+        /// <summary>
+        /// Called once the graph view is resized to the editor window and all geometry has been
+        /// calculated. (Internally, this is called after a GeometryChangedEvent)
+        /// </summary>
+        public abstract void OnCreateGraphGUI();
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
         {
@@ -59,6 +71,13 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
 
             return changes;
+        }
+
+        private void InitializeSearchWindow()
+        {
+            searchWindow.graphView = this;
+            nodeCreationRequest = context =>
+                SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), searchWindow);
         }
 
         #region Copy and Paste
@@ -367,6 +386,39 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
         }
 
+        public void CreateNode(Type nodeType, Vector2 contextSpawnPos)
+        {
+            //Thanks to Mert Kirimgeri "UNITY DIALOGUE GRAPH TUTORIAL - Variables and Search Window"
+            //https://www.youtube.com/watch?v=F4cTWOxMjMY
+            Vector2 spawnPosition = parentWindow.rootVisualElement.ChangeCoordinatesTo(
+                parentWindow.rootVisualElement.parent,
+                contextSpawnPos - parentWindow.position.position);
+
+            spawnPosition = contentViewContainer.WorldToLocal(spawnPosition);
+
+            Vector2 nodeSize;
+            if (typeof(BaseNode).IsAssignableFrom(nodeType))
+            {
+                var node = SafeActivatorHelper.LoadArbitrary<BaseNode>(nodeType);
+                node.Initialize(nodeType.Name);
+                nodeSize = new Vector2(300, 300);
+                AddNodeAt(node, new Rect(spawnPosition.x - (nodeSize.x * scale / 2), 
+                    spawnPosition.y - (nodeSize.y * scale / 2), 
+                    nodeSize.x, nodeSize.y));
+            }
+            else if (typeof(BaseStackNode).IsAssignableFrom(nodeType))
+            {
+                BaseStackNode stack = SafeActivatorHelper.LoadArbitrary<BaseStackNode>(nodeType);
+                stack.Initialize(nodeType.Name);
+                nodeSize = new Vector2(150, 150);
+                stack.SetPosition(
+                    new Rect(spawnPosition.x - (nodeSize.x * scale / 2), 
+                        spawnPosition.y - (nodeSize.y * scale / 2), 
+                        nodeSize.x, nodeSize.y));
+                AddStackNode(stack);
+            }
+        }
+
         #endregion
         
         #region Helper Functions
@@ -413,6 +465,23 @@ namespace VisualNovelFramework.GraphFramework.Editor
             //This way we "undo" the division by scale for only the offset value, scaling everything else.
             relPos -= (offset * scale);
             return relPos / scale;
+        }
+        
+        #endregion
+
+        #region Event Handling
+
+        public override void HandleEvent(EventBase evt)
+        {
+            //Prevents the root node from being copied/deleted/weird shit
+            if (evt is ExecuteCommandEvent)
+            {
+                if (this.selection.Contains(rootNode))
+                {
+                    this.selection.Remove(rootNode);
+                }
+            }
+            base.HandleEvent(evt);
         }
         
         #endregion

@@ -1,10 +1,13 @@
 ﻿using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
+using VisualNovelFramework.DialogueGraph;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
+    [RegisterNodeToView(typeof(DialogueGraphView), "Building Blocks/Characters/Experimental/Dialogue Node")]
     public class DialogueNode : BaseNode<RuntimeDialogueNode>
     {
         private void DynamicPortTest()

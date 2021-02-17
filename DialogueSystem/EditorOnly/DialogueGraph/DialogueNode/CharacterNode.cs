@@ -2,13 +2,16 @@
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.DialogueGraph;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.Editor.Outfitter;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
 using VisualNovelFramework.VNCharacter;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
+    [RegisterNodeToView(typeof(DialogueGraphView), "Building Blocks/Characters/Experimental/Deep/Node")]
     public class CharacterNode : BaseNode<RuntimeCharacterNode>
     {
         protected override void OnNodeCreation()
@@ -29,7 +32,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
                 if (nodeRuntimeData == null)
                     return;
 
-                var m = EditorWindow.GetWindow<DialogueGraph.DialogueGraph>();
+                var m = EditorWindow.GetWindow<DialogueGraph.DialogueGraphWindow>();
                 var newPos = new Rect(m.position.xMin + charDropdownThing.worldBound.position.x,
                     m.position.yMin + charDropdownThing.worldBound.position.y, 200, 400);
                 outfitDropdown = EditorWindow.CreateInstance<OutfitDropdownWindow>();

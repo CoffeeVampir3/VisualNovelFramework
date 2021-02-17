@@ -1,16 +1,16 @@
 ﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
+
 using VisualNovelFramework.GraphFramework.Editor;
 
 namespace VisualNovelFramework.DialogueGraph
 {
-    public partial class DialogueGraph : CoffeeGraph
+    public partial class DialogueGraphWindow : CoffeeGraphWindow
     {
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
         {
-            var window = GetWindow<DialogueGraph>();
+            var window = GetWindow<DialogueGraphWindow>();
             window.titleContent = new GUIContent("C0ff33");
             
             window.Focus();
@@ -28,11 +28,6 @@ namespace VisualNovelFramework.DialogueGraph
                 name = "Coffee Dialogue Graph"
             };
             InitializeGraph();
-        }
-
-        protected override void OnGraphGUI()
-        {
-            (graphView as DialogueGraphView).OnGeometryResizeInitialization();
         }
     }
     

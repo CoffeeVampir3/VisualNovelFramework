@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
-    public abstract class CoffeeGraph : EditorWindow
+    public abstract class CoffeeGraphWindow : EditorWindow
     {
         [SerializeReference]
         protected CoffeeGraphView graphView;
@@ -38,17 +38,16 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 graphView = null;
             };
 
+            graphView.parentWindow = this;
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
             graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
         }
 
-        protected abstract void OnGraphGUI();
-
         private void OnGeometryChangedInitialization(GeometryChangedEvent e)
         {
             GenerateToolbar();
-            OnGraphGUI();
+            graphView.OnCreateGraphGUI();
             graphView.UnregisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);
         }
 

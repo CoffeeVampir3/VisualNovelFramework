@@ -4,7 +4,7 @@ using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.AssetHandlers
 {
-    public class SerializedGraphAssetHandler : OpenWindowOnAssetClickedHandler<SerializedGraph, DialogueGraph.DialogueGraph>
+    public class SerializedGraphAssetHandler : OpenWindowOnAssetClickedHandler<SerializedGraph, DialogueGraph.DialogueGraphWindow>
     {
         [OnOpenAsset]
         public static bool OnSerializedGraphOpened(int instanceID, int line)

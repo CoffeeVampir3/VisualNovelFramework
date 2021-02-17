@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorOnly.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor;
-using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 namespace VisualNovelFramework.DialogueGraph
 {
@@ -17,7 +15,7 @@ namespace VisualNovelFramework.DialogueGraph
             Insert(0, grid);
         }
 
-        public void OnGeometryResizeInitialization()
+        public override void OnCreateGraphGUI()
         {
             CreateGrid();
             SpawnRootNode();
@@ -38,71 +36,6 @@ namespace VisualNovelFramework.DialogueGraph
             rootNode.Initialize("Root Node");
             AddNodeAt(rootNode, new Rect(spawnWidth, spawnHeight, 150, 150));
         }
-        
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
-        {
-            //We need this so we don't pollute the blackboard menus.
-            if (evt.target is GraphView || evt.target is Node)
-            {
-                evt.menu.AppendAction("Nodes/Character", MenuAddCharacterNode);
-                evt.menu.AppendAction("Nodes/Dialogue", MenuAddDialogueNode);
-                evt.menu.AppendAction("Nodes/Debug", MenuAddDebugNode);
-            }
-            
-            base.BuildContextualMenu(evt);
-        }
-
-        private void MenuAddDialogueNode(DropdownMenuAction act)
-        {
-            var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
-                new Vector2(50, 75));
-            
-            var spawnPos = new Rect(pos.x, pos.y, 100, 150);
-            var node = new DialogueNode();
-            node.Initialize("Dialogue Node");
-            AddNodeAt(node, spawnPos);
-        }
-
-        private void MenuAddDebugNode(DropdownMenuAction act)
-        {
-            var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
-                new Vector2(50, 75));
-            
-            var spawnPos = new Rect(pos.x, pos.y, 100, 150);
-            var node = new SequenceStackNode();
-            node.SetCoffeeGUID(Guid.NewGuid().ToString());
-            node.SetPosition(spawnPos);
-            node.Initialize("Sequence Stack");
-            AddStackNode(node);
-        }
-
-        private void MenuAddCharacterNode(DropdownMenuAction act)
-        {
-            var pos = GetViewRelativePosition(act.eventInfo.mousePosition,
-                new Vector2(50, 75));
-            
-            var spawnPos = new Rect(pos.x, pos.y, 100, 150);
-            var node = new CharacterNode();
-            node.Initialize("Character Node");
-            AddNodeAt(node, spawnPos);
-        }
-
-        #region Events
-        
-        public override void HandleEvent(EventBase evt)
-        {
-            //Prevents the root node from being copied/deleted/weird shit
-            if (evt is ExecuteCommandEvent)
-            {
-                if (this.selection.Contains(rootNode))
-                {
-                    this.selection.Remove(rootNode);
-                }
-            }
-            base.HandleEvent(evt);
-        }
-        
-        #endregion
 
         #region Literal Garbage
 
