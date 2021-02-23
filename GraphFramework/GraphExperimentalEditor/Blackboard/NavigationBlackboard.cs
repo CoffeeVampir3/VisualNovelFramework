@@ -31,18 +31,18 @@ namespace VisualNovelFramework.GraphFramework.Editor
             listBase.bindItem = BindNodeToList;
             listBase.itemHeight = 22;
         }
-        
+
         private void BindNodeToList(VisualElement ele, int index)
         {
-            if (!(ele is NavBlackboardNodeItem bc)) 
+            if (!(ele is NavBlackboardNodeItem bc))
                 return;
             bc.styleSheets.Add(categoryStyle);
-            if (!(listBase.itemsSource[index] is Node node)) 
+            if (!(listBase.itemsSource[index] is Node node))
                 return;
-            
+
             bc.foldout.text = node.name;
             bc.targetNode = node;
-                
+
             if (node is BaseNode bn && coffeeGraph.IsNodeStacked(bn))
             {
                 ele.AddToClassList("stacked");
@@ -90,11 +90,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
         private bool refreshingImminent = false;
         public void RequestRefresh()
         {
-            if (!refreshingImminent)
-            {
-                schedule.Execute(DelayedRefresh).StartingIn(100);
-                refreshingImminent = true;
-            }
+            if (refreshingImminent) 
+                return;
+            
+            schedule.Execute(DelayedRefresh).StartingIn(100);
+            refreshingImminent = true;
         }
     }
 }

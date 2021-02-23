@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using CoffeeExtensions;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 
@@ -25,7 +28,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     }
     
     /// <summary>
-    /// Inherit from BaseNode<RuntimeNodeType>, not this class.
+    /// Inherit using the generic version with a RuntimeNodeType.
     /// BaseNode is responsible for the very most basic setup and initialization of any deriving nodes.
     /// This allows us to have a common class we can generate using reflection and an activator,
     /// allowing us to avoid boilerplate code.
@@ -35,7 +38,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
     {
         public string GUID;
         /// <summary>
-        /// This is an auto property which is overriden in BaseNode<T> allowing us to use
+        /// This is an auto property which is overriden in BaseNode allowing us to use
         /// a more-specific type for RuntimeData instead of the less-specific RuntimeNode.
         /// </summary>
         public abstract RuntimeNode RuntimeData { get; set; }
@@ -79,6 +82,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             OnNodeCreation();
             SetupBaseNodeUI();
             RebuildPortsFromSerialization(data);
+            Repaint();
         }
         
         /// <summary>
@@ -89,7 +93,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             GenerateNewNodeData(initialName);
             OnNodeCreation();
             SetupBaseNodeUI();
-            InstantiatePorts();
+            CreatePortsFromReflection();
+            Repaint();
         }
 
         private System.Type GetGenericRuntimeNodeType()
@@ -99,7 +104,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             //This magic deserve some explanation:
             //In a declaration like DialogueNode : BaseNode<RuntimeDialogueNode>
             //This code looks at BaseNode<RuntimeDialogueNode>
-            //And extracts the type RuntimeDialogueNode
+            //And extracts the type between the <>, RuntimeDialogueNode
             var k = thisType.GetGenericClassConstructorArguments(typeof(BaseNode<>));
             return k.FirstOrDefault(w => typeof(RuntimeNode).IsAssignableFrom(w));
         }
@@ -118,5 +123,36 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         }
 
         #endregion
+        
+        #region Port Binding
+        
+        protected Dictionary<Port, ValuePort> portValueBindings = new Dictionary<Port, ValuePort>();
+        protected Dictionary<(BaseNode, Port), Connection> connectionLookupDict =
+            new Dictionary<(BaseNode, Port), Connection>();
+        public Connection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
+        {
+            ValuePort localValuePort = portValueBindings[localPort];
+            ValuePort remoteValuePort = connectingTo.portValueBindings[remotePort];
+            Connection cn = new Connection(localValuePort, connectingTo.RuntimeData, remoteValuePort);
+
+            connectionLookupDict.Add((connectingTo, remotePort), cn);
+            RuntimeData.connections.Add(cn);
+            
+            Debug.Log("Created Connection from: " + this.name + " to " + connectingTo.name);
+            return cn;
+        }
+
+        public void DisconnectPortFrom(BaseNode connectingTo, Port remotePort)
+        {
+            var key = (connectingTo, remotePort);
+            if (!connectionLookupDict.TryGetValue(key, out var con)) 
+                return;
+
+            connectionLookupDict.Remove(key);
+            Debug.Log("Disconnecting port from: " + this.name + " to " + connectingTo.name);
+            RuntimeData.connections.Remove(con);
+        }
+        
+        #endregion 
     }
 }

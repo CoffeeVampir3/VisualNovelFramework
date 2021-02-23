@@ -39,7 +39,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
                 runtimeNodeVisitedEditor.Invoke(currentNode);
             }
             
-            currentNode = currentNode.outputConnections.FirstOrDefault();
+            //TODO::
+            //currentNode = currentNode.outputConnections.FirstOrDefault();
         }
     }
 }

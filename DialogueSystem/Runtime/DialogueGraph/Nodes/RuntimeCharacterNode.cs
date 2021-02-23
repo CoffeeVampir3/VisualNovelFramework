@@ -2,6 +2,7 @@
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.DialogueSystem.VNScene;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.VNCharacter;
 
@@ -9,11 +10,22 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
 {
     public class RuntimeCharacterNode : RuntimeNode
     {
+        [In]
+        public ValuePort<string> stringValue = new ValuePort<string>();
+        [Out]
+        public ValuePort<string> stringValue2 = new ValuePort<string>();
+        [Out]
+        public ValuePort<string> stringValue3 = new ValuePort<string>();
+        [Out]
+        public ValuePort<string> stringValue4 = new ValuePort<string>();
+        [Out]
+        public ValuePort<string> stringValue5 = new ValuePort<string>();
+        
         [SerializeField]
         public Character swag;
         [SerializeField, ReadonlyField]
         public CharacterOutfit outfit;
-        
+
         //HideInInspector appears to be bugged, but this is a fine workaround.
         [SerializeField, HideInInspector]
         public Vector2 spawnPosition;

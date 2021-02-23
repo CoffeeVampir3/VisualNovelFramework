@@ -4,6 +4,7 @@ using VisualNovelFramework.DialogueGraph;
 using VisualNovelFramework.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
+using VisualNovelFramework.VNCharacter;
 
 namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
 {
@@ -12,9 +13,7 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
     {
         private void DynamicPortTest()
         {
-            var port = CreatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));
-
-            outputPortsContainer.Add(port);
+            AddDynamicPort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(string));
         }
 
         private void DynamicPortRemover()
@@ -34,9 +33,6 @@ namespace VisualNovelFramework.EditorOnly.DialogueSystem.Nodes
         
         protected override void InstantiatePorts()
         {
-            var port = CreatePort(Orientation.Horizontal, 
-                Direction.Input, Port.Capacity.Multi, typeof(string));
-            inputPortsContainer.Add(port);
         }
     }
 }

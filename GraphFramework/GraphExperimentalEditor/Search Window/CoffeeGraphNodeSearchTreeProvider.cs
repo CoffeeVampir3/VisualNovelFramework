@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -13,29 +14,22 @@ namespace VisualNovelFramework.GraphFramework.Editor
     /// </summary>
     public static class CoffeeGraphNodeSearchTreeProvider
     {
-        private static List<Type> GetNodesRegisteredToView(Type graphViewType)
+        private static IEnumerable<Type> GetNodesRegisteredToView(Type graphViewType)
         {
             var nodeList = TypeCache.GetTypesWithAttribute<RegisterNodeToView>();
 
-            List<Type> registeredNodes = new List<Type>();
-            foreach (var node in nodeList)
-            {
-                var attr = node.
-                    GetCustomAttributes(typeof(RegisterNodeToView), false)[0] 
-                    as RegisterNodeToView;
-
-                //Type cache ensures this is never null.
-                // ReSharper disable once PossibleNullReferenceException
-                if(attr.registeredGraphView == graphViewType)
-                    registeredNodes.Add(node);
-            }
-
-            return registeredNodes;
+            return (from node 
+                    in nodeList 
+                    let attr = 
+                        node.GetCustomAttributes(typeof(RegisterNodeToView), false)[0] as RegisterNodeToView 
+                    where attr.registeredGraphView == graphViewType 
+                    select node)
+                .ToList();
         }
         
         #region Node Search Tree Parser
 
-        private static Dictionary<(string directory, int depth), SearchTreeGroupEntry> dirToGroup;
+        private static Dictionary<(string, int), SearchTreeGroupEntry> dirToGroup;
         private static Dictionary<SearchTreeGroupEntry, List<SearchTreeEntry>> groupToEntry;
 
         private static SearchTreeGroupEntry CreateDirectory(string directory, int depth)
@@ -57,7 +51,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 groupToEntry.Add(parent, entryList);
             }
 
-            SearchTreeEntry nEntry = new SearchTreeEntry(new GUIContent(entryName))
+            SearchTreeEntry nEntry = new SearchTreeEntry(new GUIContent(entryName, indentationIcon))
             {
                 level = depth, userData = entryNodeType
             };
@@ -65,6 +59,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             entryList.Add(nEntry);
         }
 
+        private static Texture2D indentationIcon;
         /// <summary>
         /// Returns a search tree of our registered nodes for the given graph view type.
         /// </summary>
@@ -75,6 +70,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
             groupToEntry = new Dictionary<SearchTreeGroupEntry, List<SearchTreeEntry>>();
 
             List<SearchTreeGroupEntry> allGroups = new List<SearchTreeGroupEntry>();
+
+            //Create our nice alignment icon, gosh it's so nice.
+            //...Why the fuck is this necessary @Unity?
+            indentationIcon = new Texture2D(1, 1);
+            indentationIcon.SetPixel(0, 0, new Color(0, 0, 0, 0));
+            indentationIcon.Apply();
             
             //Create top entry of our search tree.
             SearchTreeGroupEntry top = new SearchTreeGroupEntry(
@@ -120,7 +121,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 {
                     searchTree.Add(group);
                 }
-                //For the groups with leafs:
+                //For the groups with tree leaves:
                 if(groupToEntry.TryGetValue(group, out var entries))
                 {
                     searchTree.AddRange(entries);

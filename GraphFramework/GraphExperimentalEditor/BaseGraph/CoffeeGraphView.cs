@@ -12,11 +12,12 @@ using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
-    public abstract class CoffeeGraphView : GraphView
+    public abstract partial class CoffeeGraphView : GraphView
     {
         [SerializeReference] public BaseNode rootNode;
         [SerializeReference] public readonly GraphSettings settings;
-        protected readonly NavigationBlackboard blackboard;
+        protected readonly NavigationBlackboard navBlackboard;
+        protected readonly PropertyBlackboard propBlackboard;
         protected readonly CoffeeSearchWindow searchWindow;
         public CoffeeGraphWindow parentWindow;
 
@@ -30,8 +31,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
 
-            blackboard = new NavigationBlackboard(this);
-            Add(blackboard);
+            navBlackboard = new NavigationBlackboard(this);
+            //Add(navBlackboard);
+
+            propBlackboard = new PropertyBlackboard(this);
+            Add(propBlackboard);
 
             //These callbacks are derived from graphView.
             //Callback on cut/copy.
@@ -53,29 +57,59 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
         {
-            if (changes.elementsToRemove == null)
-                return changes;
-            
             //Checks for changes related to our nodes.
-            foreach (var elem in changes.elementsToRemove)
+            if (changes.elementsToRemove != null)
             {
-                switch (elem)
+                foreach (var elem in changes.elementsToRemove)
                 {
-                    case BaseNode bn:
-                        OnNodeDelete(bn);
-                        break;
-                    case BaseStackNode sn:
-                        OnStackDelete(sn);
-                        break;
+                    switch (elem)
+                    {
+                        case BaseNode bn:
+                            OnNodeDelete(bn);
+                            break;
+                        case BaseStackNode sn:
+                            OnStackDelete(sn);
+                            break;
+                        case Edge e:
+                            OnEdgeDelete(e);
+                            break;
+                    }
                 }
+            }
+
+            if (changes.edgesToCreate == null) 
+                return changes;
+
+            foreach (var edge in changes.edgesToCreate)
+            {
+                CreateConnectionFromEdge(edge);
             }
 
             return changes;
         }
 
+        private void CreateConnectionFromEdge(Edge edge)
+        {
+            if (edge.input.node is BaseNode inputSide && 
+                edge.output.node is BaseNode outputSide)
+            {
+                inputSide.ConnectPortTo(edge.input, outputSide, edge.output);
+            }
+        }
+
+        private void OnEdgeDelete(Edge edge)
+        {
+            if (edge.input.node is BaseNode inputSide && 
+                edge.output.node is BaseNode outputSide)
+            {
+                inputSide.DisconnectPortFrom(outputSide, edge.output);
+            }
+        }
+
+
         private void InitializeSearchWindow()
         {
-            searchWindow.graphView = this;
+            searchWindow.Init(this);
             nodeCreationRequest = context =>
                 SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), searchWindow);
         }
@@ -251,7 +285,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         /// </summary>
         protected virtual void OnNodeNameChanged(ChangeEvent<string> changeEvent)
         {
-            blackboard.RequestRefresh();
+            navBlackboard.RequestRefresh();
         }
 
         protected virtual void OnNodeDelete(BaseNode node)
@@ -264,7 +298,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 RemoveNodeFromStack(node);
             }
-            blackboard.RequestRefresh();
+            navBlackboard.RequestRefresh();
         }
 
         protected virtual void OnStackDelete(BaseStackNode stack)
@@ -291,12 +325,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 RemoveNodeFromStack(changedNode);
                 freeNodes.Add(changedNode);
-                blackboard.RequestRefresh();
+                navBlackboard.RequestRefresh();
             }
             else
             {
                 AddNodeToStack(changedStack, changedNode);
-                blackboard.RequestRefresh();
+                navBlackboard.RequestRefresh();
             }
         }
 
@@ -349,7 +383,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             AddElement(node);
             
             node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
-            blackboard.RequestRefresh();
+            navBlackboard.RequestRefresh();
         }
 
         /// <summary>
@@ -370,7 +404,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             AddDefaultSettingsToNode(node);
             AddElement(node);
             node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
-            blackboard.RequestRefresh();
+            navBlackboard.RequestRefresh();
         }
 
         public void AddDefaultSettingsToNode(Node node)

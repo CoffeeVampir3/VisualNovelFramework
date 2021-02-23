@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
@@ -8,10 +9,8 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
     {
         [SerializeField, HideInInspector]
         public string GUID;
-        [SerializeField, HideInInspector]
-        public List<RuntimeNode> inputConnections = new List<RuntimeNode>();
-        [SerializeField, HideInInspector]
-        public List<RuntimeNode> outputConnections = new List<RuntimeNode>();
+        [SerializeField] 
+        public List<Connection> connections = new List<Connection>();
 
         public virtual RuntimeNode GetNextNode()
         {

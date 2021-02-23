@@ -14,7 +14,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
 
         private static readonly Dictionary<NodeSerializationData, NodeSerializationData> 
             stackNodeRefTracker = new Dictionary<NodeSerializationData, NodeSerializationData>();
-
+        
         private static void OverwriteScriptableObject<T>(T objectBeingOverwritten, 
             T objectToCopyFrom) 
             where T : ScriptableObject

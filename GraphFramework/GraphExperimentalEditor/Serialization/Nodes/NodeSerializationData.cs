@@ -49,8 +49,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.name = "sNodeData_" + serializationData.nodeTitle;
             serializationData.runtimeNode.name = serializationData.nodeTitle;
             
-            serializationData.runtimeNode.outputConnections.Clear();
-            serializationData.runtimeNode.inputConnections.Clear();
+            serializationData.runtimeNode.connections.Clear();
             
             if (node is IRootNode)
             {
@@ -116,8 +115,11 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             SerializedPortData serializedPort = new SerializedPortData(port);
             foreach (var edge in port.connections)
             {
-                if(edge.input.node is BaseNode bn)
-                    AddOutputLink(runtimeData, bn.RuntimeData);
+                if (edge.input.node is BaseNode bn)
+                {
+                    //TODO::
+                    //AddOutputLink(runtimeData, bn.RuntimeData);
+                }
                 serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
             }
 
@@ -129,29 +131,14 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             SerializedPortData serializedPort = new SerializedPortData(port);
             foreach (var edge in port.connections)
             {
-                if(edge.output.node is BaseNode bn)
-                    AddInputLink(runtimeData, bn.RuntimeData);
+                if (edge.output.node is BaseNode bn)
+                {
+                    //TODO::
+                    //AddInputLink(runtimeData, bn.RuntimeData);
+                }
             }
             
             return serializedPort;
-        }
-
-        /// <summary>
-        /// This is the actual connection information that we're serializing, not just
-        /// the edge data. So the node actually connects to another runtime node.
-        /// </summary>
-        private static void AddOutputLink(RuntimeNode addingTo, RuntimeNode connection)
-        {
-            addingTo.outputConnections.Add(connection);
-        }
-        
-        /// <summary>
-        /// This is the actual connection information that we're serializing, not just
-        /// the edge data. So the node actually connects to another runtime node.
-        /// </summary>
-        private static void AddInputLink(RuntimeNode addingTo, RuntimeNode connection)
-        {
-            addingTo.inputConnections.Add(connection);
         }
 
         public string GetCoffeeGUID()

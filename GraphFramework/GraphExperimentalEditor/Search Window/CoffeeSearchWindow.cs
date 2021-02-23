@@ -8,7 +8,12 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Win
 {
     public class CoffeeSearchWindow : ScriptableObject, ISearchWindowProvider
     {
-        public CoffeeGraphView graphView;
+        private CoffeeGraphView graphView;
+
+        public void Init(CoffeeGraphView parentGraphView)
+        {
+            graphView = parentGraphView;
+        }
 
         public List<SearchTreeEntry> CreateSearchTree(SearchWindowContext context)
         {
