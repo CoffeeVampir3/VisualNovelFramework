@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using CoffeeExtensions;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -126,19 +127,24 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         
         #region Port Binding
         
-        protected Dictionary<Port, ValuePort> portValueBindings = new Dictionary<Port, ValuePort>();
+        protected Dictionary<Port, FieldInfo> portValueBindings = new Dictionary<Port, FieldInfo>();
         protected Dictionary<(BaseNode, Port), Connection> connectionLookupDict =
             new Dictionary<(BaseNode, Port), Connection>();
         public Connection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
         {
-            ValuePort localValuePort = portValueBindings[localPort];
-            ValuePort remoteValuePort = connectingTo.portValueBindings[remotePort];
-            Connection cn = new Connection(localValuePort, connectingTo.RuntimeData, remoteValuePort);
+            FieldInfo localValuePortField = portValueBindings[localPort];
+            FieldInfo remoteValuePortField = connectingTo.portValueBindings[remotePort];
+
+            Connection cn = new Connection(
+                RuntimeData, localValuePortField, 
+                connectingTo.RuntimeData, remoteValuePortField);
 
             connectionLookupDict.Add((connectingTo, remotePort), cn);
             RuntimeData.connections.Add(cn);
-            
+
             Debug.Log("Created Connection from: " + this.name + " to " + connectingTo.name);
+            
+            cn.BindConnection();
             return cn;
         }
 

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
 {
@@ -12,6 +14,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     public class ValuePort
     {
         public ValuePort valueKey;
+        public string GUID;
         protected static Dictionary<ValuePort, object> ioValue =
             new Dictionary<ValuePort, object>();
         
@@ -24,12 +27,26 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
         {
             return ioValue[port.valueKey];
         }
+
+        public static ValuePort FromField(FieldInfo field, RuntimeNode fromNode)
+        {
+            ValuePort valuePort = field.GetValue(fromNode) as ValuePort;
+            SetPortValue(valuePort, true);
+            return valuePort;
+        }
     }
 
     public class ValuePort<T> : ValuePort
     {
         public ValuePort()
         {
+            GUID = Guid.NewGuid().ToString();
+            ioValue[this] = default(T);
+        }
+
+        public ValuePort(string withGuid)
+        {
+            GUID = withGuid;
             ioValue[this] = default(T);
         }
 

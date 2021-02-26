@@ -1,4 +1,7 @@
-﻿using VisualNovelFramework.GraphFramework.GraphRuntime;
+﻿using System;
+using System.Reflection;
+using UnityEngine;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
 {
@@ -8,19 +11,39 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     [System.Serializable]
     public class Connection
     {
-        private readonly ValuePort localPort;
-        private readonly ValuePort connectedPort;
-        private readonly RuntimeNode connectedNode;
-        public Connection(ValuePort local, RuntimeNode connectedNode, ValuePort remote)
+        [NonSerialized]
+        public ValuePort localPort;
+        [NonSerialized]
+        public ValuePort remotePort;
+        [SerializeField]
+        public RuntimeNode localNode;
+        [SerializeField]
+        public RuntimeNode remoteNode;
+        [SerializeField]
+        public SerializedFieldInfo localPortField;
+        [SerializeField]
+        public SerializedFieldInfo remotePortField;
+        public Connection(
+            RuntimeNode localSide, FieldInfo localPortField, 
+            RuntimeNode remoteSide, FieldInfo remotePortField)
         {
-            localPort = local;
-            connectedPort = remote;
-            this.connectedNode = connectedNode;
+            localNode = localSide;
+            remoteNode = remoteSide;
+            this.localPortField = new SerializedFieldInfo(localPortField);
+            this.remotePortField = new SerializedFieldInfo(remotePortField);
         }
+
         public void BindConnection()
         {
-            localPort.valueKey = connectedPort;
-            connectedPort.valueKey = localPort;
+            var localPortInfo = localPortField.FieldFromInfo;
+            var remotePortInfo = remotePortField.FieldFromInfo;
+
+            localPort = localPortInfo.GetValue(localNode) as ValuePort;
+            remotePort = remotePortInfo.GetValue(remoteNode) as ValuePort;
+            Debug.Assert(localPort != null, nameof(localPort) + " != null");
+            Debug.Assert(remotePort != null, nameof(remotePort) + " != null");
+            localPort.valueKey = remotePort;
+            remotePort.valueKey = localPort;
         }
     }
 }

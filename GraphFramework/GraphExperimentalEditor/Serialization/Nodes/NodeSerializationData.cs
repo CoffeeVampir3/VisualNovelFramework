@@ -26,7 +26,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public SerializableType nodeType = null;
         [SerializeField] 
         public List<SerializedPortData> serializedPorts = new List<SerializedPortData>();
-        [SerializeField]
+        [SerializeReference]
         public RuntimeNode runtimeNode;
         [SerializeField] 
         public bool isStacked;
@@ -48,9 +48,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             serializationData.runtimeNode.SetCoffeeGUID(node.GetCoffeeGUID());
             serializationData.name = "sNodeData_" + serializationData.nodeTitle;
             serializationData.runtimeNode.name = serializationData.nodeTitle;
-            
-            serializationData.runtimeNode.connections.Clear();
-            
+
             if (node is IRootNode)
             {
                 serializationData.isRoot = true;

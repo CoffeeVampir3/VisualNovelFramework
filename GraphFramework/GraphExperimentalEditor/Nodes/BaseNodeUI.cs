@@ -120,13 +120,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         {
             foreach (var field in fields)
             {
-                ValuePort valuePort = field.GetValue(RuntimeData) as ValuePort;
-                ValuePort.SetPortValue(valuePort, true);
-                var k = field.FieldType.GetGenericClassConstructorArguments(typeof(ValuePort<>));
+                var portValueType = field.FieldType.GetGenericClassConstructorArguments(typeof(ValuePort<>));
                 var port = AddPort(Orientation.Horizontal, 
-                    dir, Port.Capacity.Single, k.FirstOrDefault());
-
-                portValueBindings.Add(port, valuePort);
+                    dir, Port.Capacity.Single, portValueType.FirstOrDefault());
+                portValueBindings.Add(port, field);
             }
         }
         
@@ -141,13 +138,14 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         protected Port AddDynamicPort(Orientation orientation,
             Direction direction,
             Port.Capacity capacity,
-            System.Type type) 
+            System.Type type)
         {
+            throw new System.NotImplementedException();
+            
             //TODO:: Need a way to reference dynamic ports from runtime node.
             var genericValuePort = typeof(ValuePort<>).MakeGenericType(type);
             var valuePort = Activator.CreateInstance(genericValuePort) as ValuePort;
             var port = AddPort(orientation, direction, capacity, type);
-            portValueBindings.Add(port, valuePort);
             return port;
         }
         

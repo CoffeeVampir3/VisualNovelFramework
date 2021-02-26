@@ -7,9 +7,9 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
     public class RuntimeNode : ScriptableObject, HasCoffeeGUID
     {
-        [SerializeField, HideInInspector]
+        [SerializeField]
         public string GUID;
-        [SerializeField] 
+        [SerializeField]
         public List<Connection> connections = new List<Connection>();
 
         public virtual RuntimeNode GetNextNode()
