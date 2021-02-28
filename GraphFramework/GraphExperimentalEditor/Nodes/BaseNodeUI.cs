@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor.Nodes
@@ -123,7 +124,9 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                 var portValueType = field.FieldType.GetGenericClassConstructorArguments(typeof(ValuePort<>));
                 var port = AddPort(Orientation.Horizontal, 
                     dir, Port.Capacity.Single, portValueType.FirstOrDefault());
-                portValueBindings.Add(port, field);
+
+                SerializedFieldInfo serializedFieldInfo = new SerializedFieldInfo(field);
+                portValueBindings.Add(port, serializedFieldInfo);
             }
         }
 
@@ -173,10 +176,19 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             Direction direction,
             Port.Capacity capacity,
             System.Type type, 
-            List<RuntimeConnection> connections)
+            List<RuntimeConnection> connections, 
+            SerializedFieldInfo valueFieldInfo)
         {
             var port = AddPort(orientation, direction, capacity, type);
-            portConnectionBindings.Add(port, connections);
+            if (connections != null)
+            {
+                //Adding null to a dictionary makes TryGetValue return true poggers
+                portConnectionBindings.Add(port, connections);
+            }
+            if (valueFieldInfo != null)
+            {
+                portValueBindings.Add(port, valueFieldInfo);
+            }
 
             return port;
         }
@@ -212,7 +224,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             AddSerializedPort(serializedPort.orientation,
                 serializedPort.direction, serializedPort.capacity,
                 serializedPort.portValueType.type,
-                serializedPort.portConnections);
+                serializedPort.portConnections,
+                serializedPort.serializedValueFieldInfo);
         }
 
         private void RebuildPortsFromSerialization(NodeSerializationData serializedNode)

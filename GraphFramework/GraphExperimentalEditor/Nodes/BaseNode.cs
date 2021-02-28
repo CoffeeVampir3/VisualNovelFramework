@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using CoffeeExtensions;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -47,7 +46,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// <summary>
         /// The value binding dictionary for Port to ValuePort
         /// </summary>
-        public Dictionary<Port, FieldInfo> portValueBindings = new Dictionary<Port, FieldInfo>();
+        public Dictionary<Port, SerializedFieldInfo> portValueBindings = new Dictionary<Port, SerializedFieldInfo>();
         
         /// <summary>
         /// The value binding dictionary for Port to Connection
@@ -146,17 +145,20 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                 portConnectionBindings.Add(port, localConnections);
             }
             localConnections.Add(connection);
+            RuntimeData.connections.Add(connection);
         }
 
+        /// <summary>
+        /// Creates a real connection from the given local port to the connection nodes remote port.
+        /// </summary>
         public RuntimeConnection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
         {
-            FieldInfo localValuePortField = portValueBindings[localPort];
-            FieldInfo remoteValuePortField = connectingTo.portValueBindings[remotePort];
+            SerializedFieldInfo localValuePortField = portValueBindings[localPort];
+            SerializedFieldInfo remoteValuePortField = connectingTo.portValueBindings[remotePort];
 
             RuntimeConnection connection = new RuntimeConnection(
                 RuntimeData, localValuePortField, 
                 connectingTo.RuntimeData, remoteValuePortField);
-            RuntimeData.connections.Add(connection);
             AddPortConnection(connection, localPort);
             connectingTo.AddPortConnection(connection, remotePort);
 
@@ -166,28 +168,39 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             return connection;
         }
 
+        /// <summary>
+        /// Deletes a real connection from the given local port to the connection nodes remote port.
+        /// </summary>
         public void DisconnectPortFrom(Port localPort, BaseNode connectingTo, Port remotePort)
         {
             if (!portConnectionBindings.TryGetValue(localPort, 
                 out var localConnections)) return;
-            if (!connectingTo.portConnectionBindings.TryGetValue(remotePort, 
+
+            if (!connectingTo.portConnectionBindings.TryGetValue(remotePort,
                 out var remoteConnections)) return;
-            
+
             //This could be optimized via dictionary search, but this makes serialization much
-            //simpler and this operation will never be very expensive.
-            foreach (var lCon 
+            //simpler and this operation will never be very expensive, despite being a parallel list
+            //search.
+            foreach (var connection 
                 in localConnections.Where(lCon => 
                     remoteConnections.Contains(lCon)))
             {
-                localConnections.Remove(lCon);
-                remoteConnections.Remove(lCon);
+                localConnections.Remove(connection);
+                remoteConnections.Remove(connection);
 
-                if (!RuntimeData.connections.Contains(lCon)) return;
+                if (!(RuntimeData.connections.Contains(connection) &&
+                    connectingTo.RuntimeData.connections.Contains(connection)))
+                {
+                    Debug.LogError("Attempted to disconnect a port with no connection recorded.");
+                    return;
+                }
                 
-                RuntimeData.connections.Remove(lCon);
-                Debug.Log("Disconnecting port from: " + this.name + " to " + connectingTo.name);
+                RuntimeData.connections.Remove(connection);
+                connectingTo.RuntimeData.connections.Remove(connection);
                 return;
             }
+            
         }
         
         #endregion 

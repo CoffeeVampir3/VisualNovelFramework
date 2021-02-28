@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
+using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
@@ -22,6 +23,8 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public List<SerializedEdgeData> serializedEdges = new List<SerializedEdgeData>();
         [SerializeField] 
         public List<RuntimeConnection> portConnections;
+        [SerializeField] 
+        public SerializedFieldInfo serializedValueFieldInfo;
 
         public SerializedPortData(Port p)
         {

@@ -75,14 +75,14 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
         [SerializeField] 
         private BindingConnection connectionBinder;
         public RuntimeConnection(
-            RuntimeNode localSide, FieldInfo localPortField, 
-            RuntimeNode remoteSide, FieldInfo remotePortField)
+            RuntimeNode localSide, SerializedFieldInfo localPortField, 
+            RuntimeNode remoteSide, SerializedFieldInfo remotePortField)
         {
             connectionBinder = new BindingConnection(
                 localSide, 
                 remoteSide,
-                new SerializedFieldInfo(localPortField),
-                new SerializedFieldInfo(remotePortField));
+                localPortField,
+                remotePortField);
         }
 
         public void BindConnection()
