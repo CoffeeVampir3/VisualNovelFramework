@@ -10,7 +10,7 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
         [SerializeField]
         public string GUID;
         [SerializeField]
-        public List<Connection> connections = new List<Connection>();
+        public List<RuntimeConnection> connections = new List<RuntimeConnection>();
 
         public virtual RuntimeNode GetNextNode()
         {

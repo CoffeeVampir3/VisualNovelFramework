@@ -102,7 +102,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             if (edge.input.node is BaseNode inputSide && 
                 edge.output.node is BaseNode outputSide)
             {
-                inputSide.DisconnectPortFrom(outputSide, edge.output);
+                inputSide.DisconnectPortFrom(edge.input, outputSide, edge.output);
             }
         }
 

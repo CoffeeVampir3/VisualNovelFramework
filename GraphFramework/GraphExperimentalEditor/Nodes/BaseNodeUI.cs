@@ -126,7 +126,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                 portValueBindings.Add(port, field);
             }
         }
-        
+
         protected void CreatePortsFromReflection()
         {
             var oFields = RuntimeData.GetType().GetLocalFieldsWithAttribute<Out>();
@@ -148,8 +148,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             var port = AddPort(orientation, direction, capacity, type);
             return port;
         }
-        
-        private Port AddPort(Orientation orientation, 
+
+        private Port AddPort(Orientation orientation,
             Direction direction,
             Port.Capacity capacity,
             System.Type type)
@@ -165,6 +165,18 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                     break;
             }
             Repaint();
+
+            return port;
+        }
+        
+        private Port AddSerializedPort(Orientation orientation, 
+            Direction direction,
+            Port.Capacity capacity,
+            System.Type type, 
+            List<RuntimeConnection> connections)
+        {
+            var port = AddPort(orientation, direction, capacity, type);
+            portConnectionBindings.Add(port, connections);
 
             return port;
         }
@@ -197,9 +209,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
         private void RebuildPortFromSerialization(SerializedPortData serializedPort)
         {
-            AddPort(serializedPort.orientation,
+            AddSerializedPort(serializedPort.orientation,
                 serializedPort.direction, serializedPort.capacity,
-                serializedPort.portValueType.type);
+                serializedPort.portValueType.type,
+                serializedPort.portConnections);
         }
 
         private void RebuildPortsFromSerialization(NodeSerializationData serializedNode)

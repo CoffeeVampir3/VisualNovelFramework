@@ -5,6 +5,7 @@ using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
+    //TODO:: "When" unity supports roslyn code generation this can be removed entirely.
     [Serializable]
     public class SerializedFieldInfo
     {
@@ -12,6 +13,8 @@ namespace VisualNovelFramework.GraphFramework.GraphRuntime
         private string fieldName;
         [SerializeField]
         private SerializableType declaringType;
+
+        public string FieldName => fieldName;
         
         public FieldInfo FieldFromInfo => declaringType.type.GetField(fieldName, 
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

@@ -23,7 +23,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             get => nodeRuntimeData;
             set => nodeRuntimeData = value as RuntimeNodeType;
         }
-
+ 
         [SerializeReference]
         protected RuntimeNodeType nodeRuntimeData;
     }
@@ -43,7 +43,18 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// a more-specific type for RuntimeData instead of the less-specific RuntimeNode.
         /// </summary>
         public abstract RuntimeNode RuntimeData { get; set; }
-
+        
+        /// <summary>
+        /// The value binding dictionary for Port to ValuePort
+        /// </summary>
+        public Dictionary<Port, FieldInfo> portValueBindings = new Dictionary<Port, FieldInfo>();
+        
+        /// <summary>
+        /// The value binding dictionary for Port to Connection
+        /// </summary>
+        public Dictionary<Port, List<RuntimeConnection>> portConnectionBindings = 
+            new Dictionary<Port, List<RuntimeConnection>>();
+        
         /// <summary>
         /// Editor Only Callback:
         /// Called when this node is visited by the graph while it is open in an editor window.
@@ -126,37 +137,57 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         #endregion
         
         #region Port Binding
-        
-        protected Dictionary<Port, FieldInfo> portValueBindings = new Dictionary<Port, FieldInfo>();
-        protected Dictionary<(BaseNode, Port), Connection> connectionLookupDict =
-            new Dictionary<(BaseNode, Port), Connection>();
-        public Connection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
+
+        public void AddPortConnection(RuntimeConnection connection, Port port)
+        {
+            if(!portConnectionBindings.TryGetValue(port, out var localConnections))
+            {
+                localConnections = new List<RuntimeConnection>();
+                portConnectionBindings.Add(port, localConnections);
+            }
+            localConnections.Add(connection);
+        }
+
+        public RuntimeConnection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
         {
             FieldInfo localValuePortField = portValueBindings[localPort];
             FieldInfo remoteValuePortField = connectingTo.portValueBindings[remotePort];
 
-            Connection cn = new Connection(
+            RuntimeConnection connection = new RuntimeConnection(
                 RuntimeData, localValuePortField, 
                 connectingTo.RuntimeData, remoteValuePortField);
-
-            connectionLookupDict.Add((connectingTo, remotePort), cn);
-            RuntimeData.connections.Add(cn);
+            RuntimeData.connections.Add(connection);
+            AddPortConnection(connection, localPort);
+            connectingTo.AddPortConnection(connection, remotePort);
 
             Debug.Log("Created Connection from: " + this.name + " to " + connectingTo.name);
             
-            cn.BindConnection();
-            return cn;
+            connection.BindConnection();
+            return connection;
         }
 
-        public void DisconnectPortFrom(BaseNode connectingTo, Port remotePort)
+        public void DisconnectPortFrom(Port localPort, BaseNode connectingTo, Port remotePort)
         {
-            var key = (connectingTo, remotePort);
-            if (!connectionLookupDict.TryGetValue(key, out var con)) 
-                return;
+            if (!portConnectionBindings.TryGetValue(localPort, 
+                out var localConnections)) return;
+            if (!connectingTo.portConnectionBindings.TryGetValue(remotePort, 
+                out var remoteConnections)) return;
+            
+            //This could be optimized via dictionary search, but this makes serialization much
+            //simpler and this operation will never be very expensive.
+            foreach (var lCon 
+                in localConnections.Where(lCon => 
+                    remoteConnections.Contains(lCon)))
+            {
+                localConnections.Remove(lCon);
+                remoteConnections.Remove(lCon);
 
-            connectionLookupDict.Remove(key);
-            Debug.Log("Disconnecting port from: " + this.name + " to " + connectingTo.name);
-            RuntimeData.connections.Remove(con);
+                if (!RuntimeData.connections.Contains(lCon)) return;
+                
+                RuntimeData.connections.Remove(lCon);
+                Debug.Log("Disconnecting port from: " + this.name + " to " + connectingTo.name);
+                return;
+            }
         }
         
         #endregion 

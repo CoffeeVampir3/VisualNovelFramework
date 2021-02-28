@@ -14,7 +14,6 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     public class ValuePort
     {
         public ValuePort valueKey;
-        public string GUID;
         protected static Dictionary<ValuePort, object> ioValue =
             new Dictionary<ValuePort, object>();
         
@@ -40,13 +39,6 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     {
         public ValuePort()
         {
-            GUID = Guid.NewGuid().ToString();
-            ioValue[this] = default(T);
-        }
-
-        public ValuePort(string withGuid)
-        {
-            GUID = withGuid;
             ioValue[this] = default(T);
         }
 

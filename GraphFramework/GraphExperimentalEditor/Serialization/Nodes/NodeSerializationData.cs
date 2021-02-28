@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.Serialization;
 
@@ -30,7 +31,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public RuntimeNode runtimeNode;
         [SerializeField] 
         public bool isStacked;
-        
+
         /// <summary>
         /// Serializes the given nodes data into a new serialization data scriptable object.
         /// </summary>
@@ -55,19 +56,22 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             }
             
             var ports = node.Query<Port>().ToList();
+
             foreach(var port in ports)
             {
+                SerializedPortData sPort = null;
                 switch (port.direction)
                 {
                     case Direction.Output:
-                        serializationData.serializedPorts.
-                            Add(SerializeOutputPort(port, serializationData.runtimeNode));
-                        continue;
+                        sPort = SerializeOutputPort(port, serializationData.runtimeNode);
+                        serializationData.serializedPorts.Add(sPort);
+                        break;
                     case Direction.Input:
-                        serializationData.serializedPorts.
-                            Add(SerializeInputPort(port, serializationData.runtimeNode));
-                        continue;
+                        sPort = SerializeInputPort(port, serializationData.runtimeNode);
+                        serializationData.serializedPorts.Add(sPort);
+                        break;
                 }
+                SerializePortConnections(port, sPort, node);
             }
             
             return serializationData;
@@ -104,6 +108,14 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             node.Initialize(this);
             return node;
         }
+
+        private static void SerializePortConnections(Port port, SerializedPortData sPort, BaseNode node)
+        {
+            if(node.portConnectionBindings.TryGetValue(port, out var connections))
+            {
+                sPort.portConnections = connections;
+            }
+        }
         
         /// <summary>
         /// Output ports hold the edge information, input ports do not.
@@ -113,11 +125,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             SerializedPortData serializedPort = new SerializedPortData(port);
             foreach (var edge in port.connections)
             {
-                if (edge.input.node is BaseNode bn)
-                {
-                    //TODO::
-                    //AddOutputLink(runtimeData, bn.RuntimeData);
-                }
                 serializedPort.serializedEdges.Add(new SerializedEdgeData(edge));
             }
 
@@ -127,15 +134,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         private static SerializedPortData SerializeInputPort(Port port, RuntimeNode runtimeData)
         {
             SerializedPortData serializedPort = new SerializedPortData(port);
-            foreach (var edge in port.connections)
-            {
-                if (edge.output.node is BaseNode bn)
-                {
-                    //TODO::
-                    //AddInputLink(runtimeData, bn.RuntimeData);
-                }
-            }
-            
             return serializedPort;
         }
 

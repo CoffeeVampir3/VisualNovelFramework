@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Serialization
@@ -17,10 +18,10 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public Port.Capacity capacity;
         [SerializeField, HideInInspector] 
         public SerializableType portValueType = null;
-        [SerializeField] 
-        public string portName;
         [SerializeField, HideInInspector] 
         public List<SerializedEdgeData> serializedEdges = new List<SerializedEdgeData>();
+        [SerializeField] 
+        public List<RuntimeConnection> portConnections;
 
         public SerializedPortData(Port p)
         {
@@ -28,7 +29,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             orientation = p.orientation;
             direction = p.direction;
             capacity = p.capacity;
-            portName = p.portName;
         }
     }
 }
