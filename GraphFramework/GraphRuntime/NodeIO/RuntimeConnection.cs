@@ -74,6 +74,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
         public ValuePort remotePort;
         [SerializeField] 
         private BindingConnection connectionBinder;
+        [SerializeField] 
+        public string GUID;
         public RuntimeConnection(
             RuntimeNode localSide, SerializedFieldInfo localPortField, 
             RuntimeNode remoteSide, SerializedFieldInfo remotePortField)
@@ -83,10 +85,13 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
                 remoteSide,
                 localPortField,
                 remotePortField);
+
+            GUID = Guid.NewGuid().ToString();
         }
 
         public void BindConnection()
         {
+            Debug.Log("Binding connection: " + GUID);
             localPort = connectionBinder.BindLocal();
             remotePort = connectionBinder.BindRemote();
             

@@ -14,7 +14,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             base.BuildContextualMenu(evt);
         }
 
-        public void CreateProperty(DropdownMenuAction dma)
+        private void CreateProperty(DropdownMenuAction dma)
         {
             BasePropertyNode bpNode = new BasePropertyNode();
             bpNode.Initialize("woo");

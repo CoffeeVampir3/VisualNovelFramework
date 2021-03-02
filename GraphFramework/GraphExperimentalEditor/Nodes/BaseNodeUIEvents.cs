@@ -15,14 +15,23 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         private void OnNodeDeleted(DetachFromPanelEvent panelEvent)
         {
             var ports = this.Query<Port>().ToList();
+            var gvParent = panel.visualTree.Q<CoffeeGraphView>();
+            if (gvParent == null)
+            {
+                return;
+            }
+            //This is a workaround because graphView.DeleteElements throws during event handling...
             foreach (Port port in ports)
             {
-                var tempConnections = port.connections.ToArray();
-                foreach (Edge e in tempConnections)
+                //Important to cast the connections to an array otherwise this will throw
+                foreach (Edge edge in port.connections.ToArray())
                 {
-                    e.input.Disconnect(e);
-                    e.output.Disconnect(e);
-                    e.parent.Remove(e);
+                    gvParent.OnEdgeDelete(edge);
+                    edge.output?.Disconnect(edge);
+                    edge.input?.Disconnect(edge);
+                    edge.output = null;
+                    edge.input = null;
+                    edge.parent.Remove(edge);
                 }
             }
         }

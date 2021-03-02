@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -87,26 +88,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
             return changes;
         }
-
-        private void CreateConnectionFromEdge(Edge edge)
-        {
-            if (edge.input.node is BaseNode inputSide && 
-                edge.output.node is BaseNode outputSide)
-            {
-                inputSide.ConnectPortTo(edge.input, outputSide, edge.output);
-            }
-        }
-
-        private void OnEdgeDelete(Edge edge)
-        {
-            if (edge.input.node is BaseNode inputSide && 
-                edge.output.node is BaseNode outputSide)
-            {
-                inputSide.DisconnectPortFrom(edge.input, outputSide, edge.output);
-            }
-        }
-
-
+        
+        //Thanks @Mert Kirimgeri
         private void InitializeSearchWindow()
         {
             searchWindow.Init(this);
@@ -163,7 +146,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 return;
             
             List<ISelectable> newSelection = new List<ISelectable>();
-
+            
             //Deserialize each node.
             foreach (var serialNode in box.serializedNodes)
             {
@@ -455,9 +438,35 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         #endregion
         
+        #region Edges
+        
+        private void CreateConnectionFromEdge(Edge edge)
+        {
+            if (edge.input.node is BaseNode inputSide && 
+                edge.output.node is BaseNode outputSide)
+            {
+                inputSide.ConnectPortTo(edge.input, outputSide, edge.output);
+            }
+        }
+
+        public void OnEdgeDelete(Edge edge)
+        {
+            if (edge.input.node is BaseNode inputSide && 
+                edge.output.node is BaseNode outputSide)
+            {
+                inputSide.DisconnectPortFrom(edge.input, outputSide, edge.output);
+            }
+        }
+        
+        #endregion
+        
         #region Helper Functions
 
-        public void CenterViewOnAndSelectNode(Node node)
+        /// <summary>
+        /// Centers the graph view onto target node.
+        /// </summary>
+        /// <param name="node"></param>
+        public void LookAtNode(Node node)
         {
             var halfGraphWidth = resolvedStyle.width / 2;
             var halfGraphHeight = resolvedStyle.height / 2;
@@ -516,6 +525,24 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 }
             }
             base.HandleEvent(evt);
+        }
+        
+        #endregion
+        
+        #region Default Connection Edge Rules
+        
+        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+        {
+            var compPorts = new List<Port>();
+
+            foreach (var port in ports)
+            {
+                if (startPort == port || startPort.node == port.node) continue;
+                if (startPort.portType != port.portType) continue;
+                compPorts.Add(port);
+            }
+
+            return compPorts;
         }
         
         #endregion

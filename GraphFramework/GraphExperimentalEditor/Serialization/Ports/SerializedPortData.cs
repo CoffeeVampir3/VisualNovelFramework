@@ -22,7 +22,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         [SerializeField, HideInInspector] 
         public List<SerializedEdgeData> serializedEdges = new List<SerializedEdgeData>();
         [SerializeField] 
-        public List<RuntimeConnection> portConnections;
+        public List<string> portConnectionGuids;
         [SerializeField] 
         public SerializedFieldInfo serializedValueFieldInfo;
 

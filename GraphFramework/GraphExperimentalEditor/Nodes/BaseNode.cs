@@ -47,12 +47,11 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// The value binding dictionary for Port to ValuePort
         /// </summary>
         public Dictionary<Port, SerializedFieldInfo> portValueBindings = new Dictionary<Port, SerializedFieldInfo>();
-        
         /// <summary>
-        /// The value binding dictionary for Port to Connection
+        /// List of connection guids per port.
         /// </summary>
-        public Dictionary<Port, List<RuntimeConnection>> portConnectionBindings = 
-            new Dictionary<Port, List<RuntimeConnection>>();
+        public Dictionary<Port, List<string>> portConnectionGuids = new Dictionary<Port, List<string>>();
+        
         
         /// <summary>
         /// Editor Only Callback:
@@ -137,17 +136,29 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         
         #region Port Binding
 
-        public void AddPortConnection(RuntimeConnection connection, Port port)
+        private void CreatePortConnection(Port port, RuntimeConnection connection)
         {
-            if(!portConnectionBindings.TryGetValue(port, out var localConnections))
+            if(!portConnectionGuids.TryGetValue(port, out var guids))
             {
-                localConnections = new List<RuntimeConnection>();
-                portConnectionBindings.Add(port, localConnections);
+                guids = new List<string>();
+                portConnectionGuids.Add(port, guids);
             }
-            localConnections.Add(connection);
+            guids.Add(connection.GUID);
             RuntimeData.connections.Add(connection);
         }
 
+        private void RemovePortConnectionViaGuid(Port port, string connectionGuid)
+        {
+            for (int i = RuntimeData.connections.Count - 1; i >= 0; i--)
+            {
+                var connection = RuntimeData.connections[i];
+                if (connection.GUID != connectionGuid) continue;
+                RuntimeData.connections.Remove(connection);
+                portConnectionGuids[port].Remove(connectionGuid);
+                return;
+            }
+        }
+        
         /// <summary>
         /// Creates a real connection from the given local port to the connection nodes remote port.
         /// </summary>
@@ -159,11 +170,10 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             RuntimeConnection connection = new RuntimeConnection(
                 RuntimeData, localValuePortField, 
                 connectingTo.RuntimeData, remoteValuePortField);
-            AddPortConnection(connection, localPort);
-            connectingTo.AddPortConnection(connection, remotePort);
 
-            Debug.Log("Created Connection from: " + this.name + " to " + connectingTo.name);
-            
+            CreatePortConnection(localPort, connection);
+            connectingTo.CreatePortConnection(remotePort, connection);
+
             connection.BindConnection();
             return connection;
         }
@@ -173,34 +183,21 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// </summary>
         public void DisconnectPortFrom(Port localPort, BaseNode connectingTo, Port remotePort)
         {
-            if (!portConnectionBindings.TryGetValue(localPort, 
-                out var localConnections)) return;
-
-            if (!connectingTo.portConnectionBindings.TryGetValue(remotePort,
-                out var remoteConnections)) return;
-
-            //This could be optimized via dictionary search, but this makes serialization much
-            //simpler and this operation will never be very expensive, despite being a parallel list
-            //search.
-            foreach (var connection 
-                in localConnections.Where(lCon => 
-                    remoteConnections.Contains(lCon)))
+            if (!portConnectionGuids.TryGetValue(localPort, out var localConnectionGuids) ||
+                !connectingTo.portConnectionGuids.TryGetValue(remotePort, out var remoteConnectionGuids))
             {
-                localConnections.Remove(connection);
-                remoteConnections.Remove(connection);
-
-                if (!(RuntimeData.connections.Contains(connection) &&
-                    connectingTo.RuntimeData.connections.Contains(connection)))
-                {
-                    Debug.LogError("Attempted to disconnect a port with no connection recorded.");
-                    return;
-                }
-                
-                RuntimeData.connections.Remove(connection);
-                connectingTo.RuntimeData.connections.Remove(connection);
+                Debug.LogError("Unable to find a connection record for this connection.");
                 return;
             }
             
+            foreach (var localConnection in RuntimeData.connections)
+            {
+                if (!localConnectionGuids.Contains(localConnection.GUID) ||
+                    !remoteConnectionGuids.Contains(localConnection.GUID)) continue;
+                RemovePortConnectionViaGuid(localPort, localConnection.GUID);
+                connectingTo.RemovePortConnectionViaGuid(remotePort, localConnection.GUID);
+                return;
+            }
         }
         
         #endregion 

@@ -37,7 +37,6 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 inputNodeGUID = "";
                 outputPortIndex = -1;
                 outputNodeGUID = "";
-                Debug.LogError("Bug with serializing edge, edge did not have input parent.");
             }
         }
     }

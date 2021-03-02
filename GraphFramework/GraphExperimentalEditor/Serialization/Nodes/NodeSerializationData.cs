@@ -70,8 +70,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                         serializationData.serializedPorts.Add(sPort);
                         break;
                 }
-                SerializePortConnections(port, sPort, node);
-                SerializePortValueRelation(port, sPort, node);
+                SerializePortBindings(port, sPort, node);
             }
             
             return serializationData;
@@ -86,6 +85,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             bn.RuntimeData = Instantiate(bn.RuntimeData);
             bn.SetCoffeeGUID(Guid.NewGuid().ToString());
             bn.RuntimeData.SetCoffeeGUID(bn.GetCoffeeGUID());
+            bn.RuntimeData.connections.Clear();
             return bn;
         }
 
@@ -109,19 +109,15 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             return node;
         }
 
-        private static void SerializePortConnections(Port port, SerializedPortData sPort, BaseNode node)
-        {
-            if(node.portConnectionBindings.TryGetValue(port, out var connections))
-            {
-                sPort.portConnections = connections;
-            }
-        }
-
-        private static void SerializePortValueRelation(Port port, SerializedPortData sPort, BaseNode node)
+        private static void SerializePortBindings(Port port, SerializedPortData sPort, BaseNode node)
         {
             if(node.portValueBindings.TryGetValue(port, out var valueBinding))
             {
                 sPort.serializedValueFieldInfo = valueBinding;
+            }
+            if (node.portConnectionGuids.TryGetValue(port, out var connectionGuids))
+            {
+                sPort.portConnectionGuids = connectionGuids;
             }
         }
         

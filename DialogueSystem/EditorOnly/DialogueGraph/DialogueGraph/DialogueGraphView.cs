@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
+﻿using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
 using VisualNovelFramework.EditorOnly.DialogueSystem.Nodes;
 using VisualNovelFramework.GraphFramework.Editor;
 
@@ -36,24 +34,5 @@ namespace VisualNovelFramework.DialogueGraph
             rootNode.Initialize("Root Node");
             AddNodeAt(rootNode, new Rect(spawnWidth, spawnHeight, 150, 150));
         }
-
-        #region Literal Garbage
-
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
-        {
-            var compPorts = new List<Port>();
-
-            ports.ForEach(port =>
-            {
-                if (startPort != port && startPort.node != port.node)
-                {
-                    compPorts.Add(port);
-                }
-            });
-            
-            return compPorts;
-        }
-
-        #endregion
     }
 }

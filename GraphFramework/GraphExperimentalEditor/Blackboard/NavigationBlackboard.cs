@@ -64,7 +64,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             
             Node targetNode = bbItem.targetNode;
 
-            coffeeGraph.CenterViewOnAndSelectNode(targetNode);
+            coffeeGraph.LookAtNode(targetNode);
             //Screaming internally
             listBase.SetSelection(listBase.itemsSource.IndexOf(targetNode));
 

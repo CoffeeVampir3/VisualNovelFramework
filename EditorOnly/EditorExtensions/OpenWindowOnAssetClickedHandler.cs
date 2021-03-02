@@ -8,7 +8,7 @@ namespace VisualNovelFramework.EditorExtensions
         where Item : ScriptableObject, HasCoffeeGUID
         where Window : EditorWindow
     {
-        public static Window IsOpenedAssetTargetType(int instanceID, out Item openedItem, params Type[] desiredDockNextTo)
+        protected static Window IsOpenedAssetTargetType(int instanceID, out Item openedItem, params Type[] desiredDockNextTo)
         {
             var targetItems = CoffeeAssetDatabase.FindAssetsOfType<Item>();
 

@@ -63,10 +63,20 @@ namespace VisualNovelFramework.GraphFramework.Serialization
                 }
             }
 
-            LoadEdges(serializedNodes);
+            LoadEdges(ref serializedNodes);
+
+            BindConnections(ref serializedNodes);
             
             edges.ForEach(graphView.AddElement);
             return true;
+        }
+
+        private static void BindConnections(ref List<NodeSerializationData> serializedNodes)
+        {
+            foreach (var connection in serializedNodes.SelectMany(node => node.runtimeNode.connections))
+            {
+                connection.BindConnection();
+            }
         }
 
         private static BaseNode LoadSerializedNode(
@@ -174,7 +184,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         }
 
         //The essence of code.
-        private static void LoadEdges(List<NodeSerializationData> serializedNodeData)
+        private static void LoadEdges(ref List<NodeSerializationData> serializedNodeData)
         {
             //Port queries are cached, clear the cache before we start iterating ports.
             inPortDict.Clear();

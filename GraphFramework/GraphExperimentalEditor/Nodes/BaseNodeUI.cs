@@ -175,19 +175,18 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         private Port AddSerializedPort(Orientation orientation, 
             Direction direction,
             Port.Capacity capacity,
-            System.Type type, 
-            List<RuntimeConnection> connections, 
-            SerializedFieldInfo valueFieldInfo)
+            System.Type type,
+            SerializedFieldInfo valueFieldInfo, 
+            List<string> connectionGuids)
         {
             var port = AddPort(orientation, direction, capacity, type);
-            if (connections != null)
-            {
-                //Adding null to a dictionary makes TryGetValue return true poggers
-                portConnectionBindings.Add(port, connections);
-            }
             if (valueFieldInfo != null)
             {
                 portValueBindings.Add(port, valueFieldInfo);
+            }
+            if (connectionGuids != null)
+            {
+                portConnectionGuids.Add(port, connectionGuids);
             }
 
             return port;
@@ -224,8 +223,8 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
             AddSerializedPort(serializedPort.orientation,
                 serializedPort.direction, serializedPort.capacity,
                 serializedPort.portValueType.type,
-                serializedPort.portConnections,
-                serializedPort.serializedValueFieldInfo);
+                serializedPort.serializedValueFieldInfo,
+                serializedPort.portConnectionGuids);
         }
 
         private void RebuildPortsFromSerialization(NodeSerializationData serializedNode)

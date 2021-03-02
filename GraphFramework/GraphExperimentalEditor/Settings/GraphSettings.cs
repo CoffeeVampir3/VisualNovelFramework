@@ -9,7 +9,6 @@ using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings
 {
-    [CreateAssetMenu]
     public class GraphSettings : ScriptableObject
     {
         [HideInInspector]

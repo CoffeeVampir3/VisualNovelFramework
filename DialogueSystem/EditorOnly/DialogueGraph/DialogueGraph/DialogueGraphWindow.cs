@@ -5,7 +5,7 @@ using VisualNovelFramework.GraphFramework.Editor;
 
 namespace VisualNovelFramework.DialogueGraph
 {
-    public partial class DialogueGraphWindow : CoffeeGraphWindow
+    public class DialogueGraphWindow : CoffeeGraphWindow
     {
         [MenuItem("VNFramework/Dialogue Graph")]
         public static void OpenGraph()
