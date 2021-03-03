@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
@@ -38,9 +39,9 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
             {
                 runtimeNodeVisitedEditor.Invoke(currentNode);
             }
-            
-            //TODO::
-            //currentNode = currentNode.outputConnections.FirstOrDefault();
+            currentNode.OnEvaluate();
+            var firstCon = currentNode.connections.FirstOrDefault();
+            currentNode = firstCon.GetRemoteNode();
         }
     }
 }

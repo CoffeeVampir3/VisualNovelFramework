@@ -162,20 +162,25 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         /// <summary>
         /// Creates a real connection from the given local port to the connection nodes remote port.
         /// </summary>
-        public RuntimeConnection ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
+        public void ConnectPortTo(Port localPort, BaseNode connectingTo, Port remotePort)
         {
             SerializedFieldInfo localValuePortField = portValueBindings[localPort];
             SerializedFieldInfo remoteValuePortField = connectingTo.portValueBindings[remotePort];
 
-            RuntimeConnection connection = new RuntimeConnection(
+            RuntimeConnection localConnection = new RuntimeConnection(
                 RuntimeData, localValuePortField, 
                 connectingTo.RuntimeData, remoteValuePortField);
+            
+            RuntimeConnection remoteConnection = new RuntimeConnection(
+                connectingTo.RuntimeData, remoteValuePortField,
+                RuntimeData, localValuePortField);
+            remoteConnection.GUID = localConnection.GUID;
 
-            CreatePortConnection(localPort, connection);
-            connectingTo.CreatePortConnection(remotePort, connection);
+            CreatePortConnection(localPort, localConnection);
+            connectingTo.CreatePortConnection(remotePort, remoteConnection);
 
-            connection.BindConnection();
-            return connection;
+            localConnection.BindConnection();
+            remoteConnection.BindConnection();
         }
 
         /// <summary>

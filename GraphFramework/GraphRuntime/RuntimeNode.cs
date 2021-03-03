@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
     public class RuntimeNode : ScriptableObject, HasCoffeeGUID
     {
-        [SerializeField]
+        [SerializeField, HideInInspector]
         public string GUID;
         [SerializeField]
         public List<RuntimeConnection> connections = new List<RuntimeConnection>();

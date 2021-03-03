@@ -22,7 +22,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                     in nodeList 
                     let attr = 
                         node.GetCustomAttributes(typeof(RegisterNodeToView), false)[0] as RegisterNodeToView 
-                    where attr.registeredGraphView == graphViewType 
+                    where attr.registeredGraphView.IsAssignableFrom(graphViewType) 
                     select node)
                 .ToList();
         }

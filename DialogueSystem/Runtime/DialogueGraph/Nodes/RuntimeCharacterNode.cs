@@ -12,14 +12,12 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
     {
         [In]
         public ValuePort<string> stringValue = new ValuePort<string>();
+        [In] 
+        private ValuePort<Flow> flowPortIn = new ValuePort<Flow>();
         [Out]
         public ValuePort<string> stringValue2 = new ValuePort<string>();
-        [Out]
-        public ValuePort<string> stringValue3 = new ValuePort<string>();
-        [Out]
-        public ValuePort<string> stringValue4 = new ValuePort<string>();
-        [Out]
-        public ValuePort<string> stringValue5 = new ValuePort<string>();
+        [Out] 
+        private ValuePort<Flow> flowPortOut = new ValuePort<Flow>();
         
         [SerializeField]
         public Character swag;
@@ -63,11 +61,13 @@ namespace VisualNovelFramework.DialogueSystem.Nodes
         
         public override void OnEvaluate()
         {
+            /*
             var doc = FindObjectOfType<UIDocument>();
             var templateContainer = doc.rootVisualElement;
             var sceneCont = templateContainer.Q<VisualElement>("sceneView");
 
             CreateCharacter(sceneCont);
+            */
         }
     }
 }

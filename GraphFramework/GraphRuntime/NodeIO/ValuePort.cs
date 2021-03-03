@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
@@ -42,6 +43,6 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
             ioValue[this] = default(T);
         }
 
-        public T Value => (T)ioValue[valueKey];
+        public T Value => (T) ioValue[valueKey];
     }
 }
