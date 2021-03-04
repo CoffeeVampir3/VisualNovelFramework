@@ -1,6 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using CoffeeExtensions;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using VisualNovelFramework.GraphFramework.Attributes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
@@ -10,6 +17,18 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
     {
         [SerializeReference]
         public RuntimeNode RuntimeData;
+        [SerializeReference]
+        public List<PortModel> inputPorts = new List<PortModel>();
+        [SerializeReference]
+        public List<PortModel> outputPorts = new List<PortModel>();
+
+        public static NodeModel InstantiateModel(BetaEditorGraph editorGraph)
+        {
+            var model = new NodeModel();
+            model.CreateRuntimeData(editorGraph, typeof(ModelTester));
+            model.CreatePortModels();
+            return model;
+        }
 
         public void CreateRuntimeData(BetaEditorGraph editorGraph, Type runtimeDataType)
         {
@@ -22,10 +41,33 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             EditorUtility.SetDirty(editorGraph);
         }
 
+        public PortModel CreatePortModel(FieldInfo field, Direction dir)
+        {
+            var portValueType = field.FieldType.
+                GetGenericClassConstructorArguments(typeof(ValuePort<>));
+            return new PortModel(Orientation.Horizontal, dir, 
+                Port.Capacity.Multi, portValueType.FirstOrDefault(), field);
+        }
+
+        public void CreatePortModels()
+        {
+            var oFields = RuntimeData.GetType().GetLocalFieldsWithAttribute<Out>();
+            var iFields = RuntimeData.GetType().GetLocalFieldsWithAttribute<In>();
+
+            foreach (var field in iFields)
+            {
+                PortModel p = CreatePortModel(field, Direction.Input);
+                inputPorts.Add(p);
+            }
+            foreach (var field in oFields)
+            {
+                PortModel p = CreatePortModel(field, Direction.Output);
+                outputPorts.Add(p);
+            }
+        }
+
         [SerializeField] 
         public bool isRoot = false;
-        [SerializeField]
-        public string GUID;
         [SerializeField] 
         private string nodeTitle = "Untitled.";
         [SerializeField] 

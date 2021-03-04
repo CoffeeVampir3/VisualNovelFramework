@@ -13,21 +13,16 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
         [SerializeReference] 
         public NodeModel outputModel;
         [SerializeField] 
-        public int outputPortIndex;
+        public PortModel inputPortModel;
         [SerializeField] 
-        public int inputPortIndex;
+        public PortModel outputPortModel;
 
-        public EdgeModel(Edge edge, NodeModel input, NodeModel output)
+        public EdgeModel(NodeModel inputNode, PortModel inputPort, NodeModel outputNode, PortModel outputPort)
         {
-            var inputNode = edge.input.node;
-            var inputPort = edge.input;
-            var outputNode = edge.output.node;
-            var outputPort = edge.output;
-            outputPortIndex = outputNode.Query<Port>().ToList().IndexOf(outputPort);
-            inputPortIndex = inputNode.Query<Port>().ToList().IndexOf(inputPort);
-
-            inputModel = input;
-            outputModel = output;
+            inputModel = inputNode;
+            outputModel = outputNode;
+            inputPortModel = inputPort;
+            outputPortModel = outputPort;
         }
     }
 }

@@ -1,19 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using CoffeeExtensions;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
-using UnityEngine;
-using VisualNovelFramework.GraphFramework.Attributes;
-using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 {
     public class NodeView : Node
     {
         private readonly NodeModel nodeModel;
+        private Dictionary<Port, PortModel> portToModel = new Dictionary<Port, PortModel>();
+        //Lookup via string because undo/redo creates a different copy.
+        private Dictionary<string, Port> modelToPort = new Dictionary<string, Port>();
 
         public NodeView(NodeModel model)
         {
@@ -21,20 +18,44 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
         }
         
         #region Ports
-        
-        private void CreateDirectionalPortsFromList(List<FieldInfo> fields, Direction dir)
-        {
-            foreach (var field in fields)
-            {
-                var portValueType = field.FieldType.GetGenericClassConstructorArguments(typeof(ValuePort<>));
-                var port = AddPort(Orientation.Horizontal, 
-                    dir, Port.Capacity.Single, portValueType.FirstOrDefault());
 
-                //SerializedFieldInfo serializedFieldInfo = new SerializedFieldInfo(field);
-                //portValueBindings.Add(port, serializedFieldInfo);
-            }
+        /// <summary>
+        /// Takes a port and spits out it's related model.
+        /// </summary>
+        public bool TryGetPortToModel(Port p, out PortModel model)
+        {
+            return portToModel.TryGetValue(p, out model);
         }
         
+        /// <summary>
+        /// Takes a model GUID and spits out it's related port.
+        /// Lookup is via GUID because undo/redo creates a different copy.
+        /// </summary>
+        public bool TryGetModelToPort(string modelGUID, out Port p)
+        {
+            return modelToPort.TryGetValue(modelGUID, out p);
+        }
+        
+        private void CreatePortsFromModel()
+        {
+            foreach (var portModel in nodeModel.inputPorts)
+            {
+                Port p = AddPort(portModel.orientation, portModel.direction, 
+                    portModel.capacity, portModel.portValueType.type);
+
+                portToModel.Add(p, portModel);
+                modelToPort.Add(portModel.portGUID, p);
+            }
+            foreach (var portModel in nodeModel.outputPorts)
+            {
+                Port p = AddPort(portModel.orientation, portModel.direction, 
+                    portModel.capacity, portModel.portValueType.type);
+                
+                portToModel.Add(p, portModel);
+                modelToPort.Add(portModel.portGUID, p);
+            }
+        }
+
         private Port AddPort(Orientation orientation,
             Direction direction,
             Port.Capacity capacity,
@@ -50,17 +71,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
                     outputContainer.Add(port);
                     break;
             }
-            //Repaint();
 
             return port;
-        }
-
-        private void CreatePortsFromViewDataReflection()
-        {
-            var oFields = nodeModel.RuntimeData.GetType().GetLocalFieldsWithAttribute<Out>();
-            var iFields = nodeModel.RuntimeData.GetType().GetLocalFieldsWithAttribute<In>();
-            CreateDirectionalPortsFromList(oFields, Direction.Output);
-            CreateDirectionalPortsFromList(iFields, Direction.Input);
         }
         
         #endregion 
@@ -106,7 +118,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 
         public void Display()
         {
-            CreatePortsFromViewDataReflection();
+            CreatePortsFromModel();
             CreateEditorFromNodeData();
             
             OnDirty();

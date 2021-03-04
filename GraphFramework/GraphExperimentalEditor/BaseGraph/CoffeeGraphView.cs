@@ -9,13 +9,12 @@ using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Window;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
-using VisualNovelFramework.GraphFramework.GraphRuntime;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
-        [SerializeReference] public readonly GraphSettings settings;
+        public readonly GraphSettings settings;
         protected readonly CoffeeSearchWindow searchWindow;
         public CoffeeGraphWindow parentWindow;
         public BetaEditorGraph editorGraph;
@@ -48,11 +47,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
             Undo.ClearAll();
             BuildGraph();
         }
-        
-        public void CreateNewNode(DropdownMenuAction dma)
+
+        private void CreateNewNode(DropdownMenuAction dma)
         {
-            var model = new NodeModel();
-            model.CreateRuntimeData(editorGraph, typeof(ModelTester));
+            var model = NodeModel.InstantiateModel(editorGraph);
             CreateNodeFromModel(model);
             
             Undo.RegisterCreatedObjectUndo(model.RuntimeData, "graphChanges");
@@ -106,21 +104,19 @@ namespace VisualNovelFramework.GraphFramework.Editor
             AddElement(nv);
             viewToModel.Add(nv, model);
         }
-
-        //TODO:: Suspiscious AF code.
+        
         private void CreateEdgeFromModel(EdgeModel model)
         {
-            if(model.inputModel?.View == null)
-                Debug.Log("Nulli");
-            
-            if(model.outputModel?.View == null)
-                Debug.Log("Nullp");
-
-            var inputQ = model.inputModel.View.Query<Port>().ToList();
-            var iPort = inputQ[model.inputPortIndex];
-            var outportQ = model.outputModel.View.Query<Port>().ToList();
-            var oPort = outportQ[model.outputPortIndex];
-            Edge edge = new Edge {input = iPort, output = oPort};
+            if (model.inputModel?.View == null || model.outputModel?.View == null)
+            {
+                return;
+            }
+            if (!model.inputModel.View.TryGetModelToPort(model.inputPortModel.portGUID, out var inputPort) ||
+                !model.outputModel.View.TryGetModelToPort(model.outputPortModel.portGUID, out var outputPort))
+            {
+                return;
+            }
+            Edge edge = new Edge {input = inputPort, output = outputPort};
             edge.input.Connect(edge);
             edge.output.Connect(edge);
             edgeToModel.Add(edge, model);
@@ -151,8 +147,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
             
             ClearGraph();
 
-            //Very weird bug I think caused by restoring editorGraph state, the undo stack
-            //seems to have this at null at some point.
+            //There's some issue with the undo stack rewinding the object state and somehow
+            //the editor graph can be null for a moment here. It do be like that.
             if (editorGraph == null) return;
             BuildGraph();
             AssetDatabase.SaveAssets();
@@ -163,15 +159,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void DeleteNode(NodeModel model)
         {
-            //Notes on the undo stack:
-            //The graph list state changes, and also can be set to null by deleting the last element,
-            //so we must register a full undo.
-            //The importer will keep track that we're about to delete the runtime data, which
-            //is saved to our graph.
-            //Finally, we destroy the runtime data and increment the group count.
+            //Register the state of the saved assets, because we're about to "implicitly" delete some.
             Undo.RegisterImporterUndo(AssetDatabase.GetAssetPath(model.RuntimeData), "graphChanges");
             Undo.DestroyObjectImmediate(model.RuntimeData);
-            //Unsure why this is mandatory, but errors are thrown without it.
             editorGraph.nodeModels.Remove(model);
         }
 
@@ -216,6 +206,22 @@ namespace VisualNovelFramework.GraphFramework.Editor
             Undo.CollapseUndoOperations(index);
         }
 
+        private void ProcessEdgesToCreate(ref List<Edge> addedEdges)
+        {
+            foreach (var edge in addedEdges)
+            {
+                if (!(edge.input.node is NodeView inView &&
+                      edge.output.node is NodeView outView)) continue;
+                if (!viewToModel.TryGetValue(inView, out var inModel) ||
+                    !viewToModel.TryGetValue(outView, out var outModel)) continue;
+                if (!inModel.View.TryGetPortToModel(edge.input, out var inputPort) ||
+                    !outModel.View.TryGetPortToModel(edge.output, out var outputPort)) continue;
+                EdgeModel modelEdge = new EdgeModel(inModel, inputPort, outModel, outputPort);
+                edgeToModel.Add(edge, modelEdge);
+                editorGraph.edgeModels.Add(modelEdge);
+            }
+        }
+
         private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
         {
             //Save the state before any changes are made
@@ -234,16 +240,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             if (changes.edgesToCreate == null) 
                 return changes;
             
-            foreach (var edge in changes.edgesToCreate)
-            {
-                if (!(edge.input.node is NodeView inView &&
-                      edge.output.node is NodeView outView)) continue;
-                if (!viewToModel.TryGetValue(inView, out var inModel) ||
-                    !viewToModel.TryGetValue(outView, out var outModel)) continue;
-                EdgeModel modelEdge = new EdgeModel(edge, inModel, outModel);
-                edgeToModel.Add(edge, modelEdge);
-                editorGraph.edgeModels.Add(modelEdge);
-            }
+            ProcessEdgesToCreate(ref changes.edgesToCreate);
             //Bump up the undo increment so we're not undoing multiple change passes at once.
             Undo.IncrementCurrentGroup();
 

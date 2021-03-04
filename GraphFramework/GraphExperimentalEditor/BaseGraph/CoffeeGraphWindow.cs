@@ -24,7 +24,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
 
             //Unloads the graph before the assembly reloads.
-            //This is important, otherwise unity editor will freeze, presumably due to
+            //This is important, otherwise unity editor will soft-lock, presumably due to
             //graph view no longer existing but still being referenced.
             AssemblyReloadEvents.beforeAssemblyReload += () =>
             {
