@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 using VisualNovelFramework.Serialization;
 
@@ -13,7 +15,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         public SerializedGraph targetGraph;
         [SerializeField]
         public string GUID;
-
+        
         public string GetCoffeeGUID()
         {
             return GUID;

@@ -5,6 +5,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Window;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
@@ -12,7 +13,7 @@ using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
-    public abstract partial class CoffeeGraphView : GraphView
+    public abstract class CoffeeGraphView : GraphView
     {
         [SerializeReference] public BaseNode rootNode;
         [SerializeReference] public readonly GraphSettings settings;
@@ -21,6 +22,27 @@ namespace VisualNovelFramework.GraphFramework.Editor
         protected readonly CoffeeSearchWindow searchWindow;
         public CoffeeGraphWindow parentWindow;
 
+        #region DeleteThis
+
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Debug Node Model", CreateNode);
+            base.BuildContextualMenu(evt);
+        }
+
+        public void CreateNode(DropdownMenuAction dma)
+        {
+            var model = new NodeModel<ModelTester>();
+            model.NodeTitle = "wow!";
+            model.OnCreate();
+            NodeView nv = model.CreateView();
+            this.AddElement(nv);
+        }
+
+        #endregion
+        
+        
+        
         protected CoffeeGraphView()
         {
             settings = GraphSettings.CreateOrGetSettings(this);

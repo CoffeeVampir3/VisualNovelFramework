@@ -66,7 +66,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
         private SerializedGraph delayedLoadedGraph = null;
         public void LoadGraph(SerializedGraph graph)
         {
-            if (!GraphLoader.LoadGraph(graphView, graph)) 
+            var editorGraph = GraphLoader.LoadGraph(graphView, graph);
+            if (editorGraph == null) 
                 return;
             
             if (serializedGraphSelector != null)
@@ -99,11 +100,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             var currentGraph = serializedGraphSelector.value as SerializedGraph;
             if (currentGraph == null) 
                 return;
-            
-            if (GraphLoader.LoadGraph(graphView, currentGraph))
-            {
-                currentGraphGUID = currentGraph.GetCoffeeGUID();
-            }
         }
 
         /// <summary>
@@ -173,7 +169,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             toolbar.Add(new Button( DuplicateGraph ) 
                 {text = "Duplicate Test"});
             toolbar.Add(new Button( RevertGraphToVersionOnDisk ) 
-                {text = "Revert To Saved Version"});
+                {text = "Boop"});
             toolbar.Add(new Button( Debug__FoldoutAllItems ) 
                 {text = "Foldout all Items"});
             toolbar.Add(new Button( Debug__ExpandAllItems ) 

@@ -22,7 +22,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         /// <param name="graphView">Target graph view to load onto</param>
         /// <param name="graphToLoad">Target serialized graph to load</param>
         /// <returns>True if successful.</returns>
-        public static bool LoadGraph(CoffeeGraphView graphView, SerializedGraph graphToLoad)
+        public static EditorGraphData LoadGraph(CoffeeGraphView graphView, SerializedGraph graphToLoad)
         {
             guidToNodeDict.Clear();
             edges.Clear();
@@ -36,13 +36,23 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             catch
             {
                 Debug.LogError("Critical error loading graph asset! Possibly malformed GUID or the asset DB is corrupt.");
-                return false;
+                return null;
             }
 
             var serializedNodes = new List<NodeSerializationData>((items.Length/2)+1);
-            
+
+            EditorGraphData editorGraph = null;
+            foreach (var obj in items)
+            {
+                if(obj is EditorGraphData eGraph)
+                    editorGraph = eGraph;
+            }
+
+            if (editorGraph == null)
+                return null;
+
             ClearGraph(graphView);
-            
+
             foreach(var obj in items)
             {
                 switch (obj)
@@ -68,7 +78,7 @@ namespace VisualNovelFramework.GraphFramework.Serialization
             BindConnections(ref serializedNodes);
             
             edges.ForEach(graphView.AddElement);
-            return true;
+            return editorGraph;
         }
 
         private static void BindConnections(ref List<NodeSerializationData> serializedNodes)
