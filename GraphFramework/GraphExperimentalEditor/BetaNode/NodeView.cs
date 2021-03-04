@@ -5,6 +5,7 @@ using CoffeeExtensions;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
+using UnityEngine;
 using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
@@ -13,7 +14,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
     public class NodeView : Node
     {
         private readonly NodeModel nodeModel;
-        
+
         public NodeView(NodeModel model)
         {
             nodeModel = model;
@@ -98,12 +99,11 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
         {
             title = nodeModel.NodeTitle;
             expanded = nodeModel.IsExpanded;
-
-            //From node
+            SetPosition(nodeModel.Position);
             RefreshExpandedState();
             RefreshPorts();
         }
-        
+
         public void Display()
         {
             CreatePortsFromViewDataReflection();

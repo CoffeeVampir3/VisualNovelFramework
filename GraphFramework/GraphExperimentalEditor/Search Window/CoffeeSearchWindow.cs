@@ -25,7 +25,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Win
 
         public bool OnSelectEntry(SearchTreeEntry SearchTreeEntry, SearchWindowContext context)
         {
-            graphView.CreateNode(SearchTreeEntry.userData as Type, context.screenMousePosition);
+            //graphView.CreateNode(SearchTreeEntry.userData as Type, context.screenMousePosition);
             return true;
         }
     }

@@ -58,7 +58,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
         public void AddNode(BaseNode node)
         {
             AddElement(node);
-            graphView.OnStackChanged(this, node, true);
+            //graphView.OnStackChanged(this, node, true);
             RegisterCallback<GeometryChangedEvent>(OnStackOrderChanged);
         }
 
@@ -74,7 +74,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                     continue;
 
                 //If unity ever writes a stable enough event API this will change to an event.
-                graphView.OnStackChanged(this, bn, true);
+                //graphView.OnStackChanged(this, bn, true);
             }
 
             RegisterCallback<GeometryChangedEvent>(OnStackOrderChanged);
@@ -92,7 +92,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
 
             if (ge is BaseNode bn)
             {
-                graphView.OnStackChanged(this, bn, false);
+                //graphView.OnStackChanged(this, bn, false);
             }
             base.OnStartDragging(ge);
         }

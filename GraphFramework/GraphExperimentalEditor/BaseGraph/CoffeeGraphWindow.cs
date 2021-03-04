@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
-using VisualNovelFramework.GraphFramework.Serialization;
 using Object = UnityEngine.Object;
 
 namespace VisualNovelFramework.GraphFramework.Editor
@@ -16,14 +15,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         protected CoffeeGraphView graphView;
         [SerializeReference]
         public string currentGraphGUID;
-
-        #region EditorLinker
-
-        public void RuntimeNodeVisited(RuntimeNode node) => 
-            graphView?.RuntimeNodeVisited(node);
-
-        #endregion
-
+        
         protected void InitializeGraph()
         {
             if (string.IsNullOrWhiteSpace(currentGraphGUID))
@@ -31,9 +23,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 currentGraphGUID = Guid.NewGuid().ToString();
             }
 
+            //Unloads the graph before the assembly reloads.
+            //This is important, otherwise unity editor will freeze, presumably due to
+            //graph view no longer existing but still being referenced.
             AssemblyReloadEvents.beforeAssemblyReload += () =>
             {
-                Debug.Log("Forced to unload graph view. Probably should temp save and reload it here.");
                 graphView = null;
             };
 
@@ -57,7 +51,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         protected void SaveGraph()
         {
-            GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
+            //GraphSaver.SerializeGraph(graphView, currentGraphGUID, this.GetType());
         }
 
         //TODO:: oof. Maybe this is neccesary? The order of initialization
@@ -66,9 +60,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
         private SerializedGraph delayedLoadedGraph = null;
         public void LoadGraph(SerializedGraph graph)
         {
-            var editorGraph = GraphLoader.LoadGraph(graphView, graph);
-            if (editorGraph == null) 
-                return;
+            return;
+            //var editorGraph = GraphLoader.LoadGraph(graphView, graph);
+            //if (editorGraph == null) 
+                //return;
             
             if (serializedGraphSelector != null)
             {

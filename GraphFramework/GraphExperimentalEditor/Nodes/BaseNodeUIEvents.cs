@@ -26,7 +26,7 @@ namespace VisualNovelFramework.GraphFramework.Editor.Nodes
                 //Important to cast the connections to an array otherwise this will throw
                 foreach (Edge edge in port.connections.ToArray())
                 {
-                    gvParent.OnEdgeDelete(edge);
+                    //gvParent.OnEdgeDelete(edge);
                     edge.output?.Disconnect(edge);
                     edge.input?.Disconnect(edge);
                     edge.output = null;

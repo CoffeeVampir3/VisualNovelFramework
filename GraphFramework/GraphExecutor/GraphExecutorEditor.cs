@@ -77,7 +77,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
         {
             if (linkedEditorWindow is CoffeeGraphWindow cg)
             {
-                cg.RuntimeNodeVisited(node);
+                //cg.RuntimeNodeVisited(node);
                 Debug.Log("Visited node: " + node.name);
             }
         }

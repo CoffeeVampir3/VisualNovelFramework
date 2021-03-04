@@ -3,6 +3,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
+/*
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     public class NavigationBlackboard : UnityEditor.Experimental.GraphView.Blackboard
@@ -98,3 +99,4 @@ namespace VisualNovelFramework.GraphFramework.Editor
         }
     }
 }
+*/

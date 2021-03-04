@@ -1,48 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Window;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
-using VisualNovelFramework.GraphFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
-        [SerializeReference] public BaseNode rootNode;
         [SerializeReference] public readonly GraphSettings settings;
-        protected readonly NavigationBlackboard navBlackboard;
-        protected readonly PropertyBlackboard propBlackboard;
         protected readonly CoffeeSearchWindow searchWindow;
         public CoffeeGraphWindow parentWindow;
+        public BetaEditorGraph editorGraph;
+        
+        private Dictionary<NodeView, NodeModel> viewToModel =
+            new Dictionary<NodeView, NodeModel>();
 
+        private Dictionary<Edge, EdgeModel> edgeToModel = 
+            new Dictionary<Edge, EdgeModel>();
+
+        /// <summary>
+        /// Called once the graph view is resized to the editor window and all geometry has been
+        /// calculated. (Internally, this is called after a GeometryChangedEvent)
+        /// </summary>
+        public abstract void OnCreateGraphGUI();
+        
+        //TODO::
         #region DeleteThis
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
         {
-            evt.menu.AppendAction("Debug Node Model", CreateNode);
+            evt.menu.AppendAction("Debug Node Model", CreateNewNode);
             base.BuildContextualMenu(evt);
         }
 
-        public void CreateNode(DropdownMenuAction dma)
+        /// TODO::
+        private void DEBUG__LOAD_GRAPH()
         {
-            var model = new NodeModel<ModelTester>();
-            model.NodeTitle = "wow!";
-            model.OnCreate();
-            NodeView nv = model.CreateView();
-            this.AddElement(nv);
+            editorGraph = CoffeeAssetDatabase.FindAssetsOfType<BetaEditorGraph>().FirstOrDefault();
+            Undo.ClearAll();
+            BuildGraph();
+        }
+        
+        public void CreateNewNode(DropdownMenuAction dma)
+        {
+            var model = new NodeModel();
+            model.CreateRuntimeData(editorGraph, typeof(ModelTester));
+            CreateNodeFromModel(model);
+            
+            Undo.RegisterCreatedObjectUndo(model.RuntimeData, "graphChanges");
+            Undo.RecordObject(editorGraph, "graphChanges");
+            editorGraph.nodeModels.Add(model);
         }
 
         #endregion
-        
-        
-        
+
         protected CoffeeGraphView()
         {
             settings = GraphSettings.CreateOrGetSettings(this);
@@ -53,62 +72,185 @@ namespace VisualNovelFramework.GraphFramework.Editor
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
 
-            navBlackboard = new NavigationBlackboard(this);
-            //Add(navBlackboard);
-
-            propBlackboard = new PropertyBlackboard(this);
-            Add(propBlackboard);
-
             //These callbacks are derived from graphView.
             //Callback on cut/copy.
-            serializeGraphElements = OnSerializeGraphElements;
+            //serializeGraphElements = OnSerializeGraphElements;
             //Callback on paste.
-            unserializeAndPaste = DeserializeElementsOnPaste;
+            //unserializeAndPaste = DeserializeElementsOnPaste;
             //Callback on "changes" particularly on element delete.
-            graphViewChanged = OnGraphViewChanged;
+
+            Undo.undoRedoPerformed += UndoPerformed;
 
             searchWindow = ScriptableObject.CreateInstance<CoffeeSearchWindow>();
             InitializeSearchWindow();
+
+            DEBUG__LOAD_GRAPH();
+            
+            graphViewChanged = OnGraphViewChanged;
+        }
+
+        private void ClearGraph()
+        {
+            foreach (var elem in graphElements)
+            {
+                RemoveElement(elem);
+            }
+
+            viewToModel.Clear();
         }
         
-        /// <summary>
-        /// Called once the graph view is resized to the editor window and all geometry has been
-        /// calculated. (Internally, this is called after a GeometryChangedEvent)
-        /// </summary>
-        public abstract void OnCreateGraphGUI();
+        private void CreateNodeFromModel(NodeModel model)
+        {
+            NodeView nv = model.CreateView();
+            model.NodeTitle = "wow!";
+            AddElement(nv);
+            viewToModel.Add(nv, model);
+        }
+
+        //TODO:: Suspiscious AF code.
+        private void CreateEdgeFromModel(EdgeModel model)
+        {
+            if(model.inputModel?.View == null)
+                Debug.Log("Nulli");
+            
+            if(model.outputModel?.View == null)
+                Debug.Log("Nullp");
+
+            var inputQ = model.inputModel.View.Query<Port>().ToList();
+            var iPort = inputQ[model.inputPortIndex];
+            var outportQ = model.outputModel.View.Query<Port>().ToList();
+            var oPort = outportQ[model.outputPortIndex];
+            Edge edge = new Edge {input = iPort, output = oPort};
+            edge.input.Connect(edge);
+            edge.output.Connect(edge);
+            edgeToModel.Add(edge, model);
+            AddElement(edge);
+        }
+
+        private void BuildGraph()
+        {
+            if (editorGraph.nodeModels == null)
+                return;
+            
+            foreach (var model in editorGraph.nodeModels.ToArray())
+            {
+                CreateNodeFromModel(model);
+            }
+            
+            foreach (var model in editorGraph.edgeModels.ToArray())
+            {
+                CreateEdgeFromModel(model);
+            }
+        }
+
+        private void UndoPerformed()
+        {
+            //Some notes, the order of operation appears to be very specific/finnicky here
+            //The undo stack is a bit weird, but this seems to be the only working arrangement of
+            //operations.
+            
+            ClearGraph();
+
+            //Very weird bug I think caused by restoring editorGraph state, the undo stack
+            //seems to have this at null at some point.
+            if (editorGraph == null) return;
+            BuildGraph();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(editorGraph));
+        }
+
+        #region Graph Changes Processing
+
+        private void DeleteNode(NodeModel model)
+        {
+            //Notes on the undo stack:
+            //The graph list state changes, and also can be set to null by deleting the last element,
+            //so we must register a full undo.
+            //The importer will keep track that we're about to delete the runtime data, which
+            //is saved to our graph.
+            //Finally, we destroy the runtime data and increment the group count.
+            Undo.RegisterImporterUndo(AssetDatabase.GetAssetPath(model.RuntimeData), "graphChanges");
+            Undo.DestroyObjectImmediate(model.RuntimeData);
+            //Unsure why this is mandatory, but errors are thrown without it.
+            editorGraph.nodeModels.Remove(model);
+        }
+
+        private void DeleteEdge(EdgeModel model)
+        {
+            editorGraph.edgeModels.Remove(model);
+        }
+        
+        private void ProcessElementMoves(ref List<GraphElement> elements)
+        {
+            foreach (var elem in elements)
+            {
+                if (!(elem is NodeView view)) continue;
+                if (!viewToModel.TryGetValue(view, out var model)) continue;
+                model.UpdatePosition();
+            }
+        }
+
+        private void ProcessElementRemovals(ref List<GraphElement> elements)
+        {
+            //Saves the current undo group.
+            var index = Undo.GetCurrentGroup();
+            foreach (var elem in elements)
+            {
+                switch(elem)
+                {
+                    case NodeView view:
+                        if(viewToModel.TryGetValue(view, out var nodeModel))
+                        {
+                            DeleteNode(nodeModel);
+                        }
+                        break;
+                    case Edge edge:
+                        if(edgeToModel.TryGetValue(edge, out var edgeModel))
+                        {
+                            DeleteEdge(edgeModel);
+                        }
+                        break;
+                }
+            }
+            //Crushes all the delete operations into one undo operation.
+            Undo.CollapseUndoOperations(index);
+        }
 
         private GraphViewChange OnGraphViewChanged(GraphViewChange changes)
         {
+            //Save the state before any changes are made
+            Undo.RegisterCompleteObjectUndo(editorGraph, "graphChanges");
+            if (changes.movedElements != null)
+            {
+                ProcessElementMoves(ref changes.movedElements);
+            }
+            
             //Checks for changes related to our nodes.
             if (changes.elementsToRemove != null)
             {
-                foreach (var elem in changes.elementsToRemove)
-                {
-                    switch (elem)
-                    {
-                        case BaseNode bn:
-                            OnNodeDelete(bn);
-                            break;
-                        case BaseStackNode sn:
-                            OnStackDelete(sn);
-                            break;
-                        case Edge e:
-                            OnEdgeDelete(e);
-                            break;
-                    }
-                }
+                ProcessElementRemovals(ref changes.elementsToRemove);
             }
 
             if (changes.edgesToCreate == null) 
                 return changes;
-
+            
             foreach (var edge in changes.edgesToCreate)
             {
-                CreateConnectionFromEdge(edge);
+                if (!(edge.input.node is NodeView inView &&
+                      edge.output.node is NodeView outView)) continue;
+                if (!viewToModel.TryGetValue(inView, out var inModel) ||
+                    !viewToModel.TryGetValue(outView, out var outModel)) continue;
+                EdgeModel modelEdge = new EdgeModel(edge, inModel, outModel);
+                edgeToModel.Add(edge, modelEdge);
+                editorGraph.edgeModels.Add(modelEdge);
             }
+            //Bump up the undo increment so we're not undoing multiple change passes at once.
+            Undo.IncrementCurrentGroup();
 
             return changes;
         }
+        
+        #endregion
         
         //Thanks @Mert Kirimgeri
         private void InitializeSearchWindow()
@@ -118,6 +260,99 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 SearchWindow.Open(new SearchWindowContext(context.screenMousePosition), searchWindow);
         }
 
+        #region Helper Functions
+
+        /// <summary>
+        /// Centers the graph view onto target node.
+        /// </summary>
+        /// <param name="node"></param>
+        public void LookAtNode(Node node)
+        {
+            var halfGraphWidth = resolvedStyle.width / 2;
+            var halfGraphHeight = resolvedStyle.height / 2;
+
+            Rect nodePos;
+            if (node.ClassListContains("stack-child-element"))
+            {
+                //If the node is stacked it... for some reason has no position.
+                //This is the only method I could find that actually worked to get a real
+                //position out of the damn node.
+                var stackNodeParent = node.GetFirstAncestorOfType<BaseStackNode>();
+                if (stackNodeParent == null)
+                    return;
+                nodePos = stackNodeParent.GetPosition();
+            }
+            else
+            {
+                nodePos = node.GetPosition();
+            }
+
+            //Unsure why position is flipped but this is at least consistent across graph view.
+            var nodeX = -nodePos.center.x * this.scale;
+            var nodeY = -nodePos.center.y * this.scale;
+            
+            Vector2 centeredPosition = new Vector2(nodeX + halfGraphWidth,
+                nodeY + halfGraphHeight);
+            
+            viewTransform.position = centeredPosition;
+        }
+        
+        protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
+        {
+            //What the fuck unity. NEGATIVE POSITION???
+            Vector2 relPos = new Vector2(
+                -viewTransform.position.x + pos.x,
+                -viewTransform.position.y + pos.y);
+
+            //Hold the offset as a static value by scaling it in the reverse direction of our scale
+            //This way we "undo" the division by scale for only the offset value, scaling everything else.
+            relPos -= (offset * scale);
+            return relPos / scale;
+        }
+        
+        #endregion
+
+        #region Default Connection Edge Rules
+        
+        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
+        {
+            var compPorts = new List<Port>();
+
+            foreach (var port in ports)
+            {
+                if (startPort == port || startPort.node == port.node) continue;
+                if (startPort.portType != port.portType) continue;
+                compPorts.Add(port);
+            }
+
+            return compPorts;
+        }
+        
+        #endregion
+        
+        /*
+
+#region Event Handling
+
+public override void HandleEvent(EventBase evt)
+{
+    //Prevents the root node from being copied/deleted/weird shit
+    if (evt is ExecuteCommandEvent)
+    {
+        if (this.selection.Contains(rootNode))
+        {
+            this.selection.Remove(rootNode);
+        }
+    }
+    base.HandleEvent(evt);
+}
+
+#endregion
+
+*/
+        
+        /*
+        
         #region Copy and Paste
 
         /// <summary>
@@ -199,6 +434,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
         
         #endregion
 
+        */
+        
+        /*
         #region Editor/Debugger link
         
         [SerializeReference]
@@ -226,6 +464,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
         
         #endregion
         
+        */
+        
+        
+        /*
         #region Nodes
         
         /// <summary>
@@ -458,114 +700,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
         }
 
         #endregion
-        
-        #region Edges
-        
-        private void CreateConnectionFromEdge(Edge edge)
-        {
-            if (edge.input.node is BaseNode inputSide && 
-                edge.output.node is BaseNode outputSide)
-            {
-                inputSide.ConnectPortTo(edge.input, outputSide, edge.output);
-            }
-        }
-
-        public void OnEdgeDelete(Edge edge)
-        {
-            if (edge.input.node is BaseNode inputSide && 
-                edge.output.node is BaseNode outputSide)
-            {
-                inputSide.DisconnectPortFrom(edge.input, outputSide, edge.output);
-            }
-        }
-        
-        #endregion
-        
-        #region Helper Functions
-
-        /// <summary>
-        /// Centers the graph view onto target node.
-        /// </summary>
-        /// <param name="node"></param>
-        public void LookAtNode(Node node)
-        {
-            var halfGraphWidth = resolvedStyle.width / 2;
-            var halfGraphHeight = resolvedStyle.height / 2;
-
-            Rect nodePos;
-            if (node.ClassListContains("stack-child-element"))
-            {
-                //If the node is stacked it... for some reason has no position.
-                //This is the only method I could find that actually worked to get a real
-                //position out of the damn node.
-                var stackNodeParent = node.GetFirstAncestorOfType<BaseStackNode>();
-                if (stackNodeParent == null)
-                    return;
-                nodePos = stackNodeParent.GetPosition();
-            }
-            else
-            {
-                nodePos = node.GetPosition();
-            }
-
-            //Unsure why position is flipped but this is at least consistent across graph view.
-            var nodeX = -nodePos.center.x * this.scale;
-            var nodeY = -nodePos.center.y * this.scale;
-            
-            Vector2 centeredPosition = new Vector2(nodeX + halfGraphWidth,
-                nodeY + halfGraphHeight);
-            
-            viewTransform.position = centeredPosition;
-        }
-        
-        protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
-        {
-            //What the fuck unity. NEGATIVE POSITION???
-            Vector2 relPos = new Vector2(
-                -viewTransform.position.x + pos.x,
-                -viewTransform.position.y + pos.y);
-
-            //Hold the offset as a static value by scaling it in the reverse direction of our scale
-            //This way we "undo" the division by scale for only the offset value, scaling everything else.
-            relPos -= (offset * scale);
-            return relPos / scale;
-        }
-        
-        #endregion
-
-        #region Event Handling
-
-        public override void HandleEvent(EventBase evt)
-        {
-            //Prevents the root node from being copied/deleted/weird shit
-            if (evt is ExecuteCommandEvent)
-            {
-                if (this.selection.Contains(rootNode))
-                {
-                    this.selection.Remove(rootNode);
-                }
-            }
-            base.HandleEvent(evt);
-        }
-        
-        #endregion
-        
-        #region Default Connection Edge Rules
-        
-        public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
-        {
-            var compPorts = new List<Port>();
-
-            foreach (var port in ports)
-            {
-                if (startPort == port || startPort.node == port.node) continue;
-                if (startPort.portType != port.portType) continue;
-                compPorts.Add(port);
-            }
-
-            return compPorts;
-        }
-        
-        #endregion
+        */
     }
 }

@@ -8,6 +8,7 @@ using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
+/*
 namespace VisualNovelFramework.GraphFramework.Serialization
 {
     //Well doneya!
@@ -210,3 +211,5 @@ namespace VisualNovelFramework.GraphFramework.Serialization
         }
     }
 }
+
+*/

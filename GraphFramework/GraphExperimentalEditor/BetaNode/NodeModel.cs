@@ -1,83 +1,84 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CoffeeExtensions;
+using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
-using VisualNovelFramework.GraphFramework.Serialization;
-using VisualNovelFramework.Serialization;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 {
     [Serializable]
-    public class NodeModel<RuntimeNodeType> : NodeModel where RuntimeNodeType : RuntimeNode
+    public class NodeModel
     {
-        public override RuntimeNode RuntimeData
-        {
-            get => nodeRuntimeData;
-            set => nodeRuntimeData = value as RuntimeNodeType;
-        }
- 
         [SerializeReference]
-        protected RuntimeNodeType nodeRuntimeData;
-    }
-    
-    [Serializable]
-    public abstract class NodeModel
-    {
-        public abstract RuntimeNode RuntimeData { get; set; }
-        
-        public void OnCreate()
-        {
-            var thisType = GetType();
+        public RuntimeNode RuntimeData;
 
+        public void CreateRuntimeData(BetaEditorGraph editorGraph, Type runtimeDataType)
+        {
             //This magic deserve some explanation:
             //In a declaration like DialogueNode : NodeModel<RuntimeDialogueNode>
             //This code looks at NodeModel<RuntimeDialogueNode>
             //And extracts the type between the <>, RuntimeDialogueNode
-            var genericArgs = thisType.GetGenericClassConstructorArguments(typeof(NodeModel<>));
-            var finalArg = genericArgs.FirstOrDefault(w => typeof(RuntimeNode).IsAssignableFrom(w));
-            RuntimeData = ScriptableObject.CreateInstance(finalArg) as RuntimeNode;
-        }
-
-        [NonSerialized] 
-        private NodeView currentView;
-        public NodeView CreateView()
-        {
-            currentView = new NodeView(this);
-            currentView.Display();
-            return currentView;
+            RuntimeData = ScriptableObject.CreateInstance(runtimeDataType) as RuntimeNode;
+            AssetDatabase.AddObjectToAsset(RuntimeData, editorGraph);
+            EditorUtility.SetDirty(editorGraph);
         }
 
         [SerializeField] 
         public bool isRoot = false;
         [SerializeField]
         public string GUID;
-        
-        public string NodeTitle
-        {
-            get => nodeTitle;
-            set => nodeTitle = value;
-        }
-
-        public Rect Position
-        {
-            get => position;
-            set => position = value;
-        }
-
-        public bool IsExpanded
-        {
-            get => isExpanded;
-            set => isExpanded = value;
-        }
-        
-        
         [SerializeField] 
         private string nodeTitle = "Untitled.";
         [SerializeField] 
         private Rect position = Rect.zero;
         [SerializeField] 
         private bool isExpanded = true;
+        
+        [NonSerialized] 
+        private NodeView view;
+
+        public NodeView View => view;
+        
+        public NodeView CreateView()
+        {
+            view = new NodeView(this);
+            view.Display();
+            return view;
+        }
+
+        public void UpdatePosition()
+        {
+            position = view.GetPosition();
+        }
+        
+        public string NodeTitle
+        {
+            get => nodeTitle;
+
+            set
+            {
+                nodeTitle = value;
+                view.OnDirty();
+            }
+        }
+
+        public Rect Position
+        {
+            get => position;
+            set
+            {
+                position = value;
+                view.OnDirty();
+            }
+        }
+
+        public bool IsExpanded
+        {
+            get => isExpanded;
+            set
+            {
+                isExpanded = value;
+                view.OnDirty();
+            }
+        }
     }
 }
