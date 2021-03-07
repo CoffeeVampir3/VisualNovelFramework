@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
-using VisualNovelFramework.GraphFramework.Editor.Nodes;
 
 /*
 namespace VisualNovelFramework.GraphFramework.Editor

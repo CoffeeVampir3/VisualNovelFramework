@@ -1,19 +1,18 @@
-﻿using VisualNovelFramework.GraphFramework.Attributes;
+﻿using UnityEngine;
+using VisualNovelFramework.GraphFramework.Attributes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
     public class ModelTester : RuntimeNode
     {
-        [In]
+        [In, SerializeField]
         public ValuePort<string> stringValue = new ValuePort<string>();
-        [In] 
+        [In, SerializeField] 
         private ValuePort<Flow> flowPortIn = new ValuePort<Flow>();
-        [Out]
+        [Out, SerializeField]
         public ValuePort<string> stringValue2 = new ValuePort<string>();
-        [Out] 
+        [Out, SerializeField] 
         private ValuePort<Flow> flowPortOut = new ValuePort<Flow>();
-
-        public int myInt = 5;
     }
 }

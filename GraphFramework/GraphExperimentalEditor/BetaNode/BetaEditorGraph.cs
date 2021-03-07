@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 {
@@ -13,6 +14,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
         public List<NodeModel> nodeModels = new List<NodeModel>();
         [SerializeReference] 
         public List<EdgeModel> edgeModels = new List<EdgeModel>();
+        [SerializeReference] 
+        public List<Connection> connections = new List<Connection>();
         
         public string GetCoffeeGUID()
         {

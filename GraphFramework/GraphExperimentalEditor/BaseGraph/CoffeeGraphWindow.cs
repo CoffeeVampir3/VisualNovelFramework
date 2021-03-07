@@ -30,8 +30,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 graphView = null;
             };
-
-            graphView.parentWindow = this;
+            
             graphView.StretchToParentSize();
             rootVisualElement.Add(graphView);
             graphView.RegisterCallback<GeometryChangedEvent>(OnGeometryChangedInitialization);

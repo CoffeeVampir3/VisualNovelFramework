@@ -1,6 +1,6 @@
 ﻿using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Attributes;
-
+/*
 namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Properties
 {
     [RegisterNodeToView(typeof(CoffeeGraphView), "Properties/Bool")]
@@ -48,3 +48,4 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Properties
     [RegisterNodeToView(typeof(CoffeeGraphView), "Properties/Material")]
     public class MaterialProperty : BasePropertyNode<RuntimeMaterialProperty> { }
 }
+*/

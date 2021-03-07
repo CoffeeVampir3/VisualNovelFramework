@@ -10,20 +10,20 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
     [Serializable]
     public class PortModel
     {
-        [SerializeField]
+        [SerializeReference]
         public Orientation orientation;
-        [SerializeField]
+        [SerializeReference]
         public Direction direction;
-        [SerializeField]
+        [SerializeReference]
         public Port.Capacity capacity;
-        [SerializeField] 
+        [SerializeReference] 
         public SerializableType portValueType = null;
-        [SerializeField] 
+        [SerializeReference] 
         public SerializedFieldInfo serializedValueFieldInfo;
         //Lookup is done via GUID because undo/redo creates a different copy.
-        [SerializeField] 
+        [SerializeReference] 
         public string portGUID;
-        
+
         public PortModel(Orientation orientation, 
             Direction direction, 
             Port.Capacity capacity, 

@@ -6,13 +6,12 @@ using UnityEngine;
 using VisualNovelFramework.EditorExtensions;
 using VisualNovelFramework.GraphFramework.Editor;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
-using VisualNovelFramework.GraphFramework.Serialization;
 
+/*
 namespace VisualNovelFramework.GraphFramework.GraphExecutor
 {
     public partial class GraphExecutor
     {
-        private EditorGraphData editorGraphData;
         private EditorWindow linkedEditorWindow;
         
         //We need this reflection because unity does not have a typed version of
@@ -83,4 +82,6 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
         }
     }
 }
+*/
+
 #endif

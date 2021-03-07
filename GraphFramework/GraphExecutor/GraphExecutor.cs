@@ -23,8 +23,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
         private GraphExecutor()
         {
             #if UNITY_EDITOR
-            isEditorLinkedStub = IsEditorLinkedToGraphWindow;
-            runtimeNodeVisitedEditor = EditorLinkedRuntimeNodeVisited;
+            //isEditorLinkedStub = IsEditorLinkedToGraphWindow;
+            //runtimeNodeVisitedEditor = EditorLinkedRuntimeNodeVisited;
             #endif
         }
 

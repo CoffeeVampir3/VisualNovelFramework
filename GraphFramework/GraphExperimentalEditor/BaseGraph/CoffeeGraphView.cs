@@ -5,8 +5,8 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VisualNovelFramework.EditorExtensions;
-using VisualNovelFramework.GraphFramework.Editor.Nodes;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode;
+using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Search_Window;
 using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Settings;
 
@@ -14,15 +14,15 @@ namespace VisualNovelFramework.GraphFramework.Editor
 {
     public abstract class CoffeeGraphView : GraphView
     {
-        public readonly GraphSettings settings;
+        protected readonly GraphSettings settings;
         protected readonly CoffeeSearchWindow searchWindow;
-        public CoffeeGraphWindow parentWindow;
-        public BetaEditorGraph editorGraph;
-        
-        private Dictionary<NodeView, NodeModel> viewToModel =
-            new Dictionary<NodeView, NodeModel>();
+        protected BetaEditorGraph editorGraph;
 
-        private Dictionary<Edge, EdgeModel> edgeToModel = 
+        //Keeps track of all NodeView's and their relation to their model.
+        private readonly Dictionary<NodeView, NodeModel> viewToModel =
+            new Dictionary<NodeView, NodeModel>();
+        //Keeps track of all edges and their relation to their model.
+        private readonly Dictionary<Edge, EdgeModel> edgeToModel =
             new Dictionary<Edge, EdgeModel>();
 
         /// <summary>
@@ -30,8 +30,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
         /// calculated. (Internally, this is called after a GeometryChangedEvent)
         /// </summary>
         public abstract void OnCreateGraphGUI();
-        
+
         //TODO::
+
         #region DeleteThis
 
         public override void BuildContextualMenu(ContextualMenuPopulateEvent evt)
@@ -52,7 +53,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
         {
             var model = NodeModel.InstantiateModel(editorGraph);
             CreateNodeFromModel(model);
-            
+
             Undo.RegisterCreatedObjectUndo(model.RuntimeData, "graphChanges");
             Undo.RecordObject(editorGraph, "graphChanges");
             editorGraph.nodeModels.Add(model);
@@ -83,9 +84,15 @@ namespace VisualNovelFramework.GraphFramework.Editor
             InitializeSearchWindow();
 
             DEBUG__LOAD_GRAPH();
-            
+
             graphViewChanged = OnGraphViewChanged;
         }
+        
+        #region Copy and Paste 
+        
+        
+        
+        #endregion
 
         private void ClearGraph()
         {
@@ -95,8 +102,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
             }
 
             viewToModel.Clear();
+            edgeToModel.Clear();
         }
-        
+
+        #region Graph Building
+
         private void CreateNodeFromModel(NodeModel model)
         {
             NodeView nv = model.CreateView();
@@ -104,56 +114,148 @@ namespace VisualNovelFramework.GraphFramework.Editor
             AddElement(nv);
             viewToModel.Add(nv, model);
         }
-        
+
         private void CreateEdgeFromModel(EdgeModel model)
         {
-            if (model.inputModel?.View == null || model.outputModel?.View == null)
-            {
-                return;
-            }
-            if (!model.inputModel.View.TryGetModelToPort(model.inputPortModel.portGUID, out var inputPort) ||
+            if (model.inputModel?.View == null || model.outputModel?.View == null ||
+                !model.inputModel.View.TryGetModelToPort(model.inputPortModel.portGUID, out var inputPort) ||
                 !model.outputModel.View.TryGetModelToPort(model.outputPortModel.portGUID, out var outputPort))
             {
+                editorGraph.edgeModels.Remove(model);
                 return;
             }
+
             Edge edge = new Edge {input = inputPort, output = outputPort};
             edge.input.Connect(edge);
             edge.output.Connect(edge);
-            edgeToModel.Add(edge, model);
             AddElement(edge);
+            edgeToModel.Add(edge, model);
+        }
+
+        private void BindConnections()
+        {
+            foreach (var conn in editorGraph.connections)
+            {
+                conn.BindConnection();
+            }
         }
 
         private void BuildGraph()
         {
             if (editorGraph.nodeModels == null)
                 return;
-            
+
             foreach (var model in editorGraph.nodeModels.ToArray())
             {
                 CreateNodeFromModel(model);
             }
-            
+
             foreach (var model in editorGraph.edgeModels.ToArray())
             {
                 CreateEdgeFromModel(model);
+            }
+
+            BindConnections();
+        }
+
+        #endregion
+
+        #region Undo-specific
+
+        /// <summary>
+        /// This is a hack to restore the state of ValuePort connections after an undo,
+        /// long story short the undo system does not preserve their state, so we need
+        /// to essentially rebuild them to match the current graph state which was undone.
+        /// This operation is quite expensive, but this ensures their can be no synchronization
+        /// loss between the graph and the ValuePorts.
+        /// </summary>
+        // NOTE:: It may be possible to cheapen this operation significantly by keeping track
+        // of dirtied nodes, but the undo system makes this very difficult.
+        private void PostUndoSyncNodePortConnections()
+        {
+            //Map guid->connection since we're going to be doing lots of lookups and
+            //this is a more efficient data format.
+            var graphKnownGuidToConnection = new Dictionary<string, Connection>();
+            List<Connection> untraversedConnections = new List<Connection>(editorGraph.connections);
+            bool anyConnectionsRemoved = false;
+            foreach (var conn in editorGraph.connections)
+            {
+                graphKnownGuidToConnection.Add(conn.GUID, conn);
+            }
+
+            foreach (var node in editorGraph.nodeModels)
+            {
+                void DeleteUndoneConnections(PortModel port)
+                {
+                    var localPortInfo = port.serializedValueFieldInfo.FieldFromInfo;
+                    if (!(localPortInfo.GetValue(node.RuntimeData) is ValuePort valuePort))
+                        return;
+                    for (int i = valuePort.connections.Count - 1; i >= 0; i--)
+                    {
+                        var conn = valuePort.connections[i];
+                        if (graphKnownGuidToConnection.ContainsKey(conn.GUID))
+                        {
+                            //We found a port containing this connection, so we mark it traversed.
+                            untraversedConnections.Remove(conn);
+                            continue;
+                        }
+
+                        //The graph doesn't know about this connection, so it's undone. Remove it
+                        //from the value port.
+                        valuePort.connections.Remove(conn);
+                        anyConnectionsRemoved = true;
+                    }
+                }
+
+                foreach (var port in node.inputPorts)
+                {
+                    DeleteUndoneConnections(port);
+                }
+
+                foreach (var port in node.outputPorts)
+                {
+                    DeleteUndoneConnections(port);
+                }
+            }
+
+            if (anyConnectionsRemoved || untraversedConnections.Count <= 0)
+                return;
+
+            //If we didin't remove any connections, we're going to probe for restored connections
+            //by checking to see if there's any connections we didin't traverse. If any exist,
+            //those connections are the "redone" connections.
+            foreach (var conn in untraversedConnections)
+            {
+                //Their should be no side effects to binding more than once.
+                conn.BindConnection();
+                bool existsAlready = false;
+                //We need to be careful not to add the same connection twice
+                foreach (var localConn in conn.localPort.connections)
+                {
+                    if (localConn.GUID == conn.GUID)
+                        existsAlready = true;
+                }
+
+                if (existsAlready) continue;
+                conn.localPort.connections.Add(conn);
             }
         }
 
         private void UndoPerformed()
         {
-            //Some notes, the order of operation appears to be very specific/finnicky here
-            //The undo stack is a bit weird, but this seems to be the only working arrangement of
-            //operations.
-            
+            //The undo stack is VERY finnicky, so this order of operations is important.
             ClearGraph();
 
             //There's some issue with the undo stack rewinding the object state and somehow
-            //the editor graph can be null for a moment here. It do be like that.
+            //the editor graph can be null for a moment here. It do be like it is sometimes.
             if (editorGraph == null) return;
+            PostUndoSyncNodePortConnections();
             BuildGraph();
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(editorGraph));
         }
+
+        #endregion
 
         #region Graph Changes Processing
 
@@ -165,11 +267,44 @@ namespace VisualNovelFramework.GraphFramework.Editor
             editorGraph.nodeModels.Remove(model);
         }
 
-        private void DeleteEdge(EdgeModel model)
+        private void DeletePortConnectionByGuid(ValuePort valuePort, string guid)
+        {
+            //Delete value port connection
+            for (int i = valuePort.connections.Count - 1; i >= 0; i--)
+            {
+                Connection currentConnection = valuePort.connections[i];
+                if (currentConnection.GUID != guid) continue;
+                valuePort.connections.Remove(currentConnection);
+                break;
+            }
+
+            //Delete graph connection
+            for (int j = editorGraph.connections.Count - 1; j >= 0; j--)
+            {
+                Connection currentConnection = editorGraph.connections[j];
+                if (currentConnection.GUID != guid) continue;
+                editorGraph.connections.Remove(currentConnection);
+                return;
+            }
+        }
+
+        private void DeleteEdge(Edge edge, EdgeModel model)
         {
             editorGraph.edgeModels.Remove(model);
+            if (!ResolveEdge(edge, out var inModel, out var outModel,
+                out var inputPort, out var outputPort))
+                return;
+            if (TryResolveValuePortFromModels(inModel, inputPort, out var inputValuePort))
+            {
+                DeletePortConnectionByGuid(inputValuePort, model.inputConnectionGuid);
+            }
+
+            if (TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
+            {
+                DeletePortConnectionByGuid(outputValuePort, model.outputConnectionGuid);
+            }
         }
-        
+
         private void ProcessElementMoves(ref List<GraphElement> elements)
         {
             foreach (var elem in elements)
@@ -186,39 +321,108 @@ namespace VisualNovelFramework.GraphFramework.Editor
             var index = Undo.GetCurrentGroup();
             foreach (var elem in elements)
             {
-                switch(elem)
+                switch (elem)
                 {
                     case NodeView view:
-                        if(viewToModel.TryGetValue(view, out var nodeModel))
-                        {
+                        if (viewToModel.TryGetValue(view, out var nodeModel))
                             DeleteNode(nodeModel);
-                        }
                         break;
                     case Edge edge:
-                        if(edgeToModel.TryGetValue(edge, out var edgeModel))
-                        {
-                            DeleteEdge(edgeModel);
-                        }
+                        if (edgeToModel.TryGetValue(edge, out var edgeModel))
+                            DeleteEdge(edge, edgeModel);
                         break;
                 }
             }
+
             //Crushes all the delete operations into one undo operation.
             Undo.CollapseUndoOperations(index);
         }
 
+        private bool TryCreateConnection(Edge edge,
+            NodeModel inModel, NodeModel outModel,
+            PortModel inputPort, PortModel outputPort)
+        {
+            if (!TryResolveValuePortFromModels(inModel, inputPort, out var inputValuePort) ||
+                !TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
+                return false;
+
+            var localConnection = new Connection(inModel.RuntimeData, inputPort.serializedValueFieldInfo,
+                outModel.RuntimeData, outputPort.serializedValueFieldInfo);
+            var remoteConnection = new Connection(outModel.RuntimeData, outputPort.serializedValueFieldInfo,
+                inModel.RuntimeData, inputPort.serializedValueFieldInfo);
+
+            inputValuePort.connections.Add(localConnection);
+            outputValuePort.connections.Add(remoteConnection);
+            localConnection.BindConnection();
+            remoteConnection.BindConnection();
+
+            var modelEdge = new EdgeModel(inModel, inputPort,
+                outModel, outputPort,
+                localConnection.GUID,
+                remoteConnection.GUID);
+
+            edgeToModel.Add(edge, modelEdge);
+            editorGraph.edgeModels.Add(modelEdge);
+            editorGraph.connections.Add(localConnection);
+            editorGraph.connections.Add(remoteConnection);
+            return true;
+        }
+
+        /// <summary>
+        /// Resolves an edge connection to its related models
+        /// </summary>
+        private bool ResolveEdge(Edge edge,
+            out NodeModel inModel, out NodeModel outModel,
+            out PortModel inputPort, out PortModel outputPort)
+        {
+            if (edge.input.node is NodeView inView &&
+                edge.output.node is NodeView outView &&
+                viewToModel.TryGetValue(inView, out inModel) &&
+                viewToModel.TryGetValue(outView, out outModel) &&
+                inModel.View.TryGetPortToModel(edge.input, out inputPort) &&
+                outModel.View.TryGetPortToModel(edge.output, out outputPort))
+                return true;
+
+            inModel = null;
+            outModel = null;
+            inputPort = null;
+            outputPort = null;
+            return false;
+        }
+
+        private static bool TryResolveValuePortFromModels(NodeModel nodeModel, PortModel portModel,
+            out ValuePort valuePort)
+        {
+            valuePort = null;
+            try
+            {
+                var inputPortInfo = portModel.serializedValueFieldInfo.FieldFromInfo;
+                valuePort = inputPortInfo.GetValue(nodeModel.RuntimeData) as ValuePort;
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private void ProcessEdgesToCreate(ref List<Edge> addedEdges)
         {
-            foreach (var edge in addedEdges)
+            for (int i = addedEdges.Count - 1; i >= 0; i--)
             {
-                if (!(edge.input.node is NodeView inView &&
-                      edge.output.node is NodeView outView)) continue;
-                if (!viewToModel.TryGetValue(inView, out var inModel) ||
-                    !viewToModel.TryGetValue(outView, out var outModel)) continue;
-                if (!inModel.View.TryGetPortToModel(edge.input, out var inputPort) ||
-                    !outModel.View.TryGetPortToModel(edge.output, out var outputPort)) continue;
-                EdgeModel modelEdge = new EdgeModel(inModel, inputPort, outModel, outputPort);
-                edgeToModel.Add(edge, modelEdge);
-                editorGraph.edgeModels.Add(modelEdge);
+                Edge edge = addedEdges[i];
+
+                //(NodeView) Input Node -> (NodeModel) In Model -> (PortModel) Input Port
+                //(NodeView) Output Node -> (NodeModel) Out Model -> (PortModel) Output Port
+                if (!ResolveEdge(edge, out var inModel, out var outModel,
+                        out var inputPort, out var outputPort) ||
+                    !TryCreateConnection(edge, inModel, outModel, inputPort, outputPort))
+                {
+                    //We failed to create a connection so discard this edge, otherwise it's confusing
+                    //to the user if an edge is created when a connection isin't.
+                    addedEdges.Remove(edge);
+                }
             }
         }
 
@@ -230,25 +434,25 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 ProcessElementMoves(ref changes.movedElements);
             }
-            
+
             //Checks for changes related to our nodes.
             if (changes.elementsToRemove != null)
             {
                 ProcessElementRemovals(ref changes.elementsToRemove);
             }
 
-            if (changes.edgesToCreate == null) 
+            if (changes.edgesToCreate == null)
                 return changes;
-            
+
             ProcessEdgesToCreate(ref changes.edgesToCreate);
             //Bump up the undo increment so we're not undoing multiple change passes at once.
             Undo.IncrementCurrentGroup();
 
             return changes;
         }
-        
+
         #endregion
-        
+
         //Thanks @Mert Kirimgeri
         private void InitializeSearchWindow()
         {
@@ -259,41 +463,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         #region Helper Functions
 
-        /// <summary>
-        /// Centers the graph view onto target node.
-        /// </summary>
-        /// <param name="node"></param>
-        public void LookAtNode(Node node)
-        {
-            var halfGraphWidth = resolvedStyle.width / 2;
-            var halfGraphHeight = resolvedStyle.height / 2;
-
-            Rect nodePos;
-            if (node.ClassListContains("stack-child-element"))
-            {
-                //If the node is stacked it... for some reason has no position.
-                //This is the only method I could find that actually worked to get a real
-                //position out of the damn node.
-                var stackNodeParent = node.GetFirstAncestorOfType<BaseStackNode>();
-                if (stackNodeParent == null)
-                    return;
-                nodePos = stackNodeParent.GetPosition();
-            }
-            else
-            {
-                nodePos = node.GetPosition();
-            }
-
-            //Unsure why position is flipped but this is at least consistent across graph view.
-            var nodeX = -nodePos.center.x * this.scale;
-            var nodeY = -nodePos.center.y * this.scale;
-            
-            Vector2 centeredPosition = new Vector2(nodeX + halfGraphWidth,
-                nodeY + halfGraphHeight);
-            
-            viewTransform.position = centeredPosition;
-        }
-        
         protected Vector2 GetViewRelativePosition(Vector2 pos, Vector2 offset = default)
         {
             //What the fuck unity. NEGATIVE POSITION???
@@ -306,11 +475,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
             relPos -= (offset * scale);
             return relPos / scale;
         }
-        
+
         #endregion
 
         #region Default Connection Edge Rules
-        
+
         public override List<Port> GetCompatiblePorts(Port startPort, NodeAdapter nodeAdapter)
         {
             var compPorts = new List<Port>();
@@ -324,379 +493,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
             return compPorts;
         }
-        
-        #endregion
-        
-        /*
-
-#region Event Handling
-
-public override void HandleEvent(EventBase evt)
-{
-    //Prevents the root node from being copied/deleted/weird shit
-    if (evt is ExecuteCommandEvent)
-    {
-        if (this.selection.Contains(rootNode))
-        {
-            this.selection.Remove(rootNode);
-        }
-    }
-    base.HandleEvent(evt);
-}
-
-#endregion
-
-*/
-        
-        /*
-        
-        #region Copy and Paste
-
-        /// <summary>
-        /// This makes cut & paste so much easier to implement.
-        /// </summary>
-        [Serializable]
-        protected class CopyAndPasteBox
-        {
-            public List<NodeSerializationData> serializedNodes = new List<NodeSerializationData>();
-            public List<StackNodeSerializationData> serializedStacks = new List<StackNodeSerializationData>();
-        }
-
-        protected virtual string OnSerializeGraphElements(IEnumerable<GraphElement> selectedItemsToSerialize)
-        {
-            CopyAndPasteBox box = new CopyAndPasteBox();
-            foreach (var elem in selectedItemsToSerialize)
-            {
-                switch (elem)
-                {
-                    case BaseNode bn:
-                    {
-                        //If the node is stacked, skip it, the stack will serialize it.
-                        if (bn.ClassListContains("stack-child-element"))
-                            continue;
-                        NodeSerializationData serialNode = 
-                            NodeSerializationData.SerializeFrom(bn);
-                        
-                        box.serializedNodes.Add(serialNode);
-                        break;
-                    }
-                    case BaseStackNode sn:
-                        StackNodeSerializationData stackSerialData = 
-                            StackNodeSerializationData.SerializeFrom(sn);
-                        
-                        box.serializedStacks.Add(stackSerialData);
-                        break;
-                }
-            }
-
-            return JsonUtility.ToJson(box);
-        }
-
-        protected virtual void DeserializeElementsOnPaste(string op, string serializationData)
-        {
-            CopyAndPasteBox box = JsonUtility.FromJson<CopyAndPasteBox>(serializationData);
-            if (box == null)
-                return;
-            
-            List<ISelectable> newSelection = new List<ISelectable>();
-            
-            //Deserialize each node.
-            foreach (var serialNode in box.serializedNodes)
-            {
-                var node = serialNode.CreateCopyFromSerialization();
-                newSelection.Add(node);
-                AddNode(node);
-            }
-            
-            //Deserialize all stacks and their children
-            foreach (var serializedStack in box.serializedStacks)
-            {
-                var stackNode = serializedStack.CreateCopyFromSerialization();
-                newSelection.Add(stackNode);
-                AddStackNode(stackNode);
-                foreach (var serialNode in serializedStack.stackedNodes)
-                {
-                    var node = serialNode.CreateCopyFromSerialization();
-                    AddDefaultSettingsToNode(node);
-                    stackNode.AddNode(node);
-                }
-            }
-
-            ClearSelection();
-            foreach (var selectedItem in newSelection)
-            {
-                AddToSelection(selectedItem);
-            }
-        }
-        
-        #endregion
-
-        */
-        
-        /*
-        #region Editor/Debugger link
-        
-        [SerializeReference]
-        private BaseNode lastEvaluatedNode = null;
-        /// <summary>
-        /// TODO:: Temporary code, should have a faster means of accessing nodes.
-        /// </summary>
-        public void RuntimeNodeVisited(RuntimeNode node)
-        {
-            if (!(nodes.ToList().FirstOrDefault(e =>
-            {
-                if (e is BaseNode bn)
-                {
-                    return bn.RuntimeData == node;
-                }
-
-                return false;
-            }) is BaseNode dataNode))
-                return;
-
-            lastEvaluatedNode?.OnNodeExited();
-            dataNode.OnNodeEntered();
-            lastEvaluatedNode = dataNode;
-        }
-        
-        #endregion
-        
-        */
-        
-        
-        /*
-        #region Nodes
-        
-        /// <summary>
-        /// All "free" BaseNodes (not including stack nodes) in the graph which are not stacked.
-        /// </summary>
-        public readonly List<BaseNode> freeNodes = new List<BaseNode>();
-        
-        /// <summary>
-        /// All stack nodes in the graph.
-        /// </summary>
-        public readonly List<BaseStackNode> stackNodes = new List<BaseStackNode>();
-        
-        /// <summary>
-        /// Lookup of StackNode -> Child BaseNodes
-        /// </summary>
-        private readonly Dictionary<BaseStackNode, List<BaseNode>> stackRelations =
-            new Dictionary<BaseStackNode, List<BaseNode>>();
-
-        /// <summary>
-        /// Lookup of BaseNode -> Parent BaseStackNode
-        /// </summary>
-        private readonly Dictionary<BaseNode, BaseStackNode> stackedNodeDictionary =
-            new Dictionary<BaseNode, BaseStackNode>();
-
-        public bool TryGetStackNodeChildren(BaseStackNode stack, out List<BaseNode> children)
-        {
-            return stackRelations.TryGetValue(stack, out children);
-        }
-
-        public bool IsNodeStacked(BaseNode bn)
-        {
-            return stackedNodeDictionary.TryGetValue(bn, out _);
-        }
-
-        public List<Node> GetNodes()
-        {
-            List<Node> listOfNodes = new List<Node>();
-            listOfNodes.AddRange(freeNodes);
-            listOfNodes.AddRange(stackNodes);
-            return listOfNodes;
-        }
-
-        public List<Node> GetNodesOrdered()
-        {
-            List<Node> orderedNodes = new List<Node>();
-            orderedNodes.AddRange(freeNodes);
-            foreach (var stack in stackNodes)
-            {
-                orderedNodes.Add(stack);
-                if(stackRelations.TryGetValue(stack, out var stackedNodes))
-                {
-                    orderedNodes.AddRange(stackedNodes);
-                }
-            }
-            return orderedNodes;
-        }
-
-        /// <summary>
-        /// A callback launched whenever a node in the graph is renamed. Currently used to update
-        /// the blackboard so it only repaints when there's a change.
-        /// </summary>
-        protected virtual void OnNodeNameChanged(ChangeEvent<string> changeEvent)
-        {
-            navBlackboard.RequestRefresh();
-        }
-
-        protected virtual void OnNodeDelete(BaseNode node)
-        {
-            if (freeNodes.Contains(node))
-            {
-                freeNodes.Remove(node);
-            }
-            else
-            {
-                RemoveNodeFromStack(node);
-            }
-            navBlackboard.RequestRefresh();
-        }
-
-        protected virtual void OnStackDelete(BaseStackNode stack)
-        {
-            if (!stackRelations.TryGetValue(stack, out var relations))
-                return;
-            
-            foreach (var node in relations)
-            {
-                if(stackedNodeDictionary.TryGetValue(node, out _))
-                    stackedNodeDictionary.Remove(node);
-            }
-
-            stackRelations.Remove(stack);
-            if (stackNodes.Contains(stack))
-            {
-                stackNodes.Remove(stack);
-            }
-        }
-
-        public virtual void OnStackChanged(BaseStackNode changedStack, BaseNode changedNode, bool added)
-        {
-            if (!added)
-            {
-                RemoveNodeFromStack(changedNode);
-                freeNodes.Add(changedNode);
-                navBlackboard.RequestRefresh();
-            }
-            else
-            {
-                AddNodeToStack(changedStack, changedNode);
-                navBlackboard.RequestRefresh();
-            }
-        }
-
-        private void RemoveNodeFromStack(BaseNode bn)
-        {
-            if (!stackedNodeDictionary.TryGetValue(bn, out var stack))
-            {
-                return;
-            }
-            
-            if(!stackRelations.TryGetValue(stack, out var stackedNodes))
-            {
-                stackedNodes = new List<BaseNode>();
-                stackRelations[stack] = stackedNodes;
-                return;
-            }
-
-            if (stackedNodes.Contains(bn))
-            {
-                stackedNodes.Remove(bn);
-                stackedNodeDictionary.Remove(bn);
-            }
-        }
-
-        private void AddNodeToStack(BaseStackNode stack, BaseNode bn)
-        {
-            if(!stackRelations.TryGetValue(stack, out var stackedNodes))
-            {
-                stackedNodes = new List<BaseNode>();
-                stackRelations[stack] = stackedNodes;
-            }
-            stackedNodes.Add(bn);
-            stackedNodeDictionary.Add(bn, stack);
-
-            if (freeNodes.Contains(bn))
-            {
-                freeNodes.Remove(bn);
-            }
-        }
-
-        /// <summary>
-        /// Nodes should be created using AddNoteAt with a rect targeting where on the graph
-        /// they should be spawned.
-        /// </summary>
-        public void AddNode(BaseNode node)
-        {
-            freeNodes.Add(node);
-
-            AddDefaultSettingsToNode(node);
-            AddElement(node);
-            
-            node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
-            navBlackboard.RequestRefresh();
-        }
-
-        /// <summary>
-        /// Node is created on the graph with the given coordinates.
-        /// </summary>
-        protected void AddNodeAt(BaseNode node, Rect position)
-        {
-            AddNode(node);
-            node.SetPosition(position);
-        }
-        
-        /// <summary>
-        /// Adds a stack node to the graph.
-        /// </summary>
-        public void AddStackNode(BaseStackNode node)
-        {
-            stackNodes.Add(node);
-            AddDefaultSettingsToNode(node);
-            AddElement(node);
-            node.RegisterCallback<ChangeEvent<string>>(OnNodeNameChanged);
-            navBlackboard.RequestRefresh();
-        }
-
-        public void AddDefaultSettingsToNode(Node node)
-        {
-            switch (node)
-            {
-                case BaseNode bn:
-                    bn.styleSheets.Add(settings.nodeStyle);
-                    break;
-                case BaseStackNode sn:
-                    sn.styleSheets.Add(settings.stackNodeStyle);
-                    break;
-            }
-        }
-
-        public void CreateNode(Type nodeType, Vector2 contextSpawnPos)
-        {
-            //Thanks to Mert Kirimgeri "UNITY DIALOGUE GRAPH TUTORIAL - Variables and Search Window"
-            //https://www.youtube.com/watch?v=F4cTWOxMjMY
-            Vector2 spawnPosition = parentWindow.rootVisualElement.ChangeCoordinatesTo(
-                parentWindow.rootVisualElement.parent,
-                contextSpawnPos - parentWindow.position.position);
-
-            spawnPosition = contentViewContainer.WorldToLocal(spawnPosition);
-
-            Vector2 nodeSize;
-            if (typeof(BaseNode).IsAssignableFrom(nodeType))
-            {
-                var node = SafeActivatorHelper.LoadArbitrary<BaseNode>(nodeType);
-                node.Initialize(nodeType.Name);
-                nodeSize = new Vector2(300, 300);
-                AddNodeAt(node, new Rect(spawnPosition.x - (nodeSize.x * scale / 2), 
-                    spawnPosition.y - (nodeSize.y * scale / 2), 
-                    nodeSize.x, nodeSize.y));
-            }
-            else if (typeof(BaseStackNode).IsAssignableFrom(nodeType))
-            {
-                BaseStackNode stack = SafeActivatorHelper.LoadArbitrary<BaseStackNode>(nodeType);
-                stack.Initialize(nodeType.Name);
-                nodeSize = new Vector2(150, 150);
-                stack.SetPosition(
-                    new Rect(spawnPosition.x - (nodeSize.x * scale / 2), 
-                        spawnPosition.y - (nodeSize.y * scale / 2), 
-                        nodeSize.x, nodeSize.y));
-                AddStackNode(stack);
-            }
-        }
 
         #endregion
-        */
     }
 }

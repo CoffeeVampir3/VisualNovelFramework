@@ -74,7 +74,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 
             return port;
         }
-        
+
         #endregion 
 
         private void CreateEditorFromNodeData()

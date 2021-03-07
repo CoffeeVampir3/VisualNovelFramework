@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using UnityEditor;
 using UnityEngine;
 using VisualNovelFramework.GraphFramework.GraphRuntime;
 
@@ -11,7 +9,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     /// Reflection that allows us to save the relationship between actual value field and value port.
     /// </summary>
     [System.Serializable]
-    internal class BindingConnection
+    internal class __BindingConnection
     {
         [SerializeField]
         public RuntimeNode localNode;
@@ -22,7 +20,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
         [SerializeField]
         private SerializedFieldInfo remotePortField;
 
-        internal BindingConnection(RuntimeNode local, RuntimeNode remote,
+        internal __BindingConnection(RuntimeNode local, RuntimeNode remote,
             SerializedFieldInfo localField, SerializedFieldInfo remoteField)
         {
             localNode = local;
@@ -66,21 +64,21 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO
     /// Simple class that conducts the key exchange for graph "ports".
     /// </summary>
     [System.Serializable]
-    public class RuntimeConnection
+    public class DEPRECATED_RuntimeConnection
     {
         [NonSerialized]
         public ValuePort localPort;
         [NonSerialized]
         public ValuePort remotePort;
         [SerializeField] 
-        private BindingConnection connectionBinder;
+        private __BindingConnection connectionBinder;
         [SerializeField] 
         public string GUID;
-        public RuntimeConnection(
+        public DEPRECATED_RuntimeConnection(
             RuntimeNode localSide, SerializedFieldInfo localPortField, 
             RuntimeNode remoteSide, SerializedFieldInfo remotePortField)
         {
-            connectionBinder = new BindingConnection(
+            connectionBinder = new __BindingConnection(
                 localSide, 
                 remoteSide,
                 localPortField,

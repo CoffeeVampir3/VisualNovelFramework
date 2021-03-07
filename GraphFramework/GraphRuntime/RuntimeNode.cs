@@ -6,31 +6,14 @@ using VisualNovelFramework.GraphFramework.GraphExperimentalEditor.NodeIO;
 
 namespace VisualNovelFramework.GraphFramework.GraphRuntime
 {
-    public class RuntimeNode : ScriptableObject, HasCoffeeGUID
+    public class RuntimeNode : ScriptableObject
     {
-        [SerializeField, HideInInspector]
-        public string GUID;
         [SerializeField]
-        public List<RuntimeConnection> connections = new List<RuntimeConnection>();
-
-        public virtual RuntimeNode GetNextNode()
-        {
-            return null;
-        }
-
-        public virtual void OnEvaluate()
+        public List<DEPRECATED_RuntimeConnection> connections = new List<DEPRECATED_RuntimeConnection>();
+        public virtual RuntimeNode OnEvaluate()
         {
             Debug.Log(this.name);
-        }
-
-        public string GetCoffeeGUID()
-        {
-            return GUID;
-        }
-
-        public void SetCoffeeGUID(string newGuid)
-        {
-            GUID = newGuid;
+            return null;
         }
     }
 }

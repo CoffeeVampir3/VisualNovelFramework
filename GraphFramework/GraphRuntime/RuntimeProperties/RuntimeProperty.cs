@@ -10,12 +10,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.Properties
         [Out] 
         protected ValuePort<T> propertyPortValue = new ValuePort<T>();
 
-        [SerializeField]
-        private T propertyValue;
-        
-        public override void OnEvaluate()
-        {
-            ValuePort.SetPortValue(propertyPortValue, propertyValue);
-        }
+        //[SerializeField]
+        //private T propertyValue;
     }
 }
