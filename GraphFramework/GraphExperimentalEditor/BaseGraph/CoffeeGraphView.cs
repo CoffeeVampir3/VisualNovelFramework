@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
@@ -51,15 +52,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void CreateNewNode(DropdownMenuAction dma)
         {
-            var model = NodeModel.InstantiateModel(editorGraph);
-            CreateNodeFromModel(model);
-
-            Undo.RegisterCreatedObjectUndo(model.RuntimeData, "graphChanges");
-            Undo.RecordObject(editorGraph, "graphChanges");
-            editorGraph.nodeModels.Add(model);
+            CreateNewNode();
         }
 
         #endregion
+
 
         protected CoffeeGraphView()
         {
@@ -73,9 +70,9 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
             //These callbacks are derived from graphView.
             //Callback on cut/copy.
-            //serializeGraphElements = OnSerializeGraphElements;
+            serializeGraphElements = OnSerializeGraphElements;
             //Callback on paste.
-            //unserializeAndPaste = DeserializeElementsOnPaste;
+            unserializeAndPaste = OnPaste;
             //Callback on "changes" particularly on element delete.
 
             Undo.undoRedoPerformed += UndoPerformed;
@@ -88,9 +85,108 @@ namespace VisualNovelFramework.GraphFramework.Editor
             graphViewChanged = OnGraphViewChanged;
         }
         
-        #region Copy and Paste 
+        #region Copy and Paste
+
+        [Serializable]
+        protected class CopyAndPasteBox
+        {
+            [SerializeReference]
+            public List<string> viewGuids = new List<string>();
+            [SerializeReference]
+            public List<string> edgeGuids = new List<string>();
+        }
+
+        protected virtual string OnSerializeGraphElements(IEnumerable<GraphElement> selectedItemsToSerialize)
+        {
+            CopyAndPasteBox box = new CopyAndPasteBox();
+            foreach (var elem in selectedItemsToSerialize)
+            {
+                switch (elem)
+                {
+                case NodeView view:
+                    box.viewGuids.Add(view.viewDataKey);
+                    break;
+                case Edge edge:
+                    box.edgeGuids.Add(edge.viewDataKey);
+                    break;
+                }
+            }
+
+            return JsonUtility.ToJson(box);
+        }
         
-        
+        protected virtual void OnPaste(string op, string serializationData)
+        {
+            CopyAndPasteBox box = JsonUtility.FromJson<CopyAndPasteBox>(serializationData);
+            if (box == null)
+                return;
+            
+            var oldModelToCopiedModel = new Dictionary<NodeModel, NodeModel>();
+            foreach (var viewGuid in box.viewGuids)
+            {
+                //Create a new copy
+                if (!(GetElementByGuid(viewGuid) is NodeView nv)) continue;
+                var model = viewToModel[nv];
+                var clone = model.Clone(editorGraph);
+                oldModelToCopiedModel.Add(model, clone);
+                CreateNewNode(clone);
+            }
+            
+            foreach (var edgeGuid in box.edgeGuids)
+            {
+                Edge originalEdge = GetEdgeByGuid(edgeGuid);
+                ResolveEdge(originalEdge,
+                    out var inModel, out var outModel,
+                    out var inPort, out var outPort);
+                
+                NodeModel targetInModel;
+                NodeModel targetOutModel;
+                PortModel targetInPort;
+                PortModel targetOutPort;
+                
+                if (!oldModelToCopiedModel.TryGetValue(inModel, out targetInModel))
+                {
+                    targetInModel = inModel;
+                    targetInPort = inPort;
+                }
+                else
+                {
+                    var pIndex = inModel.inputPorts.IndexOf(inPort);
+                    if (targetInModel.inputPorts.Count <= pIndex)
+                        continue;
+                    targetInPort = targetInModel.inputPorts[pIndex];
+                }
+                
+                if (!oldModelToCopiedModel.TryGetValue(outModel, out targetOutModel))
+                {
+                    targetOutModel = outModel;
+                    targetOutPort = outPort;
+                }
+                else
+                {
+                    var pIndex = outModel.outputPorts.IndexOf(outPort);
+                    if (targetOutModel.outputPorts.Count <= pIndex)
+                        continue;
+                    targetOutPort = targetOutModel.outputPorts[pIndex];
+                }
+                
+                if (!targetInModel.View.TryGetModelToPort(targetInPort.portGUID, out var realInPort) ||
+                    !targetOutModel.View.TryGetModelToPort(targetOutPort.portGUID, out var realOutPort))
+                {
+                    continue;
+                }
+                
+                Edge actualEdge = new Edge {input = realInPort, output = realOutPort};
+                if (TryCreateConnection(actualEdge, 
+                    targetInModel, targetOutModel, 
+                    targetInPort, targetOutPort))
+                {
+                    actualEdge.input.Connect(actualEdge);
+                    actualEdge.output.Connect(actualEdge);
+                    AddElement(actualEdge);
+                }
+            }
+        }
         
         #endregion
 
@@ -107,12 +203,32 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         #region Graph Building
 
+        /// <summary>
+        /// Creates a node from the given model, but does not add it to the undo record or
+        /// editor graph. This is intended for use only via BuildGraph()
+        /// </summary>
         private void CreateNodeFromModel(NodeModel model)
         {
             NodeView nv = model.CreateView();
             model.NodeTitle = "wow!";
+            model.RuntimeData.name = "wow!";
             AddElement(nv);
             viewToModel.Add(nv, model);
+        }
+
+        private void CreateNewNode(NodeModel model)
+        {
+            CreateNodeFromModel(model);
+
+            Undo.RegisterCreatedObjectUndo(model.RuntimeData, "graphChanges");
+            Undo.RecordObject(editorGraph, "graphChanges");
+            editorGraph.nodeModels.Add(model);
+        }
+        
+        private void CreateNewNode()
+        {
+            var model = NodeModel.InstantiateModel(editorGraph);
+            CreateNewNode(model);
         }
 
         private void CreateEdgeFromModel(EdgeModel model)
@@ -298,7 +414,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
             {
                 DeletePortConnectionByGuid(inputValuePort, model.inputConnectionGuid);
             }
-
+            
             if (TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
             {
                 DeletePortConnectionByGuid(outputValuePort, model.outputConnectionGuid);
@@ -342,6 +458,13 @@ namespace VisualNovelFramework.GraphFramework.Editor
             NodeModel inModel, NodeModel outModel,
             PortModel inputPort, PortModel outputPort)
         {
+            if (edge.input.capacity == Port.Capacity.Single && edge.input.connections.Any() ||
+                edge.output.capacity == Port.Capacity.Single && edge.output.connections.Any())
+            {
+                Debug.Log("Rejecting port because of capacity issue.");
+                return false;
+            }
+            
             if (!TryResolveValuePortFromModels(inModel, inputPort, out var inputValuePort) ||
                 !TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
                 return false;

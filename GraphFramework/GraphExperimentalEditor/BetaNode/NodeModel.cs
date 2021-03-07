@@ -30,13 +30,25 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             return model;
         }
 
+        public NodeModel Clone(BetaEditorGraph editorGraph)
+        {
+            NodeModel model = new NodeModel();
+            model.CreateRuntimeDataClone(editorGraph, RuntimeData);
+            model.RuntimeData.name = RuntimeData.name;
+            model.CreatePortModels(true);
+            return model;
+        }
+
         public void CreateRuntimeData(BetaEditorGraph editorGraph, Type runtimeDataType)
         {
-            //This magic deserve some explanation:
-            //In a declaration like DialogueNode : NodeModel<RuntimeDialogueNode>
-            //This code looks at NodeModel<RuntimeDialogueNode>
-            //And extracts the type between the <>, RuntimeDialogueNode
             RuntimeData = ScriptableObject.CreateInstance(runtimeDataType) as RuntimeNode;
+            AssetDatabase.AddObjectToAsset(RuntimeData, editorGraph);
+            EditorUtility.SetDirty(editorGraph);
+        }
+        
+        public void CreateRuntimeDataClone(BetaEditorGraph editorGraph, RuntimeNode toCopy)
+        {
+            RuntimeData = ScriptableObject.Instantiate(toCopy);
             AssetDatabase.AddObjectToAsset(RuntimeData, editorGraph);
             EditorUtility.SetDirty(editorGraph);
         }
@@ -49,7 +61,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
                 Port.Capacity.Multi, portValueType.FirstOrDefault(), field);
         }
 
-        public void CreatePortModels()
+        public void CreatePortModels(bool clearCopy = false)
         {
             var oFields = RuntimeData.GetType().GetLocalFieldsWithAttribute<Out>();
             var iFields = RuntimeData.GetType().GetLocalFieldsWithAttribute<In>();
@@ -58,11 +70,21 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             {
                 PortModel p = CreatePortModel(field, Direction.Input);
                 inputPorts.Add(p);
+                if (!clearCopy) continue;
+                if (field.GetValue(RuntimeData) is ValuePort vp)
+                {
+                    vp.connections.Clear();
+                }
             }
             foreach (var field in oFields)
             {
                 PortModel p = CreatePortModel(field, Direction.Output);
                 outputPorts.Add(p);
+                if (!clearCopy) continue;
+                if (field.GetValue(RuntimeData) is ValuePort vp)
+                {
+                    vp.connections.Clear();
+                }
             }
         }
 
