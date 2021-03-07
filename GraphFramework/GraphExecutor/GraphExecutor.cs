@@ -40,8 +40,8 @@ namespace VisualNovelFramework.GraphFramework.GraphExecutor
                 runtimeNodeVisitedEditor.Invoke(currentNode);
             }
             currentNode.OnEvaluate();
-            var firstCon = currentNode.connections.FirstOrDefault();
-            currentNode = firstCon.GetRemoteNode();
+            //var firstCon = currentNode.connections.FirstOrDefault();
+            //currentNode = firstCon.GetRemoteNode();
         }
     }
 }
