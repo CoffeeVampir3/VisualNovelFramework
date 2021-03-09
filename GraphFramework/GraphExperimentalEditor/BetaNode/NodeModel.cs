@@ -21,7 +21,23 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
         public List<PortModel> inputPorts = new List<PortModel>();
         [SerializeReference]
         public List<PortModel> outputPorts = new List<PortModel>();
+        
+        [SerializeField] 
+        public bool isRoot = false;
+        [SerializeField] 
+        private string nodeTitle = "Untitled.";
+        [SerializeField] 
+        private Rect position = Rect.zero;
+        [SerializeField] 
+        private bool isExpanded = true;
+        
+        [NonSerialized] 
+        private NodeView view;
 
+        public NodeView View => view;
+
+        #region Creation & Cloning
+        
         public static NodeModel InstantiateModel(BetaEditorGraph editorGraph)
         {
             var model = new NodeModel();
@@ -32,7 +48,13 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
 
         public NodeModel Clone(BetaEditorGraph editorGraph)
         {
-            NodeModel model = new NodeModel();
+            NodeModel model = new NodeModel
+            {
+                isRoot = false, 
+                nodeTitle = nodeTitle, 
+                position = position, 
+                isExpanded = isExpanded
+            };
             model.CreateRuntimeDataClone(editorGraph, RuntimeData);
             model.RuntimeData.name = RuntimeData.name;
             model.CreatePortModels(true);
@@ -87,21 +109,11 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
                 }
             }
         }
-
-        [SerializeField] 
-        public bool isRoot = false;
-        [SerializeField] 
-        private string nodeTitle = "Untitled.";
-        [SerializeField] 
-        private Rect position = Rect.zero;
-        [SerializeField] 
-        private bool isExpanded = true;
         
-        [NonSerialized] 
-        private NodeView view;
-
-        public NodeView View => view;
+        #endregion
         
+        #region Data Model Controller
+
         public NodeView CreateView()
         {
             view = new NodeView(this);
@@ -121,7 +133,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             set
             {
                 nodeTitle = value;
-                view.OnDirty();
+                view?.OnDirty();
             }
         }
 
@@ -131,7 +143,7 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             set
             {
                 position = value;
-                view.OnDirty();
+                view?.OnDirty();
             }
         }
 
@@ -141,8 +153,70 @@ namespace VisualNovelFramework.GraphFramework.GraphExperimentalEditor.BetaNode
             set
             {
                 isExpanded = value;
-                view.OnDirty();
+                view?.OnDirty();
             }
         }
+        
+        #endregion
+        
+        #region Connections
+
+        [NonSerialized]
+        private Dictionary<PortModel, ValuePort> cachedValuePorts = 
+            new Dictionary<PortModel, ValuePort>();
+        private bool TryResolveValuePortFromModels(PortModel portModel,
+            out ValuePort valuePort)
+        {
+            if (cachedValuePorts.TryGetValue(portModel, out valuePort))
+            {
+                return true;
+            }
+            try
+            {
+                var inputPortInfo = portModel.serializedValueFieldInfo.FieldFromInfo;
+                valuePort = inputPortInfo.GetValue(RuntimeData) as ValuePort;
+                cachedValuePorts.Add(portModel, valuePort);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool CanPortConnectTo(PortModel myInputPort, 
+            NodeModel outputModel, PortModel outputPort)
+        {
+            return TryResolveValuePortFromModels(myInputPort, out _) 
+                   && outputModel.TryResolveValuePortFromModels(outputPort, out _);
+        }
+
+        public void DeletePortConnectionByGuid(PortModel inPort, string guid)
+        {
+            if (!TryResolveValuePortFromModels(inPort, out var valuePort))
+                return;
+            //Delete value port connection
+            for (int i = valuePort.connections.Count - 1; i >= 0; i--)
+            {
+                Connection currentConnection = valuePort.connections[i];
+                if (currentConnection.GUID != guid) continue;
+                valuePort.connections.Remove(currentConnection);
+                return;
+            }
+        }
+
+        public Connection ConnectPortTo(PortModel myInputPort, NodeModel outputModel, PortModel outputPort)
+        {
+            var localConnection = new Connection(RuntimeData, myInputPort.serializedValueFieldInfo,
+                outputModel.RuntimeData, outputPort.serializedValueFieldInfo);
+
+            //Guaranteed to be cached if CanPortConnectTo returned true.
+            var inputValuePort = cachedValuePorts[myInputPort];
+            inputValuePort.connections.Add(localConnection);
+            localConnection.BindConnection();
+            return localConnection;
+        }
+        
+        #endregion
     }
 }

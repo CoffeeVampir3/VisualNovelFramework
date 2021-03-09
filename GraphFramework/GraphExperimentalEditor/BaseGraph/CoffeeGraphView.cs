@@ -52,12 +52,12 @@ namespace VisualNovelFramework.GraphFramework.Editor
 
         private void CreateNewNode(DropdownMenuAction dma)
         {
-            CreateNewNode();
+            Vector2 pos = GetViewRelativePosition(dma.eventInfo.localMousePosition);
+            CreateNewNode(pos);
         }
 
         #endregion
-
-
+        
         protected CoffeeGraphView()
         {
             settings = GraphSettings.CreateOrGetSettings(this);
@@ -120,7 +120,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
             CopyAndPasteBox box = JsonUtility.FromJson<CopyAndPasteBox>(serializationData);
             if (box == null)
                 return;
-            
+
+            ClearSelection();
             var oldModelToCopiedModel = new Dictionary<NodeModel, NodeModel>();
             foreach (var viewGuid in box.viewGuids)
             {
@@ -130,6 +131,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                 var clone = model.Clone(editorGraph);
                 oldModelToCopiedModel.Add(model, clone);
                 CreateNewNode(clone);
+                AddToSelection(clone.View);
             }
             
             foreach (var edgeGuid in box.edgeGuids)
@@ -184,6 +186,7 @@ namespace VisualNovelFramework.GraphFramework.Editor
                     actualEdge.input.Connect(actualEdge);
                     actualEdge.output.Connect(actualEdge);
                     AddElement(actualEdge);
+                    AddToSelection(actualEdge);
                 }
             }
         }
@@ -225,9 +228,11 @@ namespace VisualNovelFramework.GraphFramework.Editor
             editorGraph.nodeModels.Add(model);
         }
         
-        private void CreateNewNode()
+        private void CreateNewNode(Vector2 atPosition)
         {
             var model = NodeModel.InstantiateModel(editorGraph);
+            Rect spawnRect = new Rect(atPosition.x - 75, atPosition.y - 75, 150, 150);
+            model.Position = spawnRect;
             CreateNewNode(model);
         }
 
@@ -383,18 +388,8 @@ namespace VisualNovelFramework.GraphFramework.Editor
             editorGraph.nodeModels.Remove(model);
         }
 
-        private void DeletePortConnectionByGuid(ValuePort valuePort, string guid)
+        private void DeleteConnectionByGuid(string guid)
         {
-            //Delete value port connection
-            for (int i = valuePort.connections.Count - 1; i >= 0; i--)
-            {
-                Connection currentConnection = valuePort.connections[i];
-                if (currentConnection.GUID != guid) continue;
-                valuePort.connections.Remove(currentConnection);
-                break;
-            }
-
-            //Delete graph connection
             for (int j = editorGraph.connections.Count - 1; j >= 0; j--)
             {
                 Connection currentConnection = editorGraph.connections[j];
@@ -410,15 +405,10 @@ namespace VisualNovelFramework.GraphFramework.Editor
             if (!ResolveEdge(edge, out var inModel, out var outModel,
                 out var inputPort, out var outputPort))
                 return;
-            if (TryResolveValuePortFromModels(inModel, inputPort, out var inputValuePort))
-            {
-                DeletePortConnectionByGuid(inputValuePort, model.inputConnectionGuid);
-            }
-            
-            if (TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
-            {
-                DeletePortConnectionByGuid(outputValuePort, model.outputConnectionGuid);
-            }
+            inModel.DeletePortConnectionByGuid(inputPort, model.inputConnectionGuid);
+            outModel.DeletePortConnectionByGuid(outputPort, model.outputConnectionGuid);
+            DeleteConnectionByGuid(model.inputConnectionGuid);
+            DeleteConnectionByGuid(model.outputConnectionGuid);
         }
 
         private void ProcessElementMoves(ref List<GraphElement> elements)
@@ -458,26 +448,20 @@ namespace VisualNovelFramework.GraphFramework.Editor
             NodeModel inModel, NodeModel outModel,
             PortModel inputPort, PortModel outputPort)
         {
+            //Safeguard against multi-connecting single capacity ports accidentally.
             if (edge.input.capacity == Port.Capacity.Single && edge.input.connections.Any() ||
                 edge.output.capacity == Port.Capacity.Single && edge.output.connections.Any())
             {
-                Debug.Log("Rejecting port because of capacity issue.");
                 return false;
             }
-            
-            if (!TryResolveValuePortFromModels(inModel, inputPort, out var inputValuePort) ||
-                !TryResolveValuePortFromModels(outModel, outputPort, out var outputValuePort))
+
+            if (!inModel.CanPortConnectTo(inputPort, outModel, outputPort) ||
+                !outModel.CanPortConnectTo(outputPort, inModel, inputPort))
+            {
                 return false;
-
-            var localConnection = new Connection(inModel.RuntimeData, inputPort.serializedValueFieldInfo,
-                outModel.RuntimeData, outputPort.serializedValueFieldInfo);
-            var remoteConnection = new Connection(outModel.RuntimeData, outputPort.serializedValueFieldInfo,
-                inModel.RuntimeData, inputPort.serializedValueFieldInfo);
-
-            inputValuePort.connections.Add(localConnection);
-            outputValuePort.connections.Add(remoteConnection);
-            localConnection.BindConnection();
-            remoteConnection.BindConnection();
+            }
+            var localConnection = inModel.ConnectPortTo(inputPort, outModel, outputPort);
+            var remoteConnection = outModel.ConnectPortTo(outputPort, inModel, inputPort);
 
             var modelEdge = new EdgeModel(inModel, inputPort,
                 outModel, outputPort,
@@ -511,23 +495,6 @@ namespace VisualNovelFramework.GraphFramework.Editor
             inputPort = null;
             outputPort = null;
             return false;
-        }
-
-        private static bool TryResolveValuePortFromModels(NodeModel nodeModel, PortModel portModel,
-            out ValuePort valuePort)
-        {
-            valuePort = null;
-            try
-            {
-                var inputPortInfo = portModel.serializedValueFieldInfo.FieldFromInfo;
-                valuePort = inputPortInfo.GetValue(nodeModel.RuntimeData) as ValuePort;
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private void ProcessEdgesToCreate(ref List<Edge> addedEdges)
